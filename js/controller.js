@@ -5,6 +5,21 @@ export class GameController {
         this.model = model;
         this.view = view;
 
+        this.deferredPrompt = null;
+
+        // Lauschen, ob die App installierbar ist
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Verhindert das automatische Chrome-Banner (wir machen das selbst!)
+            e.preventDefault();
+            // Speichert das Event, damit wir es später beim Button-Klick auslösen können
+            this.deferredPrompt = e;
+            // Zeigt unseren eigenen Button an
+            this.view.toggleInstallButton(true);
+        });
+
+        // Binde den Klick auf unseren neuen Button
+        this.view.bindInstallApp(this.handleInstallApp.bind(this));
+
         // 1. Setup Events Binden
         this.view.bindAddPlayer(this.handleAddPlayer.bind(this));
         this.view.bindTogglePlayer(this.handleTogglePlayer.bind(this));
@@ -167,5 +182,24 @@ export class GameController {
         
         this.view.renderModalContent(this.model.state, this.model.isCurrentPhaseComplete());
         this.view.elements.modal.classList.remove('hidden');
+    }
+
+    async handleInstallApp() {
+        if (!this.deferredPrompt) return;
+        
+        // Zeige den echten Installations-Dialog des Smartphones
+        this.deferredPrompt.prompt();
+        
+        // Warte auf die Antwort des Nutzers
+        const { outcome } = await this.deferredPrompt.userChoice;
+        console.log(`User response to the install prompt: ${outcome}`);
+        
+        // Wenn er auf "Installieren" geklickt hat, verstecken wir unseren Button
+        if (outcome === 'accepted') {
+            this.view.toggleInstallButton(false);
+        }
+        
+        // Wir können den Prompt nur einmal nutzen, danach leeren wir ihn
+        this.deferredPrompt = null;
     }
 }

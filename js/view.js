@@ -13,6 +13,7 @@ export class GameView {
             activePlayersList: document.getElementById('active-players-container'),
             newPlayerInput: document.getElementById('new-player-name'),
             addNewPlayerBtn: document.getElementById('add-new-player-btn'),
+            installAppBtn: document.getElementById('install-app-btn'),
             startGameBtn: document.getElementById('start-game-btn'),
             backToSetupBtn: document.getElementById('back-to-setup-btn'),
             
@@ -261,6 +262,19 @@ export class GameView {
             if (name) { handler(name); this.elements.newPlayerInput.value = ''; }
         });
     }
+    
+    bindInstallApp(handler) {
+        this.elements.installAppBtn.addEventListener('click', handler);
+    }
+
+    toggleInstallButton(show) {
+        if (show) {
+            this.elements.installAppBtn.classList.remove('hidden');
+        } else {
+            this.elements.installAppBtn.classList.add('hidden');
+        }
+    }
+
     bindTogglePlayer(handler) { this.onPlayerToggle = handler; }
     bindRemovePlayer(handler) { this.onPlayerRemove = handler; }
     bindMovePlayer(handler) { this.onPlayerMove = handler; }
