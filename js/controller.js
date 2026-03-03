@@ -31,8 +31,15 @@ export class GameController {
         this.view.bindEditChoiceClose(this.handleEditChoiceClose.bind(this));
         this.view.bindEditChoiceSelect(this.handleEditChoiceSelect.bind(this));
 
-        // Initiale Anzeige
-        this.view.renderSetup(this.model.state);
+        // 5. Initiale Anzeige basierend auf gespeichertem Zustand
+        if (this.model.state.roundsData && this.model.state.roundsData.length > 0) {
+            // Es läuft bereits ein Spiel!
+            this.view.switchScreen(true);
+            this.view.renderGameTable(this.model.state);
+        } else {
+            // Kein aktives Spiel, zeige Setup
+            this.view.renderSetup(this.model.state);
+        }
     }
 
     // --- SETUP HANDLER ---
@@ -51,7 +58,9 @@ export class GameController {
     handleBackToSetup() {
         if (!this.view.elements.gameScreen.classList.contains('hidden')) {
             if (confirm("Wirklich zurück? Der aktuelle Spielstand geht verloren!")) {
+                this.model.quitGame();
                 this.view.switchScreen(false);
+                this.view.renderSetup(this.model.state);
             }
         }
     }

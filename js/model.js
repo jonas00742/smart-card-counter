@@ -2,6 +2,11 @@ import { CONFIG } from './config.js';
 
 export class GameModel {
     constructor() {
+        this.storageKey = 'smartCounterState';
+        this.loadState();
+    }
+
+    initDefaultState() {
         this.state = {
             availablePlayers: ["Alex", "Bela", "Charlie", "Doro"],
             activePlayers: [],
@@ -9,6 +14,7 @@ export class GameModel {
             phase: 'ansage', 
             roundsData: [],
             
+            // UI States (werden beim Neuladen sicherheitshalber zurückgesetzt)
             globalEditMode: false,
             isEditMode: false,
             editRoundIndex: 0,
@@ -17,6 +23,29 @@ export class GameModel {
         };
     }
 
+    // --- LOCAL STORAGE LOGIK ---
+    loadState() {
+        const saved = localStorage.getItem(this.storageKey);
+        if (saved) {
+            try {
+                this.state = JSON.parse(saved);
+                // UI States zurücksetzen, damit beim Reload keine verwaisten Modals offen sind
+                this.state.globalEditMode = false;
+                this.state.isEditMode = false;
+            } catch (e) {
+                console.error("Fehler beim Laden des Spielstands", e);
+                this.initDefaultState();
+            }
+        } else {
+            this.initDefaultState();
+        }
+    }
+
+    saveState() {
+        localStorage.setItem(this.storageKey, JSON.stringify(this.state));
+    }
+
+    // --- SPIEL LOGIK ---
     initGameData() {
         this.state.currentRoundIndex = 0;
         this.state.phase = 'ansage';
@@ -30,18 +59,26 @@ export class GameModel {
             });
             this.state.roundsData.push(roundObj);
         }
+        this.saveState();
+    }
+
+    quitGame() {
+        this.state.roundsData = []; // Löscht die aktiven Spieldaten
+        this.saveState();
     }
 
     addPlayer(name) {
         if (name && !this.state.availablePlayers.includes(name)) {
             this.state.availablePlayers.push(name);
             this.state.activePlayers.push(name);
+            this.saveState();
         }
     }
 
     removePlayer(player) {
         this.state.availablePlayers = this.state.availablePlayers.filter(p => p !== player);
         this.state.activePlayers = this.state.activePlayers.filter(p => p !== player);
+        this.saveState();
     }
 
     togglePlayerActive(player) {
@@ -50,6 +87,7 @@ export class GameModel {
         } else {
             this.state.activePlayers.push(player);
         }
+        this.saveState();
     }
 
     movePlayer(index, direction) {
@@ -57,15 +95,18 @@ export class GameModel {
             const temp = this.state.activePlayers[index - 1];
             this.state.activePlayers[index - 1] = this.state.activePlayers[index];
             this.state.activePlayers[index] = temp;
+            this.saveState();
         } else if (direction === 'down' && index < this.state.activePlayers.length - 1) {
             const temp = this.state.activePlayers[index + 1];
             this.state.activePlayers[index + 1] = this.state.activePlayers[index];
             this.state.activePlayers[index] = temp;
+            this.saveState();
         }
     }
 
     setPlayerOrder(newOrder) {
         this.state.activePlayers = newOrder;
+        this.saveState();
     }
 
     setInputValue(value) {
@@ -78,6 +119,7 @@ export class GameModel {
         } else {
             this.state.roundsData[rIndex][player].gemacht = value;
         }
+        this.saveState();
     }
 
     isCurrentPhaseComplete() {
@@ -106,5 +148,6 @@ export class GameModel {
                 pData.gesamtPunkte = prevTotal + pData.punkte;
             });
         }
+        this.saveState();
     }
 }
