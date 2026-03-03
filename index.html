@@ -7,15 +7,25 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <header>
+<header>
         <div id="setup-header">
             <h1>Stich-Zähler</h1>
         </div>
         
         <div id="game-header" class="hidden" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-            <button id="back-to-setup-btn" class="icon-btn">⬅️ Zurück</button>
-            <div id="game-info">Karten: <span id="current-cards">1</span></div>
-            <div style="width: 80px;"></div>
+            <div style="flex: 1; display: flex; justify-content: flex-start;">
+                <button id="back-to-setup-btn" class="icon-btn" style="display: flex; align-items: center; gap: 5px;">
+                    <span style="font-size: 1.2rem;">◀</span> Zurück
+                </button>
+            </div>
+            
+            <div style="flex: 1; text-align: center;">
+                <h1 style="margin: 0; font-size: 1.3rem;">Stich-Zähler</h1>
+            </div>
+            
+            <div id="game-info" style="flex: 1; text-align: right; font-weight: bold; font-size: 0.9rem;">
+                Karten: <span id="current-cards">1</span>
+            </div>
         </div>
     </header>
 
@@ -47,7 +57,12 @@
                 <table id="score-table">
                     <thead>
                         <tr id="table-header-row">
-                            <th>Rnd</th>
+                            <th>
+                                <div style="display: flex; align-items: center; justify-content: space-between;">
+                                    <span>Runde</span>
+                                    <button id="main-edit-toggle-btn" class="icon-btn dark-icon" style="padding: 0 4px;">✏️</button>
+                                </div>
+                            </th>
                             </tr>
                     </thead>
                     <tbody id="table-body">
@@ -70,11 +85,21 @@
             
             <div id="modal-indicators" class="modal-indicators"></div>
             
-            <div id="dynamic-button-grid" class="button-grid">
-                </div>
+            <div id="dynamic-button-grid" class="button-grid"></div>
             
             <button id="save-input-btn" class="primary-btn hidden" style="margin-top: 15px; background-color: var(--color-success);">Fertig & Speichern</button>
             <button id="cancel-input-btn" class="secondary-btn" style="margin-top: 10px; width: 100%;">Abbrechen</button>
+        </div>
+    </div>
+
+    <div id="edit-choice-modal" class="modal hidden">
+        <div class="modal-content" style="border-radius: var(--space-lg); padding-bottom: 30px;">
+            <h2 style="text-align: center; margin-bottom: 20px;">Was bearbeiten?</h2>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <button id="edit-ansage-btn" class="primary-btn">Ansagen</button>
+                <button id="edit-gemacht-btn" class="primary-btn" style="background-color: var(--color-primary);">Gemachte Stiche</button>
+                <button id="cancel-edit-choice-btn" class="secondary-btn" style="margin-top: 10px;">Abbrechen</button>
+            </div>
         </div>
     </div>
 
