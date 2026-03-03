@@ -7,23 +7,21 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<header>
+    <header>
         <div id="setup-header">
             <h1>Stich-Zähler</h1>
         </div>
         
-        <div id="game-header" class="hidden" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-            <div style="flex: 1; display: flex; justify-content: flex-start;">
-                <button id="back-to-setup-btn" class="icon-btn" style="display: flex; align-items: center; gap: 5px;">
-                    <span style="font-size: 1.2rem;">◀</span> Zurück
+        <div id="game-header" class="hidden header-layout">
+            <div class="header-left">
+                <button id="back-to-setup-btn" class="icon-btn btn-with-icon">
+                    <span class="back-icon">◀</span> Zurück
                 </button>
             </div>
-            
-            <div style="flex: 1; text-align: center;">
-                <h1 style="margin: 0; font-size: 1.3rem;">Stich-Zähler</h1>
+            <div class="header-center">
+                <h1 class="m-0 text-md">Stich-Zähler</h1>
             </div>
-            
-            <div id="game-info" style="flex: 1; text-align: right; font-weight: bold; font-size: 0.9rem;">
+            <div id="game-info" class="header-right text-sm">
                 Karten: <span id="current-cards">1</span>
             </div>
         </div>
@@ -37,13 +35,12 @@
                 <button id="add-new-player-btn" class="primary-btn add-btn">+</button>
             </div>
             
-            <p class="subtitle" style="margin-bottom: 5px;">Aus dem Pool wählen:</p>
+            <p class="subtitle mb-sm">Aus dem Pool wählen:</p>
             <div id="available-players-container" class="player-pool"></div>
 
             <h2>2. Spielreihenfolge</h2>
-            <p class="subtitle" style="font-size: 0.9rem;">Sortiere so, wie ihr am Tisch sitzt.</p>
-            <div id="active-players-container" class="player-list-vertical">
-                </div>
+            <p class="subtitle text-sm">Sortiere so, wie ihr am Tisch sitzt.</p>
+            <div id="active-players-container" class="player-list-vertical"></div>
 
             <button id="start-game-btn" class="primary-btn" disabled>Spiel starten</button>
         </section>
@@ -58,15 +55,14 @@
                     <thead>
                         <tr id="table-header-row">
                             <th>
-                                <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <div class="flex-between-center">
                                     <span>Runde</span>
-                                    <button id="main-edit-toggle-btn" class="icon-btn dark-icon" style="padding: 0 4px;">✏️</button>
+                                    <button id="main-edit-toggle-btn" class="icon-btn dark-icon px-xs">✏️</button>
                                 </div>
                             </th>
-                            </tr>
+                        </tr>
                     </thead>
-                    <tbody id="table-body">
-                        </tbody>
+                    <tbody id="table-body"></tbody>
                 </table>
             </div>
         </section>
@@ -76,33 +72,32 @@
         <div class="modal-content">
             <div class="modal-header-custom">
                 <button id="modal-prev-btn" class="icon-btn dark-icon">◀</button>
-                <div style="text-align: center;">
-                    <h2 id="modal-title" style="margin: 0;">Phase</h2>
-                    <p id="modal-subtitle" class="subtitle" style="margin: 0;">Spieler</p>
+                <div class="text-center">
+                    <h2 id="modal-title" class="m-0">Phase</h2>
+                    <p id="modal-subtitle" class="subtitle m-0">Spieler</p>
                 </div>
                 <button id="modal-next-btn" class="icon-btn dark-icon">▶</button>
             </div>
             
             <div id="modal-indicators" class="modal-indicators"></div>
-            
             <div id="dynamic-button-grid" class="button-grid"></div>
             
-            <button id="save-input-btn" class="primary-btn hidden" style="margin-top: 15px; background-color: var(--color-success);">Fertig & Speichern</button>
-            <button id="cancel-input-btn" class="secondary-btn" style="margin-top: 10px; width: 100%;">Abbrechen</button>
+            <button id="save-input-btn" class="primary-btn btn-success mt-md hidden">Fertig & Speichern</button>
+            <button id="cancel-input-btn" class="secondary-btn mt-sm w-100">Abbrechen</button>
         </div>
     </div>
 
-    <div id="edit-choice-modal" class="modal hidden">
-        <div class="modal-content" style="border-radius: var(--space-lg); padding-bottom: 30px;">
-            <h2 style="text-align: center; margin-bottom: 20px;">Was bearbeiten?</h2>
-            <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div id="edit-choice-modal" class="modal hidden flex-center">
+        <div class="modal-content edit-choice-content">
+            <h2 class="text-center mb-lg">Was bearbeiten?</h2>
+            <div class="flex-col-gap">
                 <button id="edit-ansage-btn" class="primary-btn">Ansagen</button>
-                <button id="edit-gemacht-btn" class="primary-btn" style="background-color: var(--color-primary);">Gemachte Stiche</button>
-                <button id="cancel-edit-choice-btn" class="secondary-btn" style="margin-top: 10px;">Abbrechen</button>
+                <button id="edit-gemacht-btn" class="primary-btn btn-primary-dark">Gemachte Stiche</button>
+                <button id="cancel-edit-choice-btn" class="secondary-btn mt-sm">Abbrechen</button>
             </div>
         </div>
     </div>
 
-    <script src="js/app.js"></script>
+    <script type="module" src="js/app.js"></script>
 </body>
 </html>
