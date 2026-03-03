@@ -1,26 +1,29 @@
 /**
  * ===========================================================================
- * SMART CARD COUNTER - PWA LOGIC
+ * SMART CARD COUNTER - PWA LOGIC (Refactored & Enhanced)
  * ===========================================================================
  */
 
-// --- 1. CONFIGURATION ---
 const CONFIG = {
     CARDS_SEQUENCE: [1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 1],
     TOTAL_ROUNDS: 13,
     POINTS_BASE: 5
 };
 
-// --- 2. STATE MANAGEMENT ---
-// Beinhaltet ausschließlich die Daten der App.
+// --- 1. STATE MANAGEMENT ---
 const State = {
     availablePlayers: ["Alex", "Bela", "Charlie", "Doro"],
-    activePlayers: [],
+    activePlayers: [], // Die Reihenfolge in diesem Array ist die Spielreihenfolge!
     
     currentRoundIndex: 0,
     phase: 'ansage', // 'ansage' | 'stiche'
-    currentPlayerInputIndex: 0,
     roundsData: [],
+
+    // Modal & Edit State
+    isEditMode: false,
+    editRoundIndex: 0,
+    editPhase: 'ansage',
+    currentPlayerInputIndex: 0,
 
     initGameData() {
         this.currentRoundIndex = 0;
@@ -47,134 +50,152 @@ const State = {
     addPlayer(name) {
         if (name && !this.availablePlayers.includes(name)) {
             this.availablePlayers.push(name);
+            // Optional: direkt aktivieren
             this.activePlayers.push(name);
         }
     },
 
-    removePlayer(player) {
-        this.availablePlayers = this.availablePlayers.filter(p => p !== player);
-        this.activePlayers = this.activePlayers.filter(p => p !== player);
+    movePlayer(index, direction) {
+        if (direction === 'up' && index > 0) {
+            const temp = this.activePlayers[index - 1];
+            this.activePlayers[index - 1] = this.activePlayers[index];
+            this.activePlayers[index] = temp;
+        } else if (direction === 'down' && index < this.activePlayers.length - 1) {
+            const temp = this.activePlayers[index + 1];
+            this.activePlayers[index + 1] = this.activePlayers[index];
+            this.activePlayers[index] = temp;
+        }
     }
 };
 
-// --- 3. GAME LOGIC ---
-// Behandelt Spielregeln, Punkteberechnung und Rundenübergänge.
+// --- 2. GAME LOGIC ---
 const GameLogic = {
-    processInput(value) {
+    setValue(value) {
         const player = State.activePlayers[State.currentPlayerInputIndex];
-        const roundData = State.roundsData[State.currentRoundIndex];
+        const rIndex = State.isEditMode ? State.editRoundIndex : State.currentRoundIndex;
+        const phase = State.isEditMode ? State.editPhase : State.phase;
         
-        if (State.phase === 'ansage') {
-            roundData[player].ansage = value;
+        if (phase === 'ansage') {
+            State.roundsData[rIndex][player].ansage = value;
         } else {
-            roundData[player].gemacht = value;
-        }
-
-        State.currentPlayerInputIndex++;
-
-        // Prüfen, ob alle Spieler für diese Phase getippt haben
-        if (State.currentPlayerInputIndex >= State.activePlayers.length) {
-            this.handlePhaseCompletion();
-            return true; // Modal schließen
-        }
-        return false; // Modal offen lassen für nächsten Spieler
-    },
-
-    handlePhaseCompletion() {
-        if (State.phase === 'ansage') {
-            State.phase = 'stiche';
-        } else {
-            this.calculateScores();
-            State.phase = 'ansage';
-            State.currentRoundIndex++;
-            
-            if (State.currentRoundIndex >= CONFIG.TOTAL_ROUNDS) {
-                alert("Spiel beendet! (Statistik-Screen kommt später)");
-                State.currentRoundIndex = CONFIG.TOTAL_ROUNDS - 1; // Auf letzter Runde fixieren
-                UI.elements.openInputModalBtn.classList.add('hidden');
-            }
+            State.roundsData[rIndex][player].gemacht = value;
         }
     },
 
-    calculateScores() {
-        const rIndex = State.currentRoundIndex;
-        const roundData = State.roundsData[rIndex];
+    isPhaseComplete() {
+        const rIndex = State.isEditMode ? State.editRoundIndex : State.currentRoundIndex;
+        const phase = State.isEditMode ? State.editPhase : State.phase;
         
-        State.activePlayers.forEach(player => {
-            const pData = roundData[player];
-            
-            if (pData.ansage === pData.gemacht) {
-                pData.punkte = CONFIG.POINTS_BASE + pData.gemacht;
-            } else {
-                pData.punkte = -Math.abs(pData.ansage - pData.gemacht);
-            }
-            
-            const prevTotal = rIndex === 0 ? 0 : State.roundsData[rIndex - 1][player].gesamtPunkte;
-            pData.gesamtPunkte = prevTotal + pData.punkte;
+        return State.activePlayers.every(player => {
+            const val = phase === 'ansage' ? State.roundsData[rIndex][player].ansage : State.roundsData[rIndex][player].gemacht;
+            return val !== null;
         });
+    },
+
+    recalculateAllScores() {
+        // Läuft von der 1. Runde bis zur aktuellen durch und berechnet alles neu (Wichtig für Edits)
+        for (let r = 0; r <= State.currentRoundIndex; r++) {
+            const roundData = State.roundsData[r];
+            
+            State.activePlayers.forEach(player => {
+                const pData = roundData[player];
+                
+                // Punkte nur berechnen, wenn beide Werte existieren
+                if (pData.gemacht !== null && pData.ansage !== null) {
+                    if (pData.ansage === pData.gemacht) {
+                        pData.punkte = CONFIG.POINTS_BASE + pData.gemacht;
+                    } else {
+                        pData.punkte = -Math.abs(pData.ansage - pData.gemacht);
+                    }
+                } else {
+                    pData.punkte = 0;
+                }
+                
+                const prevTotal = r === 0 ? 0 : State.roundsData[r - 1][player].gesamtPunkte;
+                pData.gesamtPunkte = prevTotal + pData.punkte;
+            });
+        }
     }
 };
 
-// --- 4. UI & RENDERING ---
-// Kümmert sich ausschließlich um das Updaten des DOMs basierend auf dem State.
+// --- 3. UI & RENDERING ---
 const UI = {
     elements: {
-        // Screens & Headers
         setupScreen: document.getElementById('setup-screen'),
         gameScreen: document.getElementById('game-screen'),
         setupHeader: document.getElementById('setup-header'),
         gameHeader: document.getElementById('game-header'),
         currentCardsSpan: document.getElementById('current-cards'),
         
-        // Setup Elements
         playerPool: document.getElementById('available-players-container'),
+        activePlayersList: document.getElementById('active-players-container'),
         newPlayerInput: document.getElementById('new-player-name'),
         addNewPlayerBtn: document.getElementById('add-new-player-btn'),
         startGameBtn: document.getElementById('start-game-btn'),
         backToSetupBtn: document.getElementById('back-to-setup-btn'),
         
-        // Table Elements
         tableHeaderRow: document.getElementById('table-header-row'),
         tableBody: document.getElementById('table-body'),
         openInputModalBtn: document.getElementById('open-input-modal-btn'),
         
-        // Modal Elements
         modal: document.getElementById('input-modal'),
         modalTitle: document.getElementById('modal-title'),
         modalSubtitle: document.getElementById('modal-subtitle'),
+        modalPrevBtn: document.getElementById('modal-prev-btn'),
+        modalNextBtn: document.getElementById('modal-next-btn'),
+        modalIndicators: document.getElementById('modal-indicators'),
         buttonGrid: document.getElementById('dynamic-button-grid'),
+        saveInputBtn: document.getElementById('save-input-btn'),
         cancelInputBtn: document.getElementById('cancel-input-btn')
     },
 
     renderSetup() {
+        // 1. Pool rendern
         this.elements.playerPool.innerHTML = '';
-        
         State.availablePlayers.forEach(player => {
             const chip = document.createElement('div');
             chip.className = `player-chip ${State.activePlayers.includes(player) ? 'selected' : ''}`;
-            
-            const nameSpan = document.createElement('span');
-            nameSpan.innerText = player;
-            nameSpan.onclick = () => {
+            chip.innerText = player;
+            chip.onclick = () => {
                 State.togglePlayer(player);
                 this.renderSetup();
             };
-            chip.appendChild(nameSpan);
-
-            const deleteBtn = document.createElement('button');
-            deleteBtn.className = 'delete-player-btn';
-            deleteBtn.innerHTML = '&times;';
-            deleteBtn.onclick = (e) => {
-                e.stopPropagation();
-                if (confirm(`${player} wirklich löschen?`)) {
-                    State.removePlayer(player);
-                    this.renderSetup();
-                }
-            };
-            chip.appendChild(deleteBtn);
-            
             this.elements.playerPool.appendChild(chip);
         });
+
+        // 2. Aktive Spieler rendern (Reihenfolge)
+        this.elements.activePlayersList.innerHTML = '';
+        if (State.activePlayers.length === 0) {
+            this.elements.activePlayersList.innerHTML = '<p class="subtitle">Noch keine Spieler gewählt.</p>';
+        } else {
+            State.activePlayers.forEach((player, index) => {
+                const row = document.createElement('div');
+                row.className = 'active-player-row';
+                
+                const nameSpan = document.createElement('span');
+                nameSpan.innerHTML = `<strong>${index + 1}.</strong> ${player}`;
+                
+                const controls = document.createElement('div');
+                controls.className = 'order-controls';
+                
+                const upBtn = document.createElement('button');
+                upBtn.innerHTML = '↑';
+                upBtn.disabled = index === 0;
+                upBtn.onclick = () => { State.movePlayer(index, 'up'); this.renderSetup(); };
+                
+                const downBtn = document.createElement('button');
+                downBtn.innerHTML = '↓';
+                downBtn.disabled = index === State.activePlayers.length - 1;
+                downBtn.onclick = () => { State.movePlayer(index, 'down'); this.renderSetup(); };
+
+                controls.appendChild(upBtn);
+                controls.appendChild(downBtn);
+                
+                row.appendChild(nameSpan);
+                row.appendChild(controls);
+                this.elements.activePlayersList.appendChild(row);
+            });
+        }
 
         this.elements.startGameBtn.disabled = State.activePlayers.length < 2;
     },
@@ -184,18 +205,18 @@ const UI = {
         this.elements.currentCardsSpan.innerText = cards;
         
         this.elements.openInputModalBtn.innerText = State.phase === 'ansage' 
-            ? `Ansagen eintragen (${cards} Karten)` 
+            ? `Eingabe starten (${cards} Karten)` 
             : `Stiche eintragen (${cards} Karten)`;
 
-        // Render Header
-        this.elements.tableHeaderRow.innerHTML = '<th>Karten</th>';
+        // Header
+        this.elements.tableHeaderRow.innerHTML = '<th>Rnd</th>';
         State.activePlayers.forEach(player => {
             const th = document.createElement('th');
-            th.innerText = player;
+            th.innerText = player.substring(0, 4); // Namen kürzen für schmales Display
             this.elements.tableHeaderRow.appendChild(th);
         });
 
-        // Render Body
+        // Body
         this.elements.tableBody.innerHTML = '';
         CONFIG.CARDS_SEQUENCE.forEach((cardCount, index) => {
             const tr = document.createElement('tr');
@@ -206,7 +227,19 @@ const UI = {
 
             const tdRound = document.createElement('td');
             tdRound.className = 'round-cell';
-            tdRound.innerText = cardCount;
+            
+            // Edit-Button hinzufügen, falls Runde <= aktuell ist
+            let editBtnHtml = '';
+            if (index <= State.currentRoundIndex) {
+                editBtnHtml = `<button class="edit-btn" onclick="Events.openEditModal(${index})">✏️</button>`;
+            }
+            
+            tdRound.innerHTML = `
+                <div class="round-cell-content">
+                    <span>${cardCount}</span>
+                    ${editBtnHtml}
+                </div>
+            `;
             tr.appendChild(tdRound);
 
             State.activePlayers.forEach(player => {
@@ -215,10 +248,10 @@ const UI = {
                 
                 const ansageStr = data.ansage !== null ? data.ansage : '-';
                 const gemachtStr = data.gemacht !== null ? data.gemacht : '-';
-                const showScore = data.gemacht !== null;
-                const scoreStr = showScore ? data.gesamtPunkte : '-';
+                const scoreStr = data.gemacht !== null ? data.gesamtPunkte : '-';
                 const scoreColor = data.punkte < 0 ? 'var(--color-danger)' : 'inherit';
 
+                // Kompaktere Darstellung
                 td.innerHTML = `
                     <div class="cell-data">
                         <span class="cell-stats">${ansageStr} / ${gemachtStr}</span>
@@ -234,47 +267,68 @@ const UI = {
 
     renderModalContent() {
         const player = State.activePlayers[State.currentPlayerInputIndex];
-        const cards = CONFIG.CARDS_SEQUENCE[State.currentRoundIndex];
+        const rIndex = State.isEditMode ? State.editRoundIndex : State.currentRoundIndex;
+        const phase = State.isEditMode ? State.editPhase : State.phase;
+        const cards = CONFIG.CARDS_SEQUENCE[rIndex];
         
-        this.elements.modalTitle.innerText = State.phase === 'ansage' ? 'Wie viele Stiche?' : 'Wie viele bekommen?';
-        this.elements.modalSubtitle.innerText = `Spieler: ${player} (Karten: ${cards})`;
+        let titlePrefix = State.isEditMode ? "Ändern: " : "";
+        this.elements.modalTitle.innerText = phase === 'ansage' ? `${titlePrefix}Stiche ansagen?` : `${titlePrefix}Stiche gemacht?`;
+        this.elements.modalSubtitle.innerText = player;
         
+        // Indikatoren rendern (Punkte)
+        this.elements.modalIndicators.innerHTML = State.activePlayers.map((p, idx) => {
+            const val = phase === 'ansage' ? State.roundsData[rIndex][p].ansage : State.roundsData[rIndex][p].gemacht;
+            const isFilled = val !== null;
+            const isActive = idx === State.currentPlayerInputIndex;
+            return `<div class="indicator-dot ${isFilled ? 'filled' : ''} ${isActive ? 'active' : ''}"></div>`;
+        }).join('');
+
+        // Buttons rendern
         this.elements.buttonGrid.innerHTML = '';
+        const currentValue = phase === 'ansage' ? State.roundsData[rIndex][player].ansage : State.roundsData[rIndex][player].gemacht;
+
         for (let i = 0; i <= cards; i++) {
             const btn = document.createElement('button');
-            btn.className = 'number-btn';
+            btn.className = `number-btn ${currentValue === i ? 'selected' : ''}`;
             btn.innerText = i;
             btn.onclick = () => {
-                const isPhaseComplete = GameLogic.processInput(i);
-                if (isPhaseComplete) {
-                    this.elements.modal.classList.add('hidden');
-                    this.renderGameTable();
-                } else {
-                    this.renderModalContent(); // Refresh für nächsten Spieler
+                GameLogic.setValue(i);
+                
+                // Springe automatisch zum nächsten, außer es ist der Letzte
+                if (State.currentPlayerInputIndex < State.activePlayers.length - 1) {
+                    State.currentPlayerInputIndex++;
                 }
+                this.renderModalContent();
             };
             this.elements.buttonGrid.appendChild(btn);
+        }
+
+        // Pfeile de-/aktivieren
+        this.elements.modalPrevBtn.style.visibility = State.currentPlayerInputIndex > 0 ? 'visible' : 'hidden';
+        this.elements.modalNextBtn.style.visibility = State.currentPlayerInputIndex < State.activePlayers.length - 1 ? 'visible' : 'hidden';
+
+        // "Fertig" Button anzeigen, wenn alle Werte haben
+        if (GameLogic.isPhaseComplete()) {
+            this.elements.saveInputBtn.classList.remove('hidden');
+        } else {
+            this.elements.saveInputBtn.classList.add('hidden');
         }
     },
 
     switchScreen(toGame) {
         if (toGame) {
             this.elements.setupScreen.classList.add('hidden');
-            this.elements.setupHeader.classList.add('hidden');
             this.elements.gameScreen.classList.remove('hidden');
             this.elements.gameHeader.classList.remove('hidden');
         } else {
             this.elements.gameScreen.classList.add('hidden');
             this.elements.gameHeader.classList.add('hidden');
             this.elements.setupScreen.classList.remove('hidden');
-            this.elements.setupHeader.classList.remove('hidden');
-            this.elements.openInputModalBtn.classList.remove('hidden');
         }
     }
 };
 
-// --- 5. EVENTS & INITIALIZATION ---
-// Bündelt alle statischen Event-Listener und den Startpunkt.
+// --- 4. EVENTS ---
 const Events = {
     init() {
         UI.elements.addNewPlayerBtn.addEventListener('click', () => {
@@ -299,18 +353,86 @@ const Events = {
         });
 
         UI.elements.openInputModalBtn.addEventListener('click', () => {
-            State.currentPlayerInputIndex = 0;
+            State.isEditMode = false;
+            // Finde den ersten Spieler, der noch keinen Wert hat
+            let firstEmptyIdx = State.activePlayers.findIndex(p => {
+                const val = State.phase === 'ansage' ? State.roundsData[State.currentRoundIndex][p].ansage : State.roundsData[State.currentRoundIndex][p].gemacht;
+                return val === null;
+            });
+            State.currentPlayerInputIndex = firstEmptyIdx !== -1 ? firstEmptyIdx : 0;
+            
             UI.renderModalContent();
             UI.elements.modal.classList.remove('hidden');
         });
 
         UI.elements.cancelInputBtn.addEventListener('click', () => {
             UI.elements.modal.classList.add('hidden');
+            UI.renderGameTable(); // Rendert evt. teilweise eingegebene Daten
         });
+
+        // Modal Pfeile
+        UI.elements.modalPrevBtn.addEventListener('click', () => {
+            if (State.currentPlayerInputIndex > 0) {
+                State.currentPlayerInputIndex--;
+                UI.renderModalContent();
+            }
+        });
+
+        UI.elements.modalNextBtn.addEventListener('click', () => {
+            if (State.currentPlayerInputIndex < State.activePlayers.length - 1) {
+                State.currentPlayerInputIndex++;
+                UI.renderModalContent();
+            }
+        });
+
+        // "Fertig & Speichern" Button im Modal
+        UI.elements.saveInputBtn.addEventListener('click', () => {
+            UI.elements.modal.classList.add('hidden');
+            
+            if (State.isEditMode) {
+                GameLogic.recalculateAllScores();
+            } else {
+                if (State.phase === 'ansage') {
+                    State.phase = 'stiche';
+                } else {
+                    GameLogic.recalculateAllScores();
+                    State.phase = 'ansage';
+                    State.currentRoundIndex++;
+                    
+                    if (State.currentRoundIndex >= CONFIG.TOTAL_ROUNDS) {
+                        alert("Spiel beendet!");
+                        State.currentRoundIndex = CONFIG.TOTAL_ROUNDS - 1;
+                        UI.elements.openInputModalBtn.classList.add('hidden');
+                    }
+                }
+            }
+            UI.renderGameTable();
+        });
+    },
+
+    // Wird vom HTML (onclick) aufgerufen
+    openEditModal(rIndex) {
+        const roundData = State.roundsData[rIndex];
+        const firstPlayer = State.activePlayers[0];
+        const hasGemacht = roundData[firstPlayer].gemacht !== null;
+        
+        let phaseToEdit = 'ansage';
+        // Wenn schon Stiche gemacht wurden, frage was geändert werden soll
+        if (hasGemacht) {
+            const choice = confirm("Was möchtest du ändern?\n\nOK = Ansagen\nAbbrechen = Gemachte Stiche");
+            phaseToEdit = choice ? 'ansage' : 'stiche';
+        }
+
+        State.isEditMode = true;
+        State.editRoundIndex = rIndex;
+        State.editPhase = phaseToEdit;
+        State.currentPlayerInputIndex = 0;
+        
+        UI.renderModalContent();
+        UI.elements.modal.classList.remove('hidden');
     }
 };
 
-// --- APP START ---
 document.addEventListener('DOMContentLoaded', () => {
     UI.renderSetup();
     Events.init();

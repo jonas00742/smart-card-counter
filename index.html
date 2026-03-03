@@ -15,45 +15,66 @@
         <div id="game-header" class="hidden" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
             <button id="back-to-setup-btn" class="icon-btn">⬅️ Zurück</button>
             <div id="game-info">Karten: <span id="current-cards">1</span></div>
-            <div style="width: 80px;"></div> </div>
+            <div style="width: 80px;"></div>
+        </div>
     </header>
 
     <main id="app">
         <section id="setup-screen">
-            <h2>Wer spielt mit?</h2>
-            <div id="available-players-container" class="player-pool"></div>
+            <h2>1. Spieler anlegen</h2>
             <div class="input-group">
                 <input type="text" id="new-player-name" placeholder="Neuer Spieler...">
-                <button id="add-new-player-btn">Dazu</button>
+                <button id="add-new-player-btn" class="primary-btn add-btn">+</button>
             </div>
+            
+            <p class="subtitle" style="margin-bottom: 5px;">Aus dem Pool wählen:</p>
+            <div id="available-players-container" class="player-pool"></div>
+
+            <h2>2. Spielreihenfolge</h2>
+            <p class="subtitle" style="font-size: 0.9rem;">Sortiere so, wie ihr am Tisch sitzt.</p>
+            <div id="active-players-container" class="player-list-vertical">
+                </div>
+
             <button id="start-game-btn" class="primary-btn" disabled>Spiel starten</button>
         </section>
 
         <section id="game-screen" class="hidden">
+            <div class="sticky-top-container">
+                <button id="open-input-modal-btn" class="primary-btn">Eingabe starten</button>
+            </div>
+
             <div class="table-container">
                 <table id="score-table">
                     <thead>
                         <tr id="table-header-row">
-                            <th>Karten</th>
+                            <th>Rnd</th>
                             </tr>
                     </thead>
                     <tbody id="table-body">
                         </tbody>
                 </table>
             </div>
-            <button id="open-input-modal-btn" class="primary-btn">Eingabe starten</button>
         </section>
     </main>
 
     <div id="input-modal" class="modal hidden">
         <div class="modal-content">
-            <h2 id="modal-title">Phase</h2>
-            <p id="modal-subtitle" class="subtitle">Spieler</p>
+            <div class="modal-header-custom">
+                <button id="modal-prev-btn" class="icon-btn dark-icon">◀</button>
+                <div style="text-align: center;">
+                    <h2 id="modal-title" style="margin: 0;">Phase</h2>
+                    <p id="modal-subtitle" class="subtitle" style="margin: 0;">Spieler</p>
+                </div>
+                <button id="modal-next-btn" class="icon-btn dark-icon">▶</button>
+            </div>
+            
+            <div id="modal-indicators" class="modal-indicators"></div>
             
             <div id="dynamic-button-grid" class="button-grid">
                 </div>
             
-            <button id="cancel-input-btn" class="secondary-btn" style="margin-top: 20px; width: 100%;">Abbrechen</button>
+            <button id="save-input-btn" class="primary-btn hidden" style="margin-top: 15px; background-color: var(--color-success);">Fertig & Speichern</button>
+            <button id="cancel-input-btn" class="secondary-btn" style="margin-top: 10px; width: 100%;">Abbrechen</button>
         </div>
     </div>
 
