@@ -1,0 +1,287 @@
+/* ==========================================================================
+   1. DESIGN SYSTEM (Variables)
+   ========================================================================== */
+:root {
+    /* Colors */
+    --color-primary: #2c3e50;
+    --color-accent: #3498db;
+    --color-bg: #f4f7f6;
+    --color-surface: #ffffff;
+    --color-text-main: #333333;
+    --color-text-muted: #7f8c8d;
+    --color-danger: #e74c3c;
+    --color-success: #2ecc71;
+    --color-border: #eeeeee;
+    --color-chip-bg: #e0e0e0;
+    --color-highlight-row: #e8f4f8;
+
+    /* Spacing */
+    --space-xs: 5px;
+    --space-sm: 10px;
+    --space-md: 15px;
+    --space-lg: 20px;
+
+    /* Borders & Shadows */
+    --radius-sm: 8px;
+    --radius-pill: 20px;
+    --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+    --shadow-md: 0 4px 10px rgba(0,0,0,0.2);
+
+    /* Z-Index */
+    --z-sticky-col: 1;
+    --z-sticky-header: 2;
+    --z-modal: 1000;
+}
+
+/* ==========================================================================
+   2. RESET & BASE
+   ========================================================================== */
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none; /* Verhindert Textmarkierung bei Touch */
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--color-bg);
+    color: var(--color-text-main);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+h1, h2 {
+    margin-bottom: var(--space-sm);
+}
+
+/* ==========================================================================
+   3. LAYOUT & CONTAINERS
+   ========================================================================== */
+header {
+    background: var(--color-primary);
+    color: var(--color-surface);
+    padding: var(--space-md);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: var(--shadow-sm);
+    min-height: 60px;
+}
+
+main {
+    flex: 1;
+    padding: var(--space-md);
+    overflow-y: auto;
+    padding-bottom: 80px; /* Platz für den fixierten Bottom-Button */
+}
+
+/* ==========================================================================
+   4. COMPONENTS
+   ========================================================================== */
+/* --- Buttons --- */
+.primary-btn {
+    background: var(--color-accent);
+    color: var(--color-surface);
+    border: none;
+    padding: var(--space-md);
+    border-radius: var(--radius-sm);
+    font-size: 1.1rem;
+    font-weight: bold;
+    width: 100%;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.primary-btn:disabled {
+    background: #bdc3c7;
+    cursor: not-allowed;
+}
+
+.primary-btn:active:not(:disabled) {
+    opacity: 0.8;
+}
+
+.secondary-btn {
+    background: transparent;
+    color: var(--color-text-main);
+    border: 1px solid #ccc;
+    padding: 12px;
+    border-radius: var(--radius-sm);
+    font-size: 1rem;
+    cursor: pointer;
+    width: 100%;
+}
+
+.icon-btn {
+    background: transparent;
+    color: var(--color-surface);
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: var(--space-xs);
+}
+
+/* --- Player Setup --- */
+.player-pool {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-lg);
+}
+
+.player-chip {
+    display: flex;
+    align-items: center;
+    background: var(--color-chip-bg);
+    border-radius: var(--radius-pill);
+    padding: var(--space-xs) var(--space-md);
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+
+.player-chip.selected {
+    background: var(--color-accent);
+    color: var(--color-surface);
+}
+
+.delete-player-btn {
+    background: transparent;
+    border: none;
+    color: inherit;
+    font-weight: bold;
+    margin-left: var(--space-sm);
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+.input-group {
+    display: flex;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-lg);
+}
+
+.input-group input {
+    flex: 1;
+    padding: var(--space-sm);
+    border: 1px solid #ccc;
+    border-radius: var(--radius-sm);
+    font-size: 1rem;
+}
+
+/* --- Table --- */
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+    background: var(--color-surface);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-sm);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+}
+
+th, td {
+    padding: var(--space-sm) var(--space-xs);
+    border-bottom: 1px solid var(--color-border);
+    border-right: 1px solid var(--color-border);
+    min-width: 70px;
+}
+
+th {
+    background: var(--color-primary);
+    color: var(--color-surface);
+    position: sticky;
+    top: 0;
+    z-index: var(--z-sticky-header);
+}
+
+.round-cell {
+    font-weight: bold;
+    background: #f8f9fa;
+    position: sticky;
+    left: 0;
+    z-index: var(--z-sticky-col);
+    border-right: 2px solid #ddd;
+}
+
+.cell-data {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.85rem;
+}
+
+.cell-stats {
+    color: var(--color-text-muted);
+    margin-bottom: 4px;
+}
+
+.cell-score {
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+/* --- Modal --- */
+.modal {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: flex-end;
+    z-index: var(--z-modal);
+}
+
+.modal-content {
+    background: var(--color-surface);
+    width: 100%;
+    border-radius: var(--space-lg) var(--space-lg) 0 0;
+    padding: var(--space-lg);
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+}
+
+.subtitle {
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-lg);
+    font-size: 1.1rem;
+}
+
+.button-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    gap: var(--space-sm);
+}
+
+.number-btn {
+    background: var(--color-bg);
+    border: 2px solid var(--color-accent);
+    color: var(--color-accent);
+    font-size: 1.5rem;
+    font-weight: bold;
+    padding: var(--space-md) 0;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.1s;
+}
+
+.number-btn:active {
+    background: var(--color-accent);
+    color: var(--color-surface);
+}
+
+#open-input-modal-btn {
+    position: fixed;
+    bottom: var(--space-lg);
+    left: 5%;
+    width: 90%;
+    box-shadow: var(--shadow-md);
+}
+
+/* ==========================================================================
+   5. UTILITIES
+   ========================================================================== */
+.hidden { display: none !important; }
