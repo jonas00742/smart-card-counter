@@ -350,15 +350,40 @@ export class GameView {
             if (e.pointerType === 'mouse' && e.button !== 0) return;
             
             e.preventDefault();
+            
+            // 1. Calculate offsets and dimensions
+            const rect = row.getBoundingClientRect();
+            const offsetY = e.clientY - rect.top;
+            
+            // 2. Create placeholder to hold the space
+            const placeholder = document.createElement('li');
+            placeholder.className = 'active-player-row placeholder';
+            placeholder.style.height = `${rect.height}px`;
+            
+            // 3. Style the dragged row to float
+            row.style.width = `${rect.width}px`;
+            row.style.height = `${rect.height}px`;
+            row.style.position = 'fixed';
+            row.style.top = `${rect.top}px`;
+            row.style.left = `${rect.left}px`;
+            row.style.zIndex = '1000';
             row.classList.add('dragging');
+
+            // 4. Insert placeholder where row currently is
+            row.parentNode.insertBefore(placeholder, row);
 
             const handleDragMove = (moveEvent) => {
                 moveEvent.preventDefault();
                 
-                const container = this.elements.activePlayersList;
-                const siblings = [...container.querySelectorAll('.active-player-row:not(.dragging)')]; // Get other rows
+                // Move the floating row
+                const currentTop = moveEvent.clientY - offsetY;
+                row.style.top = `${currentTop}px`;
                 
-                // Find the sibling to insert before
+                const container = this.elements.activePlayersList;
+                // Find siblings (excluding the floating row and the placeholder itself)
+                const siblings = [...container.querySelectorAll('.active-player-row:not(.dragging):not(.placeholder)')];
+                
+                // Find where to move the placeholder
                 const nextSibling = siblings.reduce((closest, sibling) => {
                     const box = sibling.getBoundingClientRect();
                     const offset = moveEvent.clientY - box.top - box.height / 2;
@@ -370,19 +395,32 @@ export class GameView {
                 }, { offset: Number.NEGATIVE_INFINITY }).element;
                 
                 if (nextSibling) {
-                    container.insertBefore(row, nextSibling);
+                    container.insertBefore(placeholder, nextSibling);
                 } else {
-                    container.appendChild(row);
+                    container.appendChild(placeholder);
                 }
             };
     
             const handleDragEnd = () => {
-                row.classList.remove('dragging');
-                
                 document.removeEventListener('pointermove', handleDragMove);
                 document.removeEventListener('pointerup', handleDragEnd);
                 document.removeEventListener('pointercancel', handleDragEnd);
-    
+
+                // Swap placeholder with actual row
+                if (placeholder.parentNode) {
+                    placeholder.parentNode.insertBefore(row, placeholder);
+                    placeholder.remove();
+                }
+
+                // Reset row styles
+                row.style.width = '';
+                row.style.height = '';
+                row.style.position = '';
+                row.style.top = '';
+                row.style.left = '';
+                row.style.zIndex = '';
+                row.classList.remove('dragging');
+
                 const newOrder = Array.from(this.elements.activePlayersList.children).map(r => r.querySelector('.player-row-left span').innerText.replace(/^\d+\.\s*/, '').trim());
                 this.onPlayerReorder(newOrder);
             };

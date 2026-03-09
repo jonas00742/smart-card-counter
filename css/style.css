@@ -32,6 +32,7 @@
     --z-sticky-header: 2;
     --z-sticky-btn: 3;
     --z-modal: 1000;
+    --sticky-header-height: 70px;
 }
 
 /* ==========================================================================
@@ -78,7 +79,7 @@ main {
     flex: 1;
     padding: var(--space-md);
     overflow-y: auto;
-    overflow-x: hidden;
+    overflow-x: auto;
     overscroll-behavior-y: contain;
 }
 
@@ -195,7 +196,7 @@ main {
 }
 
 .header-left { display: flex; flex: 1; justify-content: flex-start; }
-.header-center { flex: 1; text-align: center; }
+.header-center { flex: 2; text-align: center; white-space: nowrap; }
 .header-right { flex: 1; font-weight: bold; text-align: right; }
 
 .btn-with-icon {
@@ -264,10 +265,15 @@ main {
 }
 
 .active-player-row.dragging {
-    opacity: 0.9;
+    opacity: 0.95;
     background: var(--color-surface);
-    transform: scale(1.02);
-    box-shadow: var(--shadow-md);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.active-player-row.placeholder {
+    background: transparent;
+    border: 2px dashed var(--color-border);
+    box-shadow: none;
 }
 
 .player-row-left {
@@ -319,21 +325,20 @@ main {
 .sticky-top-container {
     position: sticky;
     top: 0;
+    left: 0;
     z-index: var(--z-sticky-btn);
-    margin-bottom: 10px;
-    padding-bottom: 10px;
+    height: var(--sticky-header-height);
+    display: flex;
+    align-items: center;
+    padding: 0;
     background: var(--color-bg);
 }
 
 .table-container {
     width: 100%;
-    overflow-x: auto;
     border-radius: var(--radius-sm);
     background: var(--color-surface);
     box-shadow: var(--shadow-sm);
-    overscroll-behavior-x: contain;
-    touch-action: pan-x pan-y;
-    -webkit-overflow-scrolling: touch;
 }
 
 table {
@@ -352,10 +357,19 @@ th, td {
 
 th {
     position: sticky;
-    top: 0;
+    top: var(--sticky-header-height);
     z-index: var(--z-sticky-header);
     color: var(--color-surface);
     background: var(--color-primary);
+}
+
+/* Apply radius to the corners of the sticky header */
+th:first-child {
+    border-top-left-radius: var(--radius-sm);
+}
+
+th:last-child {
+    border-top-right-radius: var(--radius-sm);
 }
 
 /* Column Specifics */
@@ -377,7 +391,6 @@ th {
 
 .dealer-col-header {
     background-color: var(--color-accent) !important;
-    position: relative;
 }
 
 .round-cell-content {

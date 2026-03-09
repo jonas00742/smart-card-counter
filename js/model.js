@@ -121,7 +121,10 @@ export class GameModel {
     }
 
     setPlayerOrder(newOrder) {
+        const currentDealer = this.state.activePlayers[this.state.startingDealerIndex];
         this.state.activePlayers = newOrder;
+        const newIndex = this.state.activePlayers.indexOf(currentDealer);
+        if (newIndex !== -1) this.state.startingDealerIndex = newIndex;
         this.saveState();
     }
     
