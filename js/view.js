@@ -166,12 +166,13 @@ export class GameView {
         });
     }
 
-    renderModalContent(state, isComplete) {
+renderModalContent(state, isComplete) {
         const player = state.activePlayers[state.currentPlayerInputIndex];
         const rIndex = state.isEditMode ? state.editRoundIndex : state.currentRoundIndex;
         const phase = state.isEditMode ? state.editPhase : state.phase;
         const cards = CONFIG.CARDS_SEQUENCE[rIndex];
         
+        // Visuelle Phasen-Trennung
         this.elements.modal.classList.remove('phase-ansage', 'phase-stiche');
         this.elements.modal.classList.add(`phase-${phase}`);
         
@@ -187,7 +188,25 @@ export class GameView {
         this.elements.buttonGrid.innerHTML = '';
         const currentValue = phase === 'ansage' ? state.roundsData[rIndex][player].ansage : state.roundsData[rIndex][player].gemacht;
 
-        for (let i = 0; i <= cards; i++) {
+        let maxButtons = cards;
+        
+        if (phase === 'stiche') {
+            let sumOthers = 0;
+            // Wir summieren die gemachten Stiche aller ANDEREN Spieler in dieser Runde
+            state.activePlayers.forEach(p => {
+                if (p !== player) {
+                    const val = state.roundsData[rIndex][p].gemacht;
+                    if (val !== null) {
+                        sumOthers += val;
+                    }
+                }
+            });
+            // Der Spieler darf maximal so viele Stiche eintragen, wie noch übrig sind
+            maxButtons = Math.max(0, cards - sumOthers); 
+        }
+
+        // Generiere nur Buttons bis zum berechneten Limit
+        for (let i = 0; i <= maxButtons; i++) {
             const btn = document.createElement('button');
             btn.className = `number-btn ${currentValue === i ? 'selected' : ''}`;
             btn.innerText = i;

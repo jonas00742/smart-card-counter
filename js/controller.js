@@ -161,6 +161,24 @@ export class GameController {
     }
 
     handleModalSave() {
+        const rIndex = this.model.state.isEditMode ? this.model.state.editRoundIndex : this.model.state.currentRoundIndex;
+        const phase = this.model.state.isEditMode ? this.model.state.editPhase : this.model.state.phase;
+        const cards = CONFIG.CARDS_SEQUENCE[rIndex];
+
+        if (phase === 'stiche') {
+            let sumGemacht = 0;
+            this.model.state.activePlayers.forEach(p => {
+                sumGemacht += this.model.state.roundsData[rIndex][p].gemacht || 0;
+            });
+
+            // Wenn die Summe der eingegebenen Stiche nicht den Karten der Runde entspricht
+            if (sumGemacht !== cards) {
+                alert(`Logik-Fehler:\nEs wurden ${cards} Karten ausgeteilt, aber es wurden insgesamt ${sumGemacht} Stiche eingetragen.\nBitte korrigiere die Eingaben.`);
+                return; // Bricht das Speichern ab und lässt das Modal offen!
+            }
+        }
+
+        // Wenn alles passt (oder wir in der Ansage-Phase sind), Modal schließen und speichern
         this.view.elements.modal.classList.add('hidden');
         
         if (this.model.state.isEditMode) {
