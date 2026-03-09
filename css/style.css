@@ -45,24 +45,20 @@
     -webkit-tap-highlight-color: transparent;
 }
 
-html {
-    overscroll-behavior: none;
-}
-
-body {
+html, body {
     display: flex;
     flex-direction: column;
     height: 100vh;
-    width: 100vw; /* Verhindert seitliches Wackeln */
+    width: 100vw;
     overflow-x: hidden;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     background-color: var(--color-bg);
     color: var(--color-text-main);
     
-    /* Blockiert das Federn/Scrollen am Rand für X- und Y-Achse */
+    /* Blockiert das Federn am Rand */
     overscroll-behavior: none; 
+    touch-action: pan-y; 
 
-    /* Bonus: Verhindert, dass beim schnellen Tippen aus Versehen Text markiert wird (sehr wichtig für PWAs!) */
     user-select: none;
     -webkit-user-select: none;
 }
@@ -88,6 +84,7 @@ main {
     padding: var(--space-md);
     overflow-y: auto;
     overflow-x: hidden;
+    overscroll-behavior-y: contain; 
 }
 
 /* ==========================================================================
@@ -270,10 +267,13 @@ main {
 .table-container {
     width: 100%;
     overflow-x: auto;
-    overscroll-behavior-x: none;
     border-radius: var(--radius-sm);
     background: var(--color-surface);
     box-shadow: var(--shadow-sm);
+    
+    overscroll-behavior-x: contain; 
+    touch-action: pan-x pan-y; 
+    -webkit-overflow-scrolling: touch; 
 }
 
 table {
