@@ -172,6 +172,9 @@ export class GameView {
         const phase = state.isEditMode ? state.editPhase : state.phase;
         const cards = CONFIG.CARDS_SEQUENCE[rIndex];
         
+        this.elements.modal.classList.remove('phase-ansage', 'phase-stiche');
+        this.elements.modal.classList.add(`phase-${phase}`);
+        
         let titlePrefix = state.isEditMode ? "Ändern: " : "";
         this.elements.modalTitle.innerText = phase === 'ansage' ? `${titlePrefix}Stiche ansagen?` : `${titlePrefix}Stiche gemacht?`;
         this.elements.modalSubtitle.innerText = player;

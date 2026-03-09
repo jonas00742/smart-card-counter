@@ -158,9 +158,6 @@ export class GameController {
 
     handleNumberInput(val) {
         this.model.setInputValue(val);
-        if (this.model.state.currentPlayerInputIndex < this.model.state.activePlayers.length - 1) {
-            this.model.state.currentPlayerInputIndex++;
-        }
         this.view.renderModalContent(this.model.state, this.model.isCurrentPhaseComplete());
     }
 
