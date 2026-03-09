@@ -287,13 +287,12 @@ th {
     background: var(--color-primary);
 }
 
+.narrow-col,
 .round-cell {
-    position: sticky;
-    left: 0;
-    z-index: var(--z-sticky-col);
-    border-right: 2px solid #ddd;
-    font-weight: bold;
-    background: #f8f9fa;
+    width: 1%;
+    min-width: max-content !important;
+    white-space: nowrap;
+    padding: 8px 10px !important;
 }
 
 .round-cell-content {
@@ -305,17 +304,23 @@ th {
 
 /* Globale Edit Logik */
 .edit-btn {
-    display: none;
-    padding: 2px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px;
+    margin-left: 6px;
     border: none;
-    font-size: 1.1rem;
-    background: none;
+    border-radius: 4px;
+    color: var(--color-text-muted);
+    background: rgba(0,0,0,0.05);
     cursor: pointer;
-    transition: transform 0.1s;
+    transition: all 0.2s ease;
 }
 
 .edit-btn:active {
     transform: scale(0.9);
+    background: var(--color-primary);
+    color: var(--color-surface);
 }
 
 #score-table.edit-mode-active .edit-btn {

@@ -109,14 +109,6 @@ export class GameView {
         this.elements.currentCardsSpan.innerText = cards;
         this.elements.openInputModalBtn.innerText = state.phase === 'ansage' ? `Eingabe starten (${cards} Karten)` : `Stiche eintragen (${cards} Karten)`;
 
-        if (state.globalEditMode) {
-            this.elements.scoreTable.classList.add('edit-mode-active');
-            this.elements.mainEditToggleBtn.classList.add('active');
-        } else {
-            this.elements.scoreTable.classList.remove('edit-mode-active');
-            this.elements.mainEditToggleBtn.classList.remove('active');
-        }
-
         while (this.elements.tableHeaderRow.children.length > 1) {
             this.elements.tableHeaderRow.removeChild(this.elements.tableHeaderRow.lastChild);
         }
@@ -127,6 +119,9 @@ export class GameView {
         });
 
         this.elements.tableBody.innerHTML = '';
+        
+        const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>`;
+
         CONFIG.CARDS_SEQUENCE.forEach((cardCount, index) => {
             const tr = document.createElement('tr');
             if (index === state.currentRoundIndex) tr.style.backgroundColor = 'var(--color-highlight-row)';
@@ -135,7 +130,7 @@ export class GameView {
             tdRound.className = 'round-cell';
             
             let editBtnHtml = index <= state.currentRoundIndex 
-                ? `<button class="edit-btn" data-rindex="${index}">✏️</button>` 
+                ? `<button class="edit-btn" data-rindex="${index}">${svgIcon}</button>` 
                 : '';
             
             tdRound.innerHTML = `<div class="round-cell-content"><span>${cardCount}</span>${editBtnHtml}</div>`;
@@ -162,7 +157,12 @@ export class GameView {
 
         // Event-Delegation für dynamisch erstellte Edit-Buttons
         this.elements.tableBody.querySelectorAll('.edit-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => this.onRowEditTriggered(parseInt(e.target.dataset.rindex)));
+            btn.addEventListener('click', (e) => {
+                // e.currentTarget greift immer auf das Element zu, an dem der Listener hängt (den Button),
+                // selbst wenn man das SVG oder den Path im Button anklickt!
+                const rIndex = parseInt(e.currentTarget.dataset.rindex);
+                this.onRowEditTriggered(rIndex);
+            });
         });
     }
 

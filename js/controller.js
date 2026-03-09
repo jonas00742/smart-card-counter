@@ -31,7 +31,6 @@ export class GameController {
         this.view.bindSwipeBack(this.handleBackToSetup.bind(this));
 
         // 2. Game Table Events Binden
-        this.view.bindToggleGlobalEdit(this.handleToggleGlobalEdit.bind(this));
         this.view.bindOpenInputModal(this.handleOpenInputModal.bind(this));
         this.view.bindTriggerRowEdit(this.handleTriggerRowEdit.bind(this));
 
