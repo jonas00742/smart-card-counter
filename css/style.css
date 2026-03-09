@@ -1,5 +1,5 @@
 /* ==========================================================================
-   1. DESIGN SYSTEM (Variables)
+   1. VARIABLES
    ========================================================================== */
 :root {
     /* Colors */
@@ -35,7 +35,7 @@
 }
 
 /* ==========================================================================
-   2. RESET & BASE
+   2. RESET & BASE STYLES
    ========================================================================== */
 * {
     box-sizing: border-box;
@@ -54,17 +54,12 @@ html, body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     background-color: var(--color-bg);
     color: var(--color-text-main);
-    
-    /* Blockiert das Federn am Rand */
-    overscroll-behavior: none; 
-    touch-action: pan-y; 
-
-    user-select: none;
+    overscroll-behavior: none;
+    touch-action: pan-y;
     -webkit-user-select: none;
 }
 
-h1, 
-h2 {
+h1, h2 {
     margin-bottom: var(--space-sm);
 }
 
@@ -84,11 +79,43 @@ main {
     padding: var(--space-md);
     overflow-y: auto;
     overflow-x: hidden;
-    overscroll-behavior-y: contain; 
+    overscroll-behavior-y: contain;
 }
 
 /* ==========================================================================
-   3. COMPONENTS (Buttons & Inputs)
+   3. UTILITIES
+   ========================================================================== */
+.hidden { display: none !important; }
+.w-100 { width: 100%; }
+
+/* Spacing */
+.m-0 { margin: 0; }
+.mb-sm { margin-bottom: 5px; }
+.mb-lg { margin-bottom: 20px; }
+.mt-sm { margin-top: 10px; }
+.mt-md { margin-top: 15px; }
+.px-xs { padding: 0 4px; }
+
+/* Text */
+.text-center { text-align: center; }
+.text-sm { font-size: 0.9rem; }
+.text-md { font-size: 1.3rem; }
+.text-danger { color: var(--color-danger); }
+
+/* Flexbox */
+.flex-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.flex-col-gap {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* ==========================================================================
+   4. COMPONENTS: BUTTONS & INPUTS
    ========================================================================== */
 .primary-btn {
     width: 100%;
@@ -132,9 +159,9 @@ main {
     cursor: pointer;
 }
 
-.dark-icon {
-    color: var(--color-primary);
-}
+.btn-success { background-color: var(--color-success); }
+.btn-danger { background-color: var(--color-danger); }
+.btn-primary-dark { background-color: var(--color-primary); }
 
 .input-group {
     display: flex;
@@ -158,13 +185,36 @@ main {
 }
 
 /* ==========================================================================
-   4. PLAYER SETUP (Pool & Reihenfolge)
+   5. MODULE: HEADER
+   ========================================================================== */
+.header-layout {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.header-left { display: flex; flex: 1; justify-content: flex-start; }
+.header-center { flex: 1; text-align: center; }
+.header-right { flex: 1; font-weight: bold; text-align: right; }
+
+.btn-with-icon {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.back-icon { font-size: 1.2rem; }
+
+/* ==========================================================================
+   6. MODULE: PLAYER SETUP
    ========================================================================== */
 .player-pool {
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-sm);
     margin-bottom: var(--space-lg);
+    list-style: none;
 }
 
 .player-chip {
@@ -198,6 +248,7 @@ main {
     flex-direction: column;
     gap: 8px;
     margin-bottom: var(--space-lg);
+    list-style: none;
 }
 
 .active-player-row {
@@ -223,7 +274,13 @@ main {
     gap: 10px;
 }
 
-/* Drag Handle: Zwei Querbalken */
+.player-row-center {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    padding: 0 10px;
+}
+
 .drag-handle {
     display: inline-block;
     width: 14px;
@@ -234,9 +291,7 @@ main {
     touch-action: none;
 }
 
-.drag-handle:active {
-    cursor: grabbing;
-}
+.drag-handle:active { cursor: grabbing; }
 
 .order-controls {
     display: flex;
@@ -252,8 +307,27 @@ main {
     cursor: pointer;
 }
 
+.dealer-btn {
+    padding: 4px 10px;
+    font-size: 0.85rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    background: var(--color-surface);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.dealer-btn.active {
+    background: var(--color-primary);
+    color: var(--color-surface);
+    border-color: var(--color-primary);
+    font-weight: bold;
+    box-shadow: var(--shadow-sm);
+}
+
 /* ==========================================================================
-   5. GAME TABLE & STICKY BUTTON
+   7. MODULE: GAME TABLE
    ========================================================================== */
 .sticky-top-container {
     position: sticky;
@@ -270,10 +344,9 @@ main {
     border-radius: var(--radius-sm);
     background: var(--color-surface);
     box-shadow: var(--shadow-sm);
-    
-    overscroll-behavior-x: contain; 
-    touch-action: pan-x pan-y; 
-    -webkit-overflow-scrolling: touch; 
+    overscroll-behavior-x: contain;
+    touch-action: pan-x pan-y;
+    -webkit-overflow-scrolling: touch;
 }
 
 table {
@@ -282,8 +355,7 @@ table {
     text-align: center;
 }
 
-th, 
-td {
+th, td {
     min-width: 50px;
     padding: 8px 4px;
     border-right: 1px solid var(--color-border);
@@ -299,12 +371,26 @@ th {
     background: var(--color-primary);
 }
 
+/* Column Specifics */
 .narrow-col,
-.round-cell {
+.round-cell,
+.player-col,
+.status-cell,
+.status-col-header {
     width: 1%;
     min-width: max-content !important;
     white-space: nowrap;
     padding: 8px 10px !important;
+}
+
+.status-cell, .status-col-header {
+    text-align: center;
+    padding: 4px !important;
+}
+
+.dealer-col-header {
+    background-color: var(--color-accent) !important;
+    position: relative;
 }
 
 .round-cell-content {
@@ -314,7 +400,26 @@ th {
     padding: 0 4px;
 }
 
-/* Globale Edit Logik */
+.cell-data { display: flex; flex-direction: column; }
+.cell-stats { margin-bottom: 2px; font-size: 0.75rem; color: var(--color-text-muted); }
+.cell-score { font-size: 0.95rem; font-weight: bold; }
+
+.status-badge {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: var(--color-surface);
+    box-shadow: var(--shadow-sm);
+}
+
+.status-badge.success { background-color: var(--color-success); }
+.status-badge.danger { background-color: var(--color-danger); }
+
 .edit-btn {
     display: inline-flex;
     align-items: center;
@@ -335,33 +440,8 @@ th {
     color: var(--color-surface);
 }
 
-#score-table.edit-mode-active .edit-btn {
-    display: inline-block;
-}
-
-#main-edit-toggle-btn.active {
-    border-radius: 4px;
-    background: var(--color-surface);
-}
-
-.cell-data {
-    display: flex;
-    flex-direction: column;
-}
-
-.cell-stats {
-    margin-bottom: 2px;
-    font-size: 0.75rem;
-    color: var(--color-text-muted);
-}
-
-.cell-score {
-    font-size: 0.95rem;
-    font-weight: bold;
-}
-
 /* ==========================================================================
-   6. MODAL
+   8. MODULE: MODALS
    ========================================================================== */
 .modal {
     position: fixed;
@@ -385,14 +465,10 @@ th {
     box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
 }
 
-#edit-choice-modal {
-    align-items: center;
-    padding: 20px;
-}
-
-#edit-choice-modal .modal-content {
-    border-radius: var(--space-lg);
-}
+/* Edit Choice Modal Specifics */
+#edit-choice-modal { align-items: center; padding: 20px; }
+#edit-choice-modal .modal-content { border-radius: var(--space-lg); }
+.edit-choice-content { padding-bottom: 30px; }
 
 .modal-header-custom {
     display: flex;
@@ -400,6 +476,24 @@ th {
     align-items: center;
     margin-bottom: 10px;
 }
+
+.modal-nav-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 1.6rem;
+    color: var(--color-surface);
+    background: var(--color-primary);
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+}
+
+.modal-nav-btn:active {
+    transform: scale(0.95);
+    background: var(--color-accent);
+}
+
+.modal-nav-btn[style*="visibility: hidden"] { pointer-events: none; }
 
 .modal-indicators {
     display: flex;
@@ -452,122 +546,13 @@ th {
     border-color: var(--color-primary);
 }
 
-.hidden {
-    display: none !important;
-}
-
 /* ==========================================================================
-   7. UTILITIES & LAYOUT
+   Phase-Specific Modal Styling
    ========================================================================== */
-.m-0 { margin: 0; }
-.mb-sm { margin-bottom: 5px; }
-.mb-lg { margin-bottom: 20px; }
-.mt-sm { margin-top: 10px; }
-.mt-md { margin-top: 15px; }
-.px-xs { padding: 0 4px; }
-.w-100 { width: 100%; }
-
-.text-center { text-align: center; }
-.text-sm { font-size: 0.9rem; }
-.text-md { font-size: 1.3rem; }
-
-.flex-center {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.flex-between-center {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.flex-col-gap {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-/* Header Layout */
-.header-layout {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-}
-
-.header-left {
-    display: flex;
-    flex: 1;
-    justify-content: flex-start;
-}
-
-.header-center {
-    flex: 1;
-    text-align: center;
-}
-
-.header-right {
-    flex: 1;
-    font-weight: bold;
-    text-align: right;
-}
-
-.btn-with-icon {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.back-icon {
-    font-size: 1.2rem;
-}
-
-/* Buttons & Specifics */
-.btn-success {
-    background-color: var(--color-success);
-}
-
-.btn-primary-dark {
-    background-color: var(--color-primary);
-}
-
-.edit-choice-content {
-    padding-bottom: 30px;
-    border-radius: var(--space-lg);
-}
-
-.modal-nav-btn {
-    padding: 10px 20px;
-    border: none;
-    border-radius: var(--radius-sm);
-    font-size: 1.6rem;
-    color: var(--color-surface);
-    background: var(--color-primary);
-    cursor: pointer;
-    transition: background 0.2s, transform 0.1s;
-}
-
-.modal-nav-btn:active {
-    transform: scale(0.95);
-    background: var(--color-accent);
-}
-
-.modal-nav-btn[style*="visibility: hidden"] {
-    /* Verhindert, dass unsichtbare Buttons noch Platz verschwenden oder klickbar sind */
-    pointer-events: none; 
-}
-
-/* ==========================================================================
-   NEU: Visuelle Unterscheidung der Phasen
-   ========================================================================== */
-/* Phase: Ansage (Blau/Standard) */
 .phase-ansage .modal-content {
     border-top: 8px solid var(--color-accent);
 }
 
-/* Phase: Gemachte Stiche (Grün) */
 .phase-stiche .modal-content {
     border-top: 8px solid var(--color-success);
 }
@@ -585,79 +570,42 @@ th {
 }
 
 /* ==========================================================================
-   NEU: Status-Spalte (Ansagen-Kontrolle am Zeilenende)
+   9. MODULE: LEADERBOARD & GAME OVER
    ========================================================================== */
-.status-cell {
-    width: 1%; /* Hält die Spalte so schmal wie möglich */
-    padding: 4px !important;
-    vertical-align: middle;
-}
-
-.status-badge {
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    font-size: 0.85rem;
-    font-weight: bold;
-    color: var(--color-surface); /* Weißer Text */
-    box-shadow: var(--shadow-sm);
-}
-
-.status-badge.success {
-    background-color: var(--color-success); /* Dein bestehendes Grün */
-}
-
-.status-badge.danger {
-    background-color: var(--color-danger); /* Dein bestehendes Rot */
-}
-
-.player-row-center {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    padding: 0 10px;
-}
-
-.dealer-btn {
-    padding: 4px 10px;
-    font-size: 0.85rem;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-pill);
+.leaderboard-container {
     background: var(--color-surface);
-    color: var(--color-text-muted);
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.dealer-btn.active {
-    background: var(--color-primary);
-    color: var(--color-surface);
-    border-color: var(--color-primary);
-    font-weight: bold;
+    padding: var(--space-md);
+    border-radius: var(--radius-sm);
     box-shadow: var(--shadow-sm);
 }
 
-.dealer-col-header {
-    background-color: var(--color-accent) !important;
-    position: relative;
+.leaderboard-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
-.dealer-icon {
-    font-size: 0.9rem;
-    margin-left: 2px;
+.leaderboard-list li {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--color-border);
+    font-size: 1.1rem;
 }
 
-.player-col {
-    width: 1%;
-    min-width: max-content !important;
-    white-space: nowrap;
-    padding: 8px 10px !important;
+.leaderboard-list li:last-child { border-bottom: none; }
+
+.rank-medal {
+    font-weight: bold;
+    width: 35px;
+    text-align: center;
+    margin-right: 15px;
+    font-size: 1.3rem;
 }
 
-podium-container {
+.rank-name { flex: 1; }
+
+.podium-container {
     display: flex;
     justify-content: center;
     align-items: flex-end;
@@ -714,65 +662,4 @@ podium-container {
     font-size: 0.8rem;
     color: var(--color-text-muted);
     margin-bottom: 8px;
-}
-
-.leaderboard-container {
-    background: var(--color-surface);
-    padding: var(--space-md);
-    border-radius: var(--radius-sm);
-    box-shadow: var(--shadow-sm);
-}
-
-.leaderboard-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.leaderboard-list li {
-    display: flex;
-    align-items: center;
-    padding: 10px 0;
-    border-bottom: 1px solid var(--color-border);
-    font-size: 1.1rem;
-}
-
-.leaderboard-list li:last-child {
-    border-bottom: none;
-}
-
-.rank-medal {
-    font-weight: bold;
-    width: 35px;
-    text-align: center;
-    margin-right: 15px;
-    font-size: 1.3rem;
-}
-
-.rank-name {
-    flex: 1;
-}
-
-/* ==========================================================================
-   NEU: Danger Colors & Custom Confirm Modal
-   ========================================================================== */
-.text-danger {
-    color: var(--color-danger);
-}
-
-.btn-danger {
-    background-color: var(--color-danger);
-}
-
-/* Überschreibt das Padding für die Status-Spalte, um sie absolut minimal zu halten */
-.status-col-header {
-    width: 1%;
-    white-space: nowrap;
-    padding: 4px !important; 
-    text-align: center;
-}
-
-.status-cell {
-    text-align: center; 
-    /* width: 1% und padding: 4px haben wir weiter oben schon definiert */
 }

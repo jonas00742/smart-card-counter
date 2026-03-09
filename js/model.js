@@ -2,20 +2,19 @@ import { CONFIG } from './config.js';
 
 export class GameModel {
     constructor() {
-        this.storageKey = 'smartCounterState';
+        this.STORAGE_KEY = 'smartCounterState';
         this.loadState();
     }
 
-    initDefaultState() {
-        this.state = {
+    get defaultState() {
+        return {
             availablePlayers: ["Alex", "Bela", "Charlie", "Doro"],
             activePlayers: [],
             currentRoundIndex: 0,
             startingDealerIndex: 0,
-            phase: 'ansage', 
+            phase: 'ansage',
             roundsData: [],
-            isGameOver: false, // --- NEU ---
-            
+            isGameOver: false,
             globalEditMode: false,
             isEditMode: false,
             editRoundIndex: 0,
@@ -25,118 +24,144 @@ export class GameModel {
     }
 
     loadState() {
-        const saved = localStorage.getItem(this.storageKey);
+        const saved = localStorage.getItem(this.STORAGE_KEY);
         if (saved) {
             try {
                 this.state = JSON.parse(saved);
+                // Reset transient flags
                 this.state.globalEditMode = false;
                 this.state.isEditMode = false;
-                if (this.state.startingDealerIndex === undefined) this.state.startingDealerIndex = 0;
-                if (this.state.isGameOver === undefined) this.state.isGameOver = false; // --- NEU ---
+                
+                // Backwards compatibility checks
+                this.state.startingDealerIndex = this.state.startingDealerIndex ?? 0;
+                this.state.isGameOver = this.state.isGameOver ?? false;
             } catch (e) {
-                this.initDefaultState();
+                console.error("Failed to load state, resetting.", e);
+                this.state = this.defaultState;
             }
         } else {
-            this.initDefaultState();
+            this.state = this.defaultState;
         }
     }
 
-    saveState() { localStorage.setItem(this.storageKey, JSON.stringify(this.state)); }
+    saveState() {
+        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.state));
+    }
 
     initGameData() {
-        this.state.currentRoundIndex = 0;
-        this.state.phase = 'ansage';
-        this.state.roundsData = [];
-        this.state.globalEditMode = false;
-        this.state.isGameOver = false; // --- NEU ---
-        
-        for (let i = 0; i < CONFIG.TOTAL_ROUNDS; i++) {
-            let roundObj = {};
-            this.state.activePlayers.forEach(player => {
-                roundObj[player] = { ansage: null, gemacht: null, punkte: 0, gesamtPunkte: 0 };
-            });
-            this.state.roundsData.push(roundObj);
-        }
+        // Preserve available players, reset game specific data
+        const { availablePlayers, activePlayers, startingDealerIndex } = this.state;
+        this.state = {
+            ...this.defaultState,
+            availablePlayers,
+            activePlayers,
+            startingDealerIndex,
+            roundsData: Array.from({ length: CONFIG.TOTAL_ROUNDS }, () => {
+                const roundObj = {};
+                activePlayers.forEach(p => {
+                    roundObj[p] = { ansage: null, gemacht: null, punkte: 0, gesamtPunkte: 0 };
+                });
+                return roundObj;
+            })
+        };
         this.saveState();
     }
 
     quitGame() {
-        this.state.roundsData = []; 
+        this.state.roundsData = [];
         this.state.isGameOver = false;
         this.saveState();
     }
 
-    // --- NEU: Sortiertes Leaderboard abrufen ---
     getLeaderboard() {
         if (!this.state.roundsData || this.state.roundsData.length === 0) return [];
-        const rIndex = this.state.currentRoundIndex;
         
-        const scores = this.state.activePlayers.map(player => ({
+        const currentData = this.state.roundsData[this.state.currentRoundIndex];
+        return this.state.activePlayers.map(player => ({
             name: player,
-            score: this.state.roundsData[rIndex][player].gesamtPunkte
-        }));
-        
-        // Sortiert nach Punkten absteigend
-        return scores.sort((a, b) => b.score - a.score);
+            score: currentData[player].gesamtPunkte
+        })).sort((a, b) => b.score - a.score);
     }
 
-    setStartingDealer(index) { this.state.startingDealerIndex = index; this.saveState(); }
-    _checkDealerBounds() {
-        if (this.state.activePlayers.length === 0) this.state.startingDealerIndex = 0;
-        else if (this.state.startingDealerIndex >= this.state.activePlayers.length) this.state.startingDealerIndex = this.state.activePlayers.length - 1;
+    setStartingDealer(index) {
+        this.state.startingDealerIndex = index;
+        this.saveState();
     }
-    addPlayer(name) {
-        if (name && !this.state.availablePlayers.includes(name)) {
-            this.state.availablePlayers.push(name); this.state.activePlayers.push(name); this.saveState();
+
+    _checkDealerBounds() {
+        const maxIndex = Math.max(0, this.state.activePlayers.length - 1);
+        if (this.state.startingDealerIndex > maxIndex) {
+            this.state.startingDealerIndex = maxIndex;
         }
     }
+
+    addPlayer(name) {
+        if (name && !this.state.availablePlayers.includes(name)) {
+            this.state.availablePlayers.push(name);
+            this.state.activePlayers.push(name);
+            this.saveState();
+        }
+    }
+
     removePlayer(player) {
         this.state.availablePlayers = this.state.availablePlayers.filter(p => p !== player);
         this.state.activePlayers = this.state.activePlayers.filter(p => p !== player);
-        this._checkDealerBounds(); this.saveState();
+        this._checkDealerBounds();
+        this.saveState();
     }
+
     togglePlayerActive(player) {
-        if (this.state.activePlayers.includes(player)) this.state.activePlayers = this.state.activePlayers.filter(p => p !== player);
-        else this.state.activePlayers.push(player);
-        this._checkDealerBounds(); this.saveState();
+        if (this.state.activePlayers.includes(player)) {
+            this.state.activePlayers = this.state.activePlayers.filter(p => p !== player);
+        } else {
+            this.state.activePlayers.push(player);
+        }
+        this._checkDealerBounds();
+        this.saveState();
     }
+
     movePlayer(index, direction) {
+        const players = this.state.activePlayers;
         if (direction === 'up' && index > 0) {
-            const temp = this.state.activePlayers[index - 1];
-            this.state.activePlayers[index - 1] = this.state.activePlayers[index];
-            this.state.activePlayers[index] = temp; this.saveState();
-        } else if (direction === 'down' && index < this.state.activePlayers.length - 1) {
-            const temp = this.state.activePlayers[index + 1];
-            this.state.activePlayers[index + 1] = this.state.activePlayers[index];
-            this.state.activePlayers[index] = temp; this.saveState();
+            [players[index], players[index - 1]] = [players[index - 1], players[index]];
+            this.saveState();
+        } else if (direction === 'down' && index < players.length - 1) {
+            [players[index], players[index + 1]] = [players[index + 1], players[index]];
+            this.saveState();
         }
     }
-    setPlayerOrder(newOrder) { this.state.activePlayers = newOrder; this.saveState(); }
+
+    setPlayerOrder(newOrder) {
+        this.state.activePlayers = newOrder;
+        this.saveState();
+    }
     
     setInputValue(value) {
         const player = this.state.activePlayers[this.state.currentPlayerInputIndex];
         const rIndex = this.state.isEditMode ? this.state.editRoundIndex : this.state.currentRoundIndex;
         const phase = this.state.isEditMode ? this.state.editPhase : this.state.phase;
         
-        if (phase === 'ansage') this.state.roundsData[rIndex][player].ansage = value;
-        else this.state.roundsData[rIndex][player].gemacht = value;
+        this.state.roundsData[rIndex][player][phase === 'ansage' ? 'ansage' : 'gemacht'] = value;
         this.saveState();
     }
+
     isCurrentPhaseComplete() {
         const rIndex = this.state.isEditMode ? this.state.editRoundIndex : this.state.currentRoundIndex;
         const phase = this.state.isEditMode ? this.state.editPhase : this.state.phase;
+        
         return this.state.activePlayers.every(player => {
-            const val = phase === 'ansage' ? this.state.roundsData[rIndex][player].ansage : this.state.roundsData[rIndex][player].gemacht;
-            return val !== null;
+            const key = phase === 'ansage' ? 'ansage' : 'gemacht';
+            return this.state.roundsData[rIndex][player][key] !== null;
         });
     }
+
     recalculateAllScores() {
         for (let r = 0; r <= this.state.currentRoundIndex; r++) {
             const roundData = this.state.roundsData[r];
             this.state.activePlayers.forEach(player => {
                 const pData = roundData[player];
                 if (pData.gemacht !== null && pData.ansage !== null) {
-                    pData.punkte = pData.ansage === pData.gemacht 
+                    pData.punkte = pData.ansage === pData.gemacht
                         ? CONFIG.POINTS_BASE + pData.gemacht 
                         : -Math.abs(pData.ansage - pData.gemacht);
                 } else pData.punkte = 0;
@@ -145,5 +170,16 @@ export class GameModel {
             });
         }
         this.saveState();
+    }
+
+    validateSticheSum(roundIndex) {
+        const cards = CONFIG.CARDS_SEQUENCE[roundIndex];
+        const sumGemacht = this.state.activePlayers.reduce((sum, p) => {
+            return sum + (this.state.roundsData[roundIndex][p].gemacht || 0);
+        }, 0);
+
+        return sumGemacht === cards 
+            ? { valid: true } 
+            : { valid: false, message: `Logik-Fehler:\nEs wurden ${cards} Karten ausgeteilt, aber ${sumGemacht} Stiche eingetragen.` };
     }
 }

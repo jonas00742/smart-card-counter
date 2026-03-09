@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Card Counter</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2c3e50">
@@ -16,7 +16,7 @@
         
         <div id="game-header" class="hidden header-layout">
             <div class="header-left">
-                <button id="back-to-setup-btn" class="icon-btn btn-with-icon">
+                <button type="button" id="back-to-setup-btn" class="icon-btn btn-with-icon">
                     <span class="back-icon">◀</span> Zurück
                 </button>
             </div>
@@ -34,25 +34,25 @@
             <h2>1. Spieler anlegen</h2>
             <div class="input-group">
                 <input type="text" id="new-player-name" placeholder="Neuer Spieler...">
-                <button id="add-new-player-btn" class="primary-btn add-btn">+</button>
+                <button type="button" id="add-new-player-btn" class="primary-btn add-btn">+</button>
             </div>
             
             <p class="subtitle mb-sm">Aus dem Pool wählen:</p>
-            <div id="available-players-container" class="player-pool"></div>
+            <ul id="available-players-container" class="player-pool"></ul>
 
             <h2>2. Spielreihenfolge</h2>
             <p class="subtitle text-sm">Sortiere so, wie ihr am Tisch sitzt.</p>
-            <div id="active-players-container" class="player-list-vertical"></div>
+            <ol id="active-players-container" class="player-list-vertical"></ol>
 
-            <button id="install-app-btn" class="primary-btn btn-success hidden mb-sm">
+            <button type="button" id="install-app-btn" class="primary-btn btn-success hidden mb-sm">
                 📲 App installieren
             </button>
-            <button id="start-game-btn" class="primary-btn" disabled>Spiel starten</button>
+            <button type="button" id="start-game-btn" class="primary-btn" disabled>Spiel starten</button>
         </section>
 
         <section id="game-screen" class="hidden">
             <div class="sticky-top-container">
-                <button id="open-input-modal-btn" class="primary-btn">Eingabe starten</button>
+                <button type="button" id="open-input-modal-btn" class="primary-btn">Eingabe starten</button>
             </div>
 
             <div class="table-container">
@@ -73,50 +73,50 @@
         </section>
     </main>
 
-    <div id="input-modal" class="modal hidden">
+    <div id="input-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
         <div class="modal-content">
             <div class="modal-header-custom">
-                <button id="modal-prev-btn" class="modal-nav-btn">◀</button>
+                <button type="button" id="modal-prev-btn" class="modal-nav-btn">◀</button>
                 <div class="text-center">
                     <h2 id="modal-title" class="m-0">Phase</h2>
                     <p id="modal-subtitle" class="subtitle m-0">Spieler</p>
                 </div>
-                <button id="modal-next-btn" class="modal-nav-btn">▶</button>
+                <button type="button" id="modal-next-btn" class="modal-nav-btn">▶</button>
             </div>
             <div id="modal-indicators" class="modal-indicators"></div>
             <div id="dynamic-button-grid" class="button-grid"></div>
-            <button id="save-input-btn" class="primary-btn btn-success mt-md hidden">Fertig</button>
-            <button id="cancel-input-btn" class="secondary-btn mt-sm w-100">Abbrechen</button>
+            <button type="button" id="save-input-btn" class="primary-btn btn-success mt-md hidden">Fertig</button>
+            <button type="button" id="cancel-input-btn" class="secondary-btn mt-sm w-100">Abbrechen</button>
         </div>
     </div>
 
-    <div id="edit-choice-modal" class="modal hidden flex-center">
+    <div id="edit-choice-modal" class="modal hidden flex-center" role="dialog" aria-modal="true" aria-labelledby="edit-choice-title">
         <div class="modal-content edit-choice-content">
-            <h2 class="text-center mb-lg">Was bearbeiten?</h2>
+            <h2 id="edit-choice-title" class="text-center mb-lg">Was bearbeiten?</h2>
             <div class="flex-col-gap">
-                <button id="edit-ansage-btn" class="primary-btn">Ansagen</button>
-                <button id="edit-gemacht-btn" class="primary-btn btn-primary-dark">Gemachte Stiche</button>
-                <button id="cancel-edit-choice-btn" class="secondary-btn mt-sm">Abbrechen</button>
+                <button type="button" id="edit-ansage-btn" class="primary-btn">Ansagen</button>
+                <button type="button" id="edit-gemacht-btn" class="primary-btn btn-primary-dark">Gemachte Stiche</button>
+                <button type="button" id="cancel-edit-choice-btn" class="secondary-btn mt-sm">Abbrechen</button>
             </div>
         </div>
     </div>
 
-    <div id="game-over-modal" class="modal hidden flex-center">
+    <div id="game-over-modal" class="modal hidden flex-center" role="dialog" aria-modal="true" aria-labelledby="game-over-title">
         <div class="modal-content text-center">
-            <h2 class="mb-sm">🎉 Spiel Beendet! 🎉</h2>
+            <h2 id="game-over-title" class="mb-sm">🎉 Spiel Beendet! 🎉</h2>
             <p class="subtitle mb-lg">Herzlichen Glückwunsch!</p>
             <div id="podium-container" class="podium-container mt-md mb-lg"></div>
-            <button id="close-game-over-btn" class="primary-btn mt-md">Zur Tabelle</button>
+            <button type="button" id="close-game-over-btn" class="primary-btn mt-md">Zur Tabelle</button>
         </div>
     </div>
 
-    <div id="confirm-back-modal" class="modal hidden flex-center">
+    <div id="confirm-back-modal" class="modal hidden flex-center" role="dialog" aria-modal="true" aria-labelledby="confirm-back-title">
         <div class="modal-content text-center">
-            <h2 class="mb-sm text-danger">⚠️ Spiel abbrechen?</h2>
+            <h2 id="confirm-back-title" class="mb-sm text-danger">⚠️ Spiel abbrechen?</h2>
             <p class="subtitle mb-lg">Willst du wirklich zurück? Der aktuelle Spielstand geht dabei verloren!</p>
             <div class="flex-col-gap">
-                <button id="confirm-back-accept-btn" class="primary-btn btn-danger">Ja, Spiel beenden</button>
-                <button id="confirm-back-cancel-btn" class="secondary-btn">Nein, weiterspielen</button>
+                <button type="button" id="confirm-back-accept-btn" class="primary-btn btn-danger">Ja, Spiel beenden</button>
+                <button type="button" id="confirm-back-cancel-btn" class="secondary-btn">Nein, weiterspielen</button>
             </div>
         </div>
     </div>

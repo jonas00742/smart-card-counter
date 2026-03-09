@@ -4,18 +4,24 @@ export class GameController {
     constructor(model, view) {
         this.model = model;
         this.view = view;
-
         this.deferredPrompt = null;
 
+        this.initInstallPrompt();
+        this.bindEvents();
+        this.initRouter();
+    }
+
+    initInstallPrompt() {
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             this.deferredPrompt = e;
             this.view.toggleInstallButton(true);
         });
-
         this.view.bindInstallApp(this.handleInstallApp.bind(this));
+    }
 
-        // Setup Events Binden
+    bindEvents() {
+        // Setup
         this.view.bindAddPlayer(this.handleAddPlayer.bind(this));
         this.view.bindTogglePlayer(this.handleTogglePlayer.bind(this));
         this.view.bindRemovePlayer(this.handleRemovePlayer.bind(this));
@@ -25,26 +31,28 @@ export class GameController {
         this.view.bindStartGame(this.handleStartGame.bind(this));
         this.view.bindBackToSetup(this.handleBackToSetup.bind(this));
 
-        // Game Table Events Binden
+        // Game Table
         this.view.bindOpenInputModal(this.handleOpenInputModal.bind(this));
         this.view.bindTriggerRowEdit(this.handleTriggerRowEdit.bind(this));
 
-        // Modal Events Binden
+        // Modal
         this.view.bindModalCancel(this.handleModalCancel.bind(this));
         this.view.bindModalPrev(this.handleModalPrev.bind(this));
         this.view.bindModalNext(this.handleModalNext.bind(this));
         this.view.bindNumberInput(this.handleNumberInput.bind(this));
         this.view.bindModalSave(this.handleModalSave.bind(this));
 
-        // Game Over & Custom Confirm Events
+        // Game Over & Confirm
         this.view.bindCloseGameOver(this.handleCloseGameOver.bind(this));
         this.view.bindConfirmBackAccept(this.handleConfirmBackAccept.bind(this));
         this.view.bindConfirmBackCancel(this.handleConfirmBackCancel.bind(this));
 
-        // Edit Choice Events Binden
+        // Edit Choice
         this.view.bindEditChoiceClose(this.handleEditChoiceClose.bind(this));
         this.view.bindEditChoiceSelect(this.handleEditChoiceSelect.bind(this));
+    }
 
+    initRouter() {
         window.addEventListener('popstate', this.handlePopState.bind(this));
 
         if (this.model.state.roundsData && this.model.state.roundsData.length > 0) {
@@ -73,55 +81,46 @@ export class GameController {
 
     handleBackToSetup() { window.history.back(); }
 
-    // --- GEÄNDERT: Logik für das neue UI Modal statt nativem confirm() ---
     handlePopState(event) {
         const isGameScreenVisible = !this.view.elements.gameScreen.classList.contains('hidden');
         
         if (isGameScreenVisible && !this.model.state.isGameOver) {
-            // Trick: Die URL hat sich schon geändert (z.B. auf #setup). 
-            // Wir biegen sie sofort wieder auf #game um, damit der Nutzer im Spiel bleibt.
             window.history.pushState({ screen: 'game' }, '', '#game');
-            // Dann zeigen wir unser wunderschönes Modal
             this.view.showConfirmBackModal();
         } 
         else if (isGameScreenVisible && this.model.state.isGameOver) {
-            // Wenn das Spiel ohnehin vorbei ist, brauchen wir keine Warnung vor Datenverlust.
             this.model.quitGame();
             this.view.switchScreen(false);
             this.view.renderSetup(this.model.state);
         } 
         else {
-            // Wir sind bereits im Setup
             this.view.switchScreen(false);
             this.view.renderSetup(this.model.state);
         }
     }
 
-    // --- NEU: Handler für die Modal-Buttons ---
     handleConfirmBackAccept() {
         this.view.hideConfirmBackModal();
         this.model.quitGame();
-        // Setzen die URL manuell auf Setup und laden den Bildschirm
         window.history.replaceState({ screen: 'setup' }, '', '#setup');
         this.view.switchScreen(false);
         this.view.renderSetup(this.model.state);
     }
 
     handleConfirmBackCancel() {
-        // Modal schließen, die URL haben wir oben in handlePopState ja schon korrigiert
         this.view.hideConfirmBackModal();
     }
 
     handleOpenInputModal() {
         this.model.state.isEditMode = false;
-        let firstEmptyIdx = this.model.state.activePlayers.findIndex(p => {
-            const val = this.model.state.phase === 'ansage' 
-                ? this.model.state.roundsData[this.model.state.currentRoundIndex][p].ansage 
-                : this.model.state.roundsData[this.model.state.currentRoundIndex][p].gemacht;
-            return val === null;
-        });
-        this.model.state.currentPlayerInputIndex = firstEmptyIdx !== -1 ? firstEmptyIdx : 0;
+        const rIndex = this.model.state.currentRoundIndex;
+        const phase = this.model.state.phase;
         
+        const firstEmptyIdx = this.model.state.activePlayers.findIndex(p => {
+            return this.model.state.roundsData[rIndex][p][phase === 'ansage' ? 'ansage' : 'gemacht'] === null;
+        });
+        
+        this.model.state.currentPlayerInputIndex = firstEmptyIdx !== -1 ? firstEmptyIdx : 0;
         this.view.renderModalContent(this.model.state, this.model.isCurrentPhaseComplete());
         this.view.elements.modal.classList.remove('hidden');
     }
@@ -164,13 +163,11 @@ export class GameController {
     handleModalSave() {
         const rIndex = this.model.state.isEditMode ? this.model.state.editRoundIndex : this.model.state.currentRoundIndex;
         const phase = this.model.state.isEditMode ? this.model.state.editPhase : this.model.state.phase;
-        const cards = CONFIG.CARDS_SEQUENCE[rIndex];
 
         if (phase === 'stiche') {
-            let sumGemacht = 0;
-            this.model.state.activePlayers.forEach(p => { sumGemacht += this.model.state.roundsData[rIndex][p].gemacht || 0; });
-            if (sumGemacht !== cards) {
-                alert(`Logik-Fehler:\nEs wurden ${cards} Karten ausgeteilt, aber es wurden insgesamt ${sumGemacht} Stiche eingetragen.\nBitte korrigiere die Eingaben.`);
+            const validation = this.model.validateSticheSum(rIndex);
+            if (!validation.valid) {
+                alert(validation.message);
                 return;
             }
         }
