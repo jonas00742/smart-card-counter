@@ -8,7 +8,7 @@ export class GameModel {
 
     get defaultState() {
         return {
-            availablePlayers: ["Alex", "Bela", "Charlie", "Doro"],
+            availablePlayers: ["Jonas", "Karim", "Nina", "Patrick", "Laura"],
             activePlayers: [],
             currentRoundIndex: 0,
             startingDealerIndex: 0,
@@ -118,17 +118,6 @@ export class GameModel {
         }
         this._checkDealerBounds();
         this.saveState();
-    }
-
-    movePlayer(index, direction) {
-        const players = this.state.activePlayers;
-        if (direction === 'up' && index > 0) {
-            [players[index], players[index - 1]] = [players[index - 1], players[index]];
-            this.saveState();
-        } else if (direction === 'down' && index < players.length - 1) {
-            [players[index], players[index + 1]] = [players[index + 1], players[index]];
-            this.saveState();
-        }
     }
 
     setPlayerOrder(newOrder) {

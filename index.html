@@ -16,9 +16,6 @@
         
         <div id="game-header" class="hidden header-layout">
             <div class="header-left">
-                <button type="button" id="back-to-setup-btn" class="icon-btn btn-with-icon">
-                    <span class="back-icon">◀</span> Zurück
-                </button>
             </div>
             <div class="header-center">
                 <h1 class="m-0 text-md">Stich-Zähler</h1>
@@ -118,6 +115,25 @@
                 <button type="button" id="confirm-back-accept-btn" class="primary-btn btn-danger">Ja, Spiel beenden</button>
                 <button type="button" id="confirm-back-cancel-btn" class="secondary-btn">Nein, weiterspielen</button>
             </div>
+        </div>
+    </div>
+
+    <div id="delete-player-modal" class="modal hidden flex-center" role="dialog" aria-modal="true" aria-labelledby="delete-player-title">
+        <div class="modal-content text-center">
+            <h2 id="delete-player-title" class="mb-sm text-danger">Spieler entfernen?</h2>
+            <p id="delete-player-text" class="subtitle mb-lg">Möchtest du diesen Spieler wirklich löschen?</p>
+            <div class="flex-col-gap">
+                <button type="button" id="confirm-delete-player-btn" class="primary-btn btn-danger">Entfernen</button>
+                <button type="button" id="cancel-delete-player-btn" class="secondary-btn">Abbrechen</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="validation-modal" class="modal hidden flex-center" role="dialog" aria-modal="true" aria-labelledby="validation-title">
+        <div class="modal-content text-center">
+            <h2 id="validation-title" class="mb-sm text-danger">Eingabefehler</h2>
+            <p id="validation-text" class="subtitle mb-lg"></p>
+            <button type="button" id="close-validation-btn" class="primary-btn">Verstanden</button>
         </div>
     </div>
 

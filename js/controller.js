@@ -25,11 +25,9 @@ export class GameController {
         this.view.bindAddPlayer(this.handleAddPlayer.bind(this));
         this.view.bindTogglePlayer(this.handleTogglePlayer.bind(this));
         this.view.bindRemovePlayer(this.handleRemovePlayer.bind(this));
-        this.view.bindMovePlayer(this.handleMovePlayer.bind(this));
         this.view.bindReorderPlayers(this.handleReorderPlayers.bind(this));
         this.view.bindSetDealer(this.handleSetDealer.bind(this)); 
         this.view.bindStartGame(this.handleStartGame.bind(this));
-        this.view.bindBackToSetup(this.handleBackToSetup.bind(this));
 
         // Game Table
         this.view.bindOpenInputModal(this.handleOpenInputModal.bind(this));
@@ -68,7 +66,6 @@ export class GameController {
     handleAddPlayer(name) { this.model.addPlayer(name); this.view.renderSetup(this.model.state); }
     handleTogglePlayer(player) { this.model.togglePlayerActive(player); this.view.renderSetup(this.model.state); }
     handleRemovePlayer(player) { this.model.removePlayer(player); this.view.renderSetup(this.model.state); }
-    handleMovePlayer(index, direction) { this.model.movePlayer(index, direction); this.view.renderSetup(this.model.state); }
     handleReorderPlayers(newOrder) { this.model.setPlayerOrder(newOrder); this.view.renderSetup(this.model.state); }
     handleSetDealer(index) { this.model.setStartingDealer(index); this.view.renderSetup(this.model.state); }
 
@@ -78,8 +75,6 @@ export class GameController {
         this.view.switchScreen(true);
         this.view.renderGameTable(this.model.state, this.model.getLeaderboard());
     }
-
-    handleBackToSetup() { window.history.back(); }
 
     handlePopState(event) {
         const isGameScreenVisible = !this.view.elements.gameScreen.classList.contains('hidden');
@@ -167,7 +162,7 @@ export class GameController {
         if (phase === 'stiche') {
             const validation = this.model.validateSticheSum(rIndex);
             if (!validation.valid) {
-                alert(validation.message);
+                this.view.showValidationAlert(validation.message);
                 return;
             }
         }

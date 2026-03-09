@@ -15,7 +15,6 @@ export class GameView {
             addNewPlayerBtn: document.getElementById('add-new-player-btn'),
             installAppBtn: document.getElementById('install-app-btn'),
             startGameBtn: document.getElementById('start-game-btn'),
-            backToSetupBtn: document.getElementById('back-to-setup-btn'),
             
             scoreTable: document.getElementById('score-table'),
             tableHeaderRow: document.getElementById('table-header-row'),
@@ -46,10 +45,28 @@ export class GameView {
             // --- NEU: Confirm Back Modal Elemente ---
             confirmBackModal: document.getElementById('confirm-back-modal'),
             confirmBackAcceptBtn: document.getElementById('confirm-back-accept-btn'),
-            confirmBackCancelBtn: document.getElementById('confirm-back-cancel-btn')
+            confirmBackCancelBtn: document.getElementById('confirm-back-cancel-btn'),
+
+            // Custom Delete & Validation Modals
+            deletePlayerModal: document.getElementById('delete-player-modal'),
+            deletePlayerText: document.getElementById('delete-player-text'),
+            confirmDeletePlayerBtn: document.getElementById('confirm-delete-player-btn'),
+            cancelDeletePlayerBtn: document.getElementById('cancel-delete-player-btn'),
+
+            validationModal: document.getElementById('validation-modal'),
+            validationText: document.getElementById('validation-text'),
+            closeValidationBtn: document.getElementById('close-validation-btn')
         };
         
         this.draggedPlayerIndex = null;
+        this.playerToDelete = null;
+
+        // Bind internal UI events (Cancel/Close buttons)
+        this.elements.cancelDeletePlayerBtn.addEventListener('click', () => this.hideDeletePlayerModal());
+        this.elements.deletePlayerModal.addEventListener('click', (e) => { if (e.target === this.elements.deletePlayerModal) this.hideDeletePlayerModal(); });
+        
+        this.elements.closeValidationBtn.addEventListener('click', () => this.hideValidationAlert());
+        this.elements.validationModal.addEventListener('click', (e) => { if (e.target === this.elements.validationModal) this.hideValidationAlert(); });
     }
 
     // Helper to create DOM elements cleanly
@@ -79,7 +96,7 @@ export class GameView {
                     html: '&times;',
                     events: { click: (e) => {
                         e.stopPropagation();
-                        if (confirm(`${player} komplett entfernen?`)) this.onPlayerRemove(player);
+                        this.showDeletePlayerModal(player);
                     }}
                 })
             );
@@ -92,28 +109,26 @@ export class GameView {
         } else {
             state.activePlayers.forEach((player, index) => {
                 const row = this.createElement('li', { className: 'active-player-row' });
-                this.setupDragEvents(row, index);
-
-                const leftSide = this.createElement('div', { className: 'player-row-left', html: `<div class="drag-handle"></div><span><strong>${index + 1}.</strong> ${player}</span>` });
+                const dragIcon = `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>`;
+                
+                const leftSide = this.createElement('div', { className: 'player-row-left' },
+                    this.createElement('div', { className: 'drag-handle-btn', html: dragIcon }),
+                    this.createElement('span', { html: `<strong>${index + 1}.</strong> ${player}` })
+                );
                 
                 const isDealer = index === state.startingDealerIndex;
-                const centerSide = this.createElement('div', { className: 'player-row-center' },
+                const rightSide = this.createElement('div', { className: 'player-row-right' },
                     this.createElement('button', {
                         type: 'button',
                         className: `dealer-btn ${isDealer ? 'active' : ''}`,
-                        text: isDealer ? '🃏 Geber' : 'Geber?',
+                        text: isDealer ? '🃏 Geber' : 'Geber',
                         events: { click: () => this.onSetDealer(index) }
                     })
                 );
                 
-                const controls = this.createElement('div', { className: 'order-controls' },
-                    this.createElement('button', { type: 'button', text: '↑', disabled: index === 0, events: { click: () => this.onPlayerMove(index, 'up') } }),
-                    this.createElement('button', { type: 'button', text: '↓', disabled: index === state.activePlayers.length - 1, events: { click: () => this.onPlayerMove(index, 'down') } })
-                );
-                
                 row.appendChild(leftSide);
-                row.appendChild(centerSide); 
-                row.appendChild(controls);
+                row.appendChild(rightSide);
+                this.setupDragEvents(row);
                 this.elements.activePlayersList.appendChild(row);
             });
         }
@@ -246,6 +261,26 @@ export class GameView {
         this.elements.confirmBackModal.classList.add('hidden');
     }
 
+    showDeletePlayerModal(player) {
+        this.playerToDelete = player;
+        this.elements.deletePlayerText.innerText = `Möchtest du ${player} wirklich entfernen?`;
+        this.elements.deletePlayerModal.classList.remove('hidden');
+    }
+
+    hideDeletePlayerModal() {
+        this.elements.deletePlayerModal.classList.add('hidden');
+        this.playerToDelete = null;
+    }
+
+    showValidationAlert(message) {
+        this.elements.validationText.innerText = message;
+        this.elements.validationModal.classList.remove('hidden');
+    }
+
+    hideValidationAlert() {
+        this.elements.validationModal.classList.add('hidden');
+    }
+
     renderModalContent(state, isComplete) {
         const player = state.activePlayers[state.currentPlayerInputIndex];
         const rIndex = state.isEditMode ? state.editRoundIndex : state.currentRoundIndex;
@@ -307,46 +342,57 @@ export class GameView {
     }
 
     // Refactored to use Pointer Events (Mouse + Touch support)
-    setupDragEvents(row, index) {
+    setupDragEvents(row) {
+        const handle = row.querySelector('.drag-handle-btn');
+
         const handleDragStart = (e) => {
-            if (!e.target.classList.contains('drag-handle')) return;
-            e.preventDefault(); // Prevent scrolling on touch
-            this.draggedPlayerIndex = index;
-            row.classList.add('dragging');
-            row.setPointerCapture(e.pointerId);
-        };
-
-        const handleDragMove = (e) => {
-            if (this.draggedPlayerIndex === null) return;
+            // Only allow main button (left click) or touch
+            if (e.pointerType === 'mouse' && e.button !== 0) return;
+            
             e.preventDefault();
-            
-            const targetElement = document.elementFromPoint(e.clientX, e.clientY);
-            if (!targetElement) return;
-            
-            const targetRow = targetElement.closest('.active-player-row');
-            if (targetRow && targetRow !== row) {
-                const allRows = Array.from(this.elements.activePlayersList.children);
-                const targetIndex = allRows.indexOf(targetRow);
-                const currentIndex = allRows.indexOf(row);
-                if (targetIndex > currentIndex) targetRow.after(row);
-                else targetRow.before(row);
-            }
-        };
+            row.classList.add('dragging');
 
-        const handleDragEnd = (e) => {
-            if (this.draggedPlayerIndex !== null) {
+            const handleDragMove = (moveEvent) => {
+                moveEvent.preventDefault();
+                
+                const container = this.elements.activePlayersList;
+                const siblings = [...container.querySelectorAll('.active-player-row:not(.dragging)')]; // Get other rows
+                
+                // Find the sibling to insert before
+                const nextSibling = siblings.reduce((closest, sibling) => {
+                    const box = sibling.getBoundingClientRect();
+                    const offset = moveEvent.clientY - box.top - box.height / 2;
+                    if (offset < 0 && offset > closest.offset) {
+                        return { offset: offset, element: sibling };
+                    } else {
+                        return closest;
+                    }
+                }, { offset: Number.NEGATIVE_INFINITY }).element;
+                
+                if (nextSibling) {
+                    container.insertBefore(row, nextSibling);
+                } else {
+                    container.appendChild(row);
+                }
+            };
+    
+            const handleDragEnd = () => {
                 row.classList.remove('dragging');
-                row.releasePointerCapture(e.pointerId);
+                
+                document.removeEventListener('pointermove', handleDragMove);
+                document.removeEventListener('pointerup', handleDragEnd);
+                document.removeEventListener('pointercancel', handleDragEnd);
+    
                 const newOrder = Array.from(this.elements.activePlayersList.children).map(r => r.querySelector('.player-row-left span').innerText.replace(/^\d+\.\s*/, '').trim());
-                this.draggedPlayerIndex = null;
-                this.onPlayerReorder(newOrder); 
-            }
-        };
+                this.onPlayerReorder(newOrder);
+            };
 
-        row.addEventListener('pointerdown', handleDragStart);
-        row.addEventListener('pointermove', handleDragMove);
-        row.addEventListener('pointerup', handleDragEnd);
-        row.addEventListener('pointercancel', handleDragEnd);
+            document.addEventListener('pointermove', handleDragMove);
+            document.addEventListener('pointerup', handleDragEnd);
+            document.addEventListener('pointercancel', handleDragEnd);
+        };
+    
+        handle.addEventListener('pointerdown', handleDragStart);
     }
 
     bindAddPlayer(handler) {
@@ -359,12 +405,17 @@ export class GameView {
     bindInstallApp(handler) { this.elements.installAppBtn.addEventListener('click', handler); }
     toggleInstallButton(show) { show ? this.elements.installAppBtn.classList.remove('hidden') : this.elements.installAppBtn.classList.add('hidden'); }
     bindTogglePlayer(handler) { this.onPlayerToggle = handler; }
-    bindRemovePlayer(handler) { this.onPlayerRemove = handler; }
-    bindMovePlayer(handler) { this.onPlayerMove = handler; }
+    
+    bindRemovePlayer(handler) { 
+        this.elements.confirmDeletePlayerBtn.addEventListener('click', () => {
+            if (this.playerToDelete) handler(this.playerToDelete);
+            this.hideDeletePlayerModal();
+        });
+    }
+
     bindReorderPlayers(handler) { this.onPlayerReorder = handler; }
     bindSetDealer(handler) { this.onSetDealer = handler; }
     bindStartGame(handler) { this.elements.startGameBtn.addEventListener('click', handler); }
-    bindBackToSetup(handler) { this.elements.backToSetupBtn.addEventListener('click', handler); }
 
     bindOpenInputModal(handler) { this.elements.openInputModalBtn.addEventListener('click', handler); }
     bindTriggerRowEdit(handler) { this.onRowEditTriggered = handler; }
@@ -384,8 +435,14 @@ export class GameView {
         this.elements.editAnsageBtn.addEventListener('click', () => handler('ansage'));
         this.elements.editGemachtBtn.addEventListener('click', () => handler('stiche'));
     }
-    bindCloseGameOver(handler) { this.elements.closeGameOverBtn.addEventListener('click', handler); }
+    bindCloseGameOver(handler) { 
+        this.elements.closeGameOverBtn.addEventListener('click', handler); 
+        this.elements.gameOverModal.addEventListener('click', (e) => { if (e.target === this.elements.gameOverModal) handler(); });
+    }
 
     bindConfirmBackAccept(handler) { this.elements.confirmBackAcceptBtn.addEventListener('click', handler); }
-    bindConfirmBackCancel(handler) { this.elements.confirmBackCancelBtn.addEventListener('click', handler); }
+    bindConfirmBackCancel(handler) { 
+        this.elements.confirmBackCancelBtn.addEventListener('click', handler); 
+        this.elements.confirmBackModal.addEventListener('click', (e) => { if (e.target === this.elements.confirmBackModal) handler(); });
+    }
 }
