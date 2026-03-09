@@ -35,7 +35,14 @@ export class GameView {
             editChoiceModal: document.getElementById('edit-choice-modal'),
             editAnsageBtn: document.getElementById('edit-ansage-btn'),
             editGemachtBtn: document.getElementById('edit-gemacht-btn'),
-            cancelEditChoiceBtn: document.getElementById('cancel-edit-choice-btn')
+            cancelEditChoiceBtn: document.getElementById('cancel-edit-choice-btn'),
+
+            // --- NEU: Elemente für Game Over & Leaderboard ---
+            leaderboardContainer: document.getElementById('leaderboard-container'),
+            leaderboardList: document.getElementById('leaderboard-list'),
+            gameOverModal: document.getElementById('game-over-modal'),
+            podiumContainer: document.getElementById('podium-container'),
+            closeGameOverBtn: document.getElementById('close-game-over-btn')
         };
         
         this.draggedPlayerIndex = null;
@@ -46,7 +53,6 @@ export class GameView {
         state.availablePlayers.forEach(player => {
             const chip = document.createElement('div');
             chip.className = `player-chip ${state.activePlayers.includes(player) ? 'selected' : ''}`;
-            
             const nameSpan = document.createElement('span');
             nameSpan.innerText = player;
             nameSpan.onclick = () => this.onPlayerToggle(player);
@@ -76,7 +82,6 @@ export class GameView {
                 leftSide.className = 'player-row-left';
                 leftSide.innerHTML = `<div class="drag-handle"></div><span><strong>${index + 1}.</strong> ${player}</span>`;
                 
-                // --- NEU: Geber-Button in der Mitte ---
                 const centerSide = document.createElement('div');
                 centerSide.className = 'player-row-center';
                 const isDealer = index === state.startingDealerIndex;
@@ -103,7 +108,7 @@ export class GameView {
                 controls.appendChild(downBtn);
                 
                 row.appendChild(leftSide);
-                row.appendChild(centerSide); // Center in die Row einfügen
+                row.appendChild(centerSide); 
                 row.appendChild(controls);
                 this.elements.activePlayersList.appendChild(row);
             });
@@ -111,29 +116,34 @@ export class GameView {
         this.elements.startGameBtn.disabled = state.activePlayers.length < 2;
     }
 
-    renderGameTable(state) {
+    // --- GEÄNDERT: Nimmt nun auch das Leaderboard entgegen ---
+    renderGameTable(state, leaderboard = []) {
         const cards = CONFIG.CARDS_SEQUENCE[state.currentRoundIndex];
         this.elements.currentCardsSpan.innerText = cards;
         this.elements.openInputModalBtn.innerText = state.phase === 'ansage' ? `Eingabe starten (${cards} Karten)` : `Stiche eintragen (${cards} Karten)`;
 
-        // Header aufräumen
+        // Toggle Game Over View Elements
+        if (state.isGameOver) {
+            this.elements.openInputModalBtn.classList.add('hidden');
+            this.elements.leaderboardContainer.classList.remove('hidden');
+            this.renderLeaderboard(leaderboard);
+        } else {
+            this.elements.openInputModalBtn.classList.remove('hidden');
+            this.elements.leaderboardContainer.classList.add('hidden');
+        }
+
         while (this.elements.tableHeaderRow.children.length > 1) {
             this.elements.tableHeaderRow.removeChild(this.elements.tableHeaderRow.lastChild);
         }
 
-        // Aktuellen Geber dynamisch berechnen
         const numPlayers = state.activePlayers.length;
         let currentDealerIndex = 0;
-        if (numPlayers > 0) {
-            currentDealerIndex = (state.startingDealerIndex + state.currentRoundIndex) % numPlayers;
-        }
+        if (numPlayers > 0) currentDealerIndex = (state.startingDealerIndex + state.currentRoundIndex) % numPlayers;
         const currentDealer = state.activePlayers[currentDealerIndex];
         
         state.activePlayers.forEach(player => {
             const th = document.createElement('th');
-            th.className = 'player-col'; // --- NEU: Klasse für schmale Spalten ---
-            
-            // Highlight für den aktuellen Geber (Icon entfernt, nur Farbe bleibt)
+            th.className = 'player-col'; 
             if (player === currentDealer) {
                 th.innerText = player.substring(0, 4);
                 th.classList.add('dealer-col-header');
@@ -149,17 +159,17 @@ export class GameView {
         this.elements.tableHeaderRow.appendChild(thStatus);
 
         this.elements.tableBody.innerHTML = '';
-        
         const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>`;
 
         CONFIG.CARDS_SEQUENCE.forEach((cardCount, index) => {
             const tr = document.createElement('tr');
-            if (index === state.currentRoundIndex) tr.style.backgroundColor = 'var(--color-highlight-row)';
+            if (index === state.currentRoundIndex && !state.isGameOver) tr.style.backgroundColor = 'var(--color-highlight-row)';
 
             const tdRound = document.createElement('td');
             tdRound.className = 'round-cell';
             
-            let editBtnHtml = index <= state.currentRoundIndex 
+            // In Game Over Mode (or past rounds), allow editing
+            let editBtnHtml = (index <= state.currentRoundIndex || state.isGameOver) 
                 ? `<button class="edit-btn" data-rindex="${index}">${svgIcon}</button>` 
                 : '';
             
@@ -171,14 +181,11 @@ export class GameView {
 
             state.activePlayers.forEach(player => {
                 const td = document.createElement('td');
-                td.className = 'player-col'; // --- NEU: Klasse für schmale Spalten ---
+                td.className = 'player-col'; 
                 const data = state.roundsData[index][player];
                 
-                if (data.ansage === null) {
-                    allAnsagenMade = false;
-                } else {
-                    sumAnsage += data.ansage;
-                }
+                if (data.ansage === null) allAnsagenMade = false;
+                else sumAnsage += data.ansage;
 
                 const ansageStr = data.ansage !== null ? data.ansage : '-';
                 const gemachtStr = data.gemacht !== null ? data.gemacht : '-';
@@ -198,16 +205,10 @@ export class GameView {
             tdStatus.className = 'status-cell';
 
             if (allAnsagenMade) {
-                if (sumAnsage === cardCount) {
-                    tdStatus.innerHTML = '<span class="status-badge success">✓</span>';
-                } else if (sumAnsage > cardCount) {
-                    tdStatus.innerHTML = '<span class="status-badge danger">+</span>';
-                } else {
-                    tdStatus.innerHTML = '<span class="status-badge danger">-</span>';
-                }
-            } else {
-                tdStatus.innerHTML = '';
-            }
+                if (sumAnsage === cardCount) tdStatus.innerHTML = '<span class="status-badge success">✓</span>';
+                else if (sumAnsage > cardCount) tdStatus.innerHTML = '<span class="status-badge danger">+</span>';
+                else tdStatus.innerHTML = '<span class="status-badge danger">-</span>';
+            } else tdStatus.innerHTML = '';
             
             tr.appendChild(tdStatus);
             this.elements.tableBody.appendChild(tr);
@@ -218,6 +219,44 @@ export class GameView {
                 const rIndex = parseInt(e.currentTarget.dataset.rindex);
                 this.onRowEditTriggered(rIndex);
             });
+        });
+    }
+
+    // --- NEU: Leaderboard unter Tabelle ---
+    renderLeaderboard(leaderboard) {
+        this.elements.leaderboardList.innerHTML = leaderboard.map((item, index) => {
+            let medal = `${index + 1}.`;
+            if (index === 0) medal = '🥇';
+            if (index === 1) medal = '🥈';
+            if (index === 2) medal = '🥉';
+            return `<li>
+                <span class="rank-medal">${medal}</span> 
+                <span class="rank-name">${item.name}</span> 
+                <strong>${item.score} Pkt</strong>
+            </li>`;
+        }).join('');
+    }
+
+    // --- NEU: Podest Modal ---
+    showGameOver(leaderboard) {
+        this.elements.gameOverModal.classList.remove('hidden');
+        this.elements.podiumContainer.innerHTML = '';
+        
+        // Reihenfolge für Podest-Ansicht umbauen: Platz 2, Platz 1, Platz 3
+        const podiumOrder = [];
+        if (leaderboard.length > 1) podiumOrder.push({ ...leaderboard[1], place: 2 });
+        if (leaderboard.length > 0) podiumOrder.push({ ...leaderboard[0], place: 1 });
+        if (leaderboard.length > 2) podiumOrder.push({ ...leaderboard[2], place: 3 });
+
+        podiumOrder.forEach(item => {
+            const step = document.createElement('div');
+            step.className = `podium-step place-${item.place}`;
+            step.innerHTML = `
+                <div class="podium-name">${item.name}</div>
+                <div class="podium-score">${item.score} Pkt</div>
+                <div class="podium-block">${item.place}</div>
+            `;
+            this.elements.podiumContainer.appendChild(step);
         });
     }
 
@@ -249,9 +288,7 @@ export class GameView {
             state.activePlayers.forEach(p => {
                 if (p !== player) {
                     const val = state.roundsData[rIndex][p].gemacht;
-                    if (val !== null) {
-                        sumOthers += val;
-                    }
+                    if (val !== null) sumOthers += val;
                 }
             });
             maxButtons = Math.max(0, cards - sumOthers); 
@@ -267,12 +304,8 @@ export class GameView {
 
         this.elements.modalPrevBtn.style.visibility = state.currentPlayerInputIndex > 0 ? 'visible' : 'hidden';
         this.elements.modalNextBtn.style.visibility = state.currentPlayerInputIndex < state.activePlayers.length - 1 ? 'visible' : 'hidden';
-
-        if (isComplete) {
-            this.elements.saveInputBtn.classList.remove('hidden');
-        } else {
-            this.elements.saveInputBtn.classList.add('hidden');
-        }
+        if (isComplete) this.elements.saveInputBtn.classList.remove('hidden');
+        else this.elements.saveInputBtn.classList.add('hidden');
     }
 
     switchScreen(toGame) {
@@ -295,31 +328,25 @@ export class GameView {
             this.draggedPlayerIndex = index;
             row.classList.add('dragging');
         }, {passive: true});
-
         row.addEventListener('touchmove', (e) => {
             if (this.draggedPlayerIndex === null) return;
             e.preventDefault();
             const touch = e.touches[0];
             const targetElement = document.elementFromPoint(touch.clientX, touch.clientY);
             if (!targetElement) return;
-
             const targetRow = targetElement.closest('.active-player-row');
             if (targetRow && targetRow !== row) {
                 const allRows = Array.from(this.elements.activePlayersList.children);
                 const targetIndex = allRows.indexOf(targetRow);
                 const currentIndex = allRows.indexOf(row);
-
                 if (targetIndex > currentIndex) targetRow.after(row);
                 else targetRow.before(row);
             }
         }, {passive: false});
-
         row.addEventListener('touchend', () => {
             if (this.draggedPlayerIndex !== null) {
                 row.classList.remove('dragging');
-                const newOrder = Array.from(this.elements.activePlayersList.children).map(r => {
-                    return r.querySelector('.player-row-left span').innerText.replace(/^\d+\.\s*/, '').trim();
-                });
+                const newOrder = Array.from(this.elements.activePlayersList.children).map(r => r.querySelector('.player-row-left span').innerText.replace(/^\d+\.\s*/, '').trim());
                 this.draggedPlayerIndex = null;
                 this.onPlayerReorder(newOrder); 
             }
@@ -339,10 +366,7 @@ export class GameView {
     bindRemovePlayer(handler) { this.onPlayerRemove = handler; }
     bindMovePlayer(handler) { this.onPlayerMove = handler; }
     bindReorderPlayers(handler) { this.onPlayerReorder = handler; }
-    
-    // --- NEU: Event-Binding für den Geber ---
     bindSetDealer(handler) { this.onSetDealer = handler; }
-    
     bindStartGame(handler) { this.elements.startGameBtn.addEventListener('click', handler); }
     bindBackToSetup(handler) { this.elements.backToSetupBtn.addEventListener('click', handler); }
 
@@ -372,4 +396,6 @@ export class GameView {
         this.elements.editAnsageBtn.addEventListener('click', () => handler('ansage'));
         this.elements.editGemachtBtn.addEventListener('click', () => handler('stiche'));
     }
+    
+    bindCloseGameOver(handler) { this.elements.closeGameOverBtn.addEventListener('click', handler); }
 }

@@ -21,7 +21,7 @@ export class GameController {
         this.view.bindRemovePlayer(this.handleRemovePlayer.bind(this));
         this.view.bindMovePlayer(this.handleMovePlayer.bind(this));
         this.view.bindReorderPlayers(this.handleReorderPlayers.bind(this));
-        this.view.bindSetDealer(this.handleSetDealer.bind(this)); // --- NEU: Geber festlegen ---
+        this.view.bindSetDealer(this.handleSetDealer.bind(this)); 
         this.view.bindStartGame(this.handleStartGame.bind(this));
         this.view.bindBackToSetup(this.handleBackToSetup.bind(this));
         this.view.bindSwipeBack(this.handleBackToSetup.bind(this));
@@ -37,6 +37,9 @@ export class GameController {
         this.view.bindNumberInput(this.handleNumberInput.bind(this));
         this.view.bindModalSave(this.handleModalSave.bind(this));
 
+        // Game Over Events
+        this.view.bindCloseGameOver(this.handleCloseGameOver.bind(this));
+
         // Edit Choice Events Binden
         this.view.bindEditChoiceClose(this.handleEditChoiceClose.bind(this));
         this.view.bindEditChoiceSelect(this.handleEditChoiceSelect.bind(this));
@@ -46,7 +49,7 @@ export class GameController {
         if (this.model.state.roundsData && this.model.state.roundsData.length > 0) {
             window.history.replaceState({ screen: 'game' }, '', '#game');
             this.view.switchScreen(true);
-            this.view.renderGameTable(this.model.state);
+            this.view.renderGameTable(this.model.state, this.model.getLeaderboard());
         } else {
             window.history.replaceState({ screen: 'setup' }, '', '#setup');
             this.view.renderSetup(this.model.state);
@@ -64,12 +67,10 @@ export class GameController {
         this.model.initGameData();
         window.history.pushState({ screen: 'game' }, '', '#game');
         this.view.switchScreen(true);
-        this.view.renderGameTable(this.model.state);
+        this.view.renderGameTable(this.model.state, this.model.getLeaderboard());
     }
 
-    handleBackToSetup() {
-        window.history.back();
-    }
+    handleBackToSetup() { window.history.back(); }
 
     handlePopState(event) {
         if (!this.view.elements.gameScreen.classList.contains('hidden')) {
@@ -107,16 +108,13 @@ export class GameController {
         
         this.model.state.editRoundIndex = rIndex;
 
-        if (hasGemacht) {
-            this.view.elements.editChoiceModal.classList.remove('hidden');
-        } else {
-            this.startEditModal('ansage');
-        }
+        if (hasGemacht) this.view.elements.editChoiceModal.classList.remove('hidden');
+        else this.startEditModal('ansage');
     }
 
     handleModalCancel() {
         this.view.elements.modal.classList.add('hidden');
-        this.view.renderGameTable(this.model.state);
+        this.view.renderGameTable(this.model.state, this.model.getLeaderboard());
     }
 
     handleModalPrev() {
@@ -145,10 +143,7 @@ export class GameController {
 
         if (phase === 'stiche') {
             let sumGemacht = 0;
-            this.model.state.activePlayers.forEach(p => {
-                sumGemacht += this.model.state.roundsData[rIndex][p].gemacht || 0;
-            });
-
+            this.model.state.activePlayers.forEach(p => { sumGemacht += this.model.state.roundsData[rIndex][p].gemacht || 0; });
             if (sumGemacht !== cards) {
                 alert(`Logik-Fehler:\nEs wurden ${cards} Karten ausgeteilt, aber es wurden insgesamt ${sumGemacht} Stiche eingetragen.\nBitte korrigiere die Eingaben.`);
                 return;
@@ -165,17 +160,25 @@ export class GameController {
                 this.model.state.phase = 'stiche';
             } else {
                 this.model.recalculateAllScores();
+                
+                // --- NEU: Spielende Logik ---
+                if (this.model.state.currentRoundIndex >= CONFIG.TOTAL_ROUNDS - 1) {
+                    this.model.state.isGameOver = true;
+                    this.model.saveState();
+                    this.view.renderGameTable(this.model.state, this.model.getLeaderboard());
+                    this.view.showGameOver(this.model.getLeaderboard());
+                    return; // Bricht hier ab, damit die Runde nicht mehr erhöht wird
+                }
+
                 this.model.state.phase = 'ansage';
                 this.model.state.currentRoundIndex++;
-                
-                if (this.model.state.currentRoundIndex >= CONFIG.TOTAL_ROUNDS) {
-                    alert("Spiel beendet!");
-                    this.model.state.currentRoundIndex = CONFIG.TOTAL_ROUNDS - 1;
-                    this.view.elements.openInputModalBtn.classList.add('hidden');
-                }
             }
         }
-        this.view.renderGameTable(this.model.state);
+        this.view.renderGameTable(this.model.state, this.model.getLeaderboard());
+    }
+
+    handleCloseGameOver() {
+        this.view.elements.gameOverModal.classList.add('hidden');
     }
 
     handleEditChoiceClose() { this.view.elements.editChoiceModal.classList.add('hidden'); }
@@ -197,9 +200,7 @@ export class GameController {
         if (!this.deferredPrompt) return;
         this.deferredPrompt.prompt();
         const { outcome } = await this.deferredPrompt.userChoice;
-        if (outcome === 'accepted') {
-            this.view.toggleInstallButton(false);
-        }
+        if (outcome === 'accepted') this.view.toggleInstallButton(false);
         this.deferredPrompt = null;
     }
 }

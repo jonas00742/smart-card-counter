@@ -59,11 +59,16 @@
                 <table id="score-table">
                     <thead>
                         <tr id="table-header-row">
-                            <th class="narrow-col">Runde</th>
+                            <th class="narrow-col">Rd.</th>
                         </tr>
                     </thead>
                     <tbody id="table-body"></tbody>
                 </table>
+            </div>
+
+            <div id="leaderboard-container" class="leaderboard-container hidden mt-lg mb-lg">
+                <h3 class="text-center mb-sm">🏆 Endstand</h3>
+                <ol id="leaderboard-list" class="leaderboard-list"></ol>
             </div>
         </section>
     </main>
@@ -95,6 +100,15 @@
                 <button id="edit-gemacht-btn" class="primary-btn btn-primary-dark">Gemachte Stiche</button>
                 <button id="cancel-edit-choice-btn" class="secondary-btn mt-sm">Abbrechen</button>
             </div>
+        </div>
+    </div>
+
+    <div id="game-over-modal" class="modal hidden flex-center">
+        <div class="modal-content text-center">
+            <h2 class="mb-sm">🎉 Spiel Beendet! 🎉</h2>
+            <p class="subtitle mb-lg">Herzlichen Glückwunsch!</p>
+            <div id="podium-container" class="podium-container mt-md mb-lg"></div>
+            <button id="close-game-over-btn" class="primary-btn mt-md">Zur Tabelle</button>
         </div>
     </div>
 
