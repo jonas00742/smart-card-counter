@@ -378,14 +378,6 @@ export class GameView {
     bindStartGame(handler) { this.elements.startGameBtn.addEventListener('click', handler); }
     bindBackToSetup(handler) { this.elements.backToSetupBtn.addEventListener('click', handler); }
 
-    bindSwipeBack(handler) {
-        let touchstartX = 0;
-        this.elements.gameScreen.addEventListener('touchstart', e => touchstartX = e.changedTouches[0].screenX, {passive: true});
-        this.elements.gameScreen.addEventListener('touchend', e => {
-            if (e.changedTouches[0].screenX - touchstartX > 100) handler();
-        }, {passive: true});
-    }
-
     bindOpenInputModal(handler) { this.elements.openInputModalBtn.addEventListener('click', handler); }
     bindTriggerRowEdit(handler) { this.onRowEditTriggered = handler; }
     bindModalCancel(handler) {

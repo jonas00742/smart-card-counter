@@ -24,7 +24,6 @@ export class GameController {
         this.view.bindSetDealer(this.handleSetDealer.bind(this)); 
         this.view.bindStartGame(this.handleStartGame.bind(this));
         this.view.bindBackToSetup(this.handleBackToSetup.bind(this));
-        this.view.bindSwipeBack(this.handleBackToSetup.bind(this));
 
         // Game Table Events Binden
         this.view.bindOpenInputModal(this.handleOpenInputModal.bind(this));

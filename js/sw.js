@@ -1,6 +1,6 @@
 // Versionsnummer des Caches. WICHTIG: Wenn du später Code änderst (z.B. in der app.js),
 // musst du hier 'v2', 'v3' etc. eintragen, damit das Handy die neuen Dateien lädt!
-const CACHE_NAME = 'smart-counter-v4';
+const CACHE_NAME = 'smart-counter-v5';
 
 // Alle Dateien, die für den Offline-Modus benötigt werden
 const ASSETS_TO_CACHE = [
