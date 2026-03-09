@@ -11,10 +11,10 @@ export class GameModel {
             availablePlayers: ["Alex", "Bela", "Charlie", "Doro"],
             activePlayers: [],
             currentRoundIndex: 0,
+            startingDealerIndex: 0,
             phase: 'ansage', 
             roundsData: [],
             
-            // UI States (werden beim Neuladen sicherheitshalber zurückgesetzt)
             globalEditMode: false,
             isEditMode: false,
             editRoundIndex: 0,
@@ -29,9 +29,10 @@ export class GameModel {
         if (saved) {
             try {
                 this.state = JSON.parse(saved);
-                // UI States zurücksetzen, damit beim Reload keine verwaisten Modals offen sind
                 this.state.globalEditMode = false;
                 this.state.isEditMode = false;
+                // Fallback, falls der Wert bei alten Spielständen fehlt
+                if (this.state.startingDealerIndex === undefined) this.state.startingDealerIndex = 0;
             } catch (e) {
                 console.error("Fehler beim Laden des Spielstands", e);
                 this.initDefaultState();
@@ -63,8 +64,21 @@ export class GameModel {
     }
 
     quitGame() {
-        this.state.roundsData = []; // Löscht die aktiven Spieldaten
+        this.state.roundsData = []; 
         this.saveState();
+    }
+
+    setStartingDealer(index) {
+        this.state.startingDealerIndex = index;
+        this.saveState();
+    }
+
+    _checkDealerBounds() {
+        if (this.state.activePlayers.length === 0) {
+            this.state.startingDealerIndex = 0;
+        } else if (this.state.startingDealerIndex >= this.state.activePlayers.length) {
+            this.state.startingDealerIndex = this.state.activePlayers.length - 1;
+        }
     }
 
     addPlayer(name) {
@@ -78,6 +92,7 @@ export class GameModel {
     removePlayer(player) {
         this.state.availablePlayers = this.state.availablePlayers.filter(p => p !== player);
         this.state.activePlayers = this.state.activePlayers.filter(p => p !== player);
+        this._checkDealerBounds(); // Index korrigieren
         this.saveState();
     }
 
@@ -87,6 +102,7 @@ export class GameModel {
         } else {
             this.state.activePlayers.push(player);
         }
+        this._checkDealerBounds(); // Index korrigieren
         this.saveState();
     }
 

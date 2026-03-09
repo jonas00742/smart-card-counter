@@ -21,7 +21,6 @@ export class GameView {
             tableHeaderRow: document.getElementById('table-header-row'),
             tableBody: document.getElementById('table-body'),
             openInputModalBtn: document.getElementById('open-input-modal-btn'),
-            mainEditToggleBtn: document.getElementById('main-edit-toggle-btn'),
             
             modal: document.getElementById('input-modal'),
             modalTitle: document.getElementById('modal-title'),
@@ -42,9 +41,7 @@ export class GameView {
         this.draggedPlayerIndex = null;
     }
 
-    // --- RENDER FUNKTIONEN ---
     renderSetup(state) {
-        // Pool rendern
         this.elements.playerPool.innerHTML = '';
         state.availablePlayers.forEach(player => {
             const chip = document.createElement('div');
@@ -66,7 +63,6 @@ export class GameView {
             this.elements.playerPool.appendChild(chip);
         });
 
-        // Aktive Liste rendern
         this.elements.activePlayersList.innerHTML = '';
         if (state.activePlayers.length === 0) {
             this.elements.activePlayersList.innerHTML = '<p class="subtitle text-sm">Noch keine Spieler gewählt.</p>';
@@ -79,6 +75,16 @@ export class GameView {
                 const leftSide = document.createElement('div');
                 leftSide.className = 'player-row-left';
                 leftSide.innerHTML = `<div class="drag-handle"></div><span><strong>${index + 1}.</strong> ${player}</span>`;
+                
+                // --- NEU: Geber-Button in der Mitte ---
+                const centerSide = document.createElement('div');
+                centerSide.className = 'player-row-center';
+                const isDealer = index === state.startingDealerIndex;
+                const dealerBtn = document.createElement('button');
+                dealerBtn.className = `dealer-btn ${isDealer ? 'active' : ''}`;
+                dealerBtn.innerHTML = isDealer ? '🃏 Geber' : 'Geber?';
+                dealerBtn.onclick = () => this.onSetDealer(index);
+                centerSide.appendChild(dealerBtn);
                 
                 const controls = document.createElement('div');
                 controls.className = 'order-controls';
@@ -97,6 +103,7 @@ export class GameView {
                 controls.appendChild(downBtn);
                 
                 row.appendChild(leftSide);
+                row.appendChild(centerSide); // Center in die Row einfügen
                 row.appendChild(controls);
                 this.elements.activePlayersList.appendChild(row);
             });
@@ -113,15 +120,29 @@ export class GameView {
         while (this.elements.tableHeaderRow.children.length > 1) {
             this.elements.tableHeaderRow.removeChild(this.elements.tableHeaderRow.lastChild);
         }
+
+        // Aktuellen Geber dynamisch berechnen
+        const numPlayers = state.activePlayers.length;
+        let currentDealerIndex = 0;
+        if (numPlayers > 0) {
+            currentDealerIndex = (state.startingDealerIndex + state.currentRoundIndex) % numPlayers;
+        }
+        const currentDealer = state.activePlayers[currentDealerIndex];
         
-        // Spieler-Spaltenköpfe generieren
         state.activePlayers.forEach(player => {
             const th = document.createElement('th');
-            th.innerText = player.substring(0, 4);
+            th.className = 'player-col'; // --- NEU: Klasse für schmale Spalten ---
+            
+            // Highlight für den aktuellen Geber (Icon entfernt, nur Farbe bleibt)
+            if (player === currentDealer) {
+                th.innerText = player.substring(0, 4);
+                th.classList.add('dealer-col-header');
+            } else {
+                th.innerText = player.substring(0, 4);
+            }
             this.elements.tableHeaderRow.appendChild(th);
         });
 
-        // --- NEU: Spaltenkopf für die Ansagen-Status-Spalte ---
         const thStatus = document.createElement('th');
         thStatus.className = 'narrow-col';
         thStatus.innerText = '±'; 
@@ -145,15 +166,14 @@ export class GameView {
             tdRound.innerHTML = `<div class="round-cell-content"><span>${cardCount}</span>${editBtnHtml}</div>`;
             tr.appendChild(tdRound);
 
-            // --- NEU: Variablen für die Status-Berechnung vorbereiten ---
             let sumAnsage = 0;
             let allAnsagenMade = true;
 
             state.activePlayers.forEach(player => {
                 const td = document.createElement('td');
+                td.className = 'player-col'; // --- NEU: Klasse für schmale Spalten ---
                 const data = state.roundsData[index][player];
                 
-                // Ansagen für die Status-Spalte summieren
                 if (data.ansage === null) {
                     allAnsagenMade = false;
                 } else {
@@ -177,7 +197,6 @@ export class GameView {
             const tdStatus = document.createElement('td');
             tdStatus.className = 'status-cell';
 
-            // Zeige den Status erst an, wenn alle Spieler dieser Runde angesagt haben
             if (allAnsagenMade) {
                 if (sumAnsage === cardCount) {
                     tdStatus.innerHTML = '<span class="status-badge success">✓</span>';
@@ -187,14 +206,13 @@ export class GameView {
                     tdStatus.innerHTML = '<span class="status-badge danger">-</span>';
                 }
             } else {
-                tdStatus.innerHTML = ''; // Leer lassen, falls die Runde noch nicht voll angesagt wurde
+                tdStatus.innerHTML = '';
             }
             
             tr.appendChild(tdStatus);
             this.elements.tableBody.appendChild(tr);
         });
 
-        // Event-Delegation fixen (wie wir es vorhin besprochen hatten)
         this.elements.tableBody.querySelectorAll('.edit-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const rIndex = parseInt(e.currentTarget.dataset.rindex);
@@ -209,7 +227,6 @@ export class GameView {
         const phase = state.isEditMode ? state.editPhase : state.phase;
         const cards = CONFIG.CARDS_SEQUENCE[rIndex];
         
-        // Visuelle Phasen-Trennung
         this.elements.modal.classList.remove('phase-ansage', 'phase-stiche');
         this.elements.modal.classList.add(`phase-${phase}`);
         
@@ -229,7 +246,6 @@ export class GameView {
         
         if (phase === 'stiche') {
             let sumOthers = 0;
-            // Wir summieren die gemachten Stiche aller ANDEREN Spieler in dieser Runde
             state.activePlayers.forEach(p => {
                 if (p !== player) {
                     const val = state.roundsData[rIndex][p].gemacht;
@@ -238,11 +254,9 @@ export class GameView {
                     }
                 }
             });
-            // Der Spieler darf maximal so viele Stiche eintragen, wie noch übrig sind
             maxButtons = Math.max(0, cards - sumOthers); 
         }
 
-        // Generiere nur Buttons bis zum berechneten Limit
         for (let i = 0; i <= maxButtons; i++) {
             const btn = document.createElement('button');
             btn.className = `number-btn ${currentValue === i ? 'selected' : ''}`;
@@ -275,7 +289,6 @@ export class GameView {
         }
     }
 
-    // --- INTERNE VIEW LOGIK (Drag & Drop) ---
     setupDragEvents(row, index) {
         row.addEventListener('touchstart', (e) => {
             if (!e.target.classList.contains('drag-handle')) return;
@@ -308,13 +321,11 @@ export class GameView {
                     return r.querySelector('.player-row-left span').innerText.replace(/^\d+\.\s*/, '').trim();
                 });
                 this.draggedPlayerIndex = null;
-                this.onPlayerReorder(newOrder); // Signalisiert dem Controller die neue Reihenfolge
+                this.onPlayerReorder(newOrder); 
             }
         });
     }
 
-    // --- BINDINGS FÜR DEN CONTROLLER ---
-    // Setup
     bindAddPlayer(handler) {
         this.elements.addNewPlayerBtn.addEventListener('click', () => {
             const name = this.elements.newPlayerInput.value.trim();
@@ -322,26 +333,19 @@ export class GameView {
         });
     }
     
-    bindInstallApp(handler) {
-        this.elements.installAppBtn.addEventListener('click', handler);
-    }
-
-    toggleInstallButton(show) {
-        if (show) {
-            this.elements.installAppBtn.classList.remove('hidden');
-        } else {
-            this.elements.installAppBtn.classList.add('hidden');
-        }
-    }
-
+    bindInstallApp(handler) { this.elements.installAppBtn.addEventListener('click', handler); }
+    toggleInstallButton(show) { show ? this.elements.installAppBtn.classList.remove('hidden') : this.elements.installAppBtn.classList.add('hidden'); }
     bindTogglePlayer(handler) { this.onPlayerToggle = handler; }
     bindRemovePlayer(handler) { this.onPlayerRemove = handler; }
     bindMovePlayer(handler) { this.onPlayerMove = handler; }
     bindReorderPlayers(handler) { this.onPlayerReorder = handler; }
+    
+    // --- NEU: Event-Binding für den Geber ---
+    bindSetDealer(handler) { this.onSetDealer = handler; }
+    
     bindStartGame(handler) { this.elements.startGameBtn.addEventListener('click', handler); }
     bindBackToSetup(handler) { this.elements.backToSetupBtn.addEventListener('click', handler); }
 
-    // Swipe Logik
     bindSwipeBack(handler) {
         let touchstartX = 0;
         this.elements.gameScreen.addEventListener('touchstart', e => touchstartX = e.changedTouches[0].screenX, {passive: true});
@@ -350,12 +354,8 @@ export class GameView {
         }, {passive: true});
     }
 
-    // Game Table
-    bindToggleGlobalEdit(handler) { this.elements.mainEditToggleBtn.addEventListener('click', handler); }
     bindOpenInputModal(handler) { this.elements.openInputModalBtn.addEventListener('click', handler); }
     bindTriggerRowEdit(handler) { this.onRowEditTriggered = handler; }
-
-    // Modal
     bindModalCancel(handler) {
         this.elements.cancelInputBtn.addEventListener('click', handler);
         this.elements.modal.addEventListener('click', (e) => { if (e.target === this.elements.modal) handler(); });
@@ -364,8 +364,6 @@ export class GameView {
     bindModalNext(handler) { this.elements.modalNextBtn.addEventListener('click', handler); }
     bindNumberInput(handler) { this.onNumberInput = handler; }
     bindModalSave(handler) { this.elements.saveInputBtn.addEventListener('click', handler); }
-
-    // Edit Choice Modal
     bindEditChoiceClose(handler) {
         this.elements.cancelEditChoiceBtn.addEventListener('click', handler);
         this.elements.editChoiceModal.addEventListener('click', (e) => { if (e.target === this.elements.editChoiceModal) handler(); });
