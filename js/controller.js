@@ -46,13 +46,18 @@ export class GameController {
         this.view.bindEditChoiceClose(this.handleEditChoiceClose.bind(this));
         this.view.bindEditChoiceSelect(this.handleEditChoiceSelect.bind(this));
 
-        // 5. Initiale Anzeige basierend auf gespeichertem Zustand
+        // Auf den nativen Zurück-Button des Browsers/Smartphones lauschen
+        window.addEventListener('popstate', this.handlePopState.bind(this));
+
+        // Initiale Anzeige basierend auf gespeichertem Zustand
         if (this.model.state.roundsData && this.model.state.roundsData.length > 0) {
-            // Es läuft bereits ein Spiel!
+            // URL anpassen, ohne die Seite neu zu laden
+            window.history.replaceState({ screen: 'game' }, '', '#game');
             this.view.switchScreen(true);
             this.view.renderGameTable(this.model.state);
         } else {
-            // Kein aktives Spiel, zeige Setup
+            // URL anpassen
+            window.history.replaceState({ screen: 'setup' }, '', '#setup');
             this.view.renderSetup(this.model.state);
         }
     }
@@ -66,17 +71,32 @@ export class GameController {
 
     handleStartGame() {
         this.model.initGameData();
+        // Einen Eintrag in den Browser-Verlauf hinzufügen
+        window.history.pushState({ screen: 'game' }, '', '#game');
+        
         this.view.switchScreen(true);
         this.view.renderGameTable(this.model.state);
     }
 
     handleBackToSetup() {
+        window.history.back();
+    }
+
+    handlePopState(event) {
         if (!this.view.elements.gameScreen.classList.contains('hidden')) {
             if (confirm("Wirklich zurück? Der aktuelle Spielstand geht verloren!")) {
                 this.model.quitGame();
                 this.view.switchScreen(false);
                 this.view.renderSetup(this.model.state);
+            } else {
+                // Wenn der Nutzer "Abbrechen" drückt, ist der Verlauf im Browser schon einen Schritt zurückgegangen.
+                // Wir müssen den "#game"-State wieder künstlich hinzufügen, damit der Nutzer im Spiel bleibt.
+                window.history.pushState({ screen: 'game' }, '', '#game');
             }
+        } else {
+            // Wir sind bereits im Setup (z.B. durch mehrfaches Zurückklicken)
+            this.view.switchScreen(false);
+            this.view.renderSetup(this.model.state);
         }
     }
 
