@@ -83,10 +83,8 @@
                 </div>
                 <button id="modal-next-btn" class="modal-nav-btn">▶</button>
             </div>
-            
             <div id="modal-indicators" class="modal-indicators"></div>
             <div id="dynamic-button-grid" class="button-grid"></div>
-            
             <button id="save-input-btn" class="primary-btn btn-success mt-md hidden">Fertig</button>
             <button id="cancel-input-btn" class="secondary-btn mt-sm w-100">Abbrechen</button>
         </div>
@@ -109,6 +107,17 @@
             <p class="subtitle mb-lg">Herzlichen Glückwunsch!</p>
             <div id="podium-container" class="podium-container mt-md mb-lg"></div>
             <button id="close-game-over-btn" class="primary-btn mt-md">Zur Tabelle</button>
+        </div>
+    </div>
+
+    <div id="confirm-back-modal" class="modal hidden flex-center">
+        <div class="modal-content text-center">
+            <h2 class="mb-sm text-danger">⚠️ Spiel abbrechen?</h2>
+            <p class="subtitle mb-lg">Willst du wirklich zurück? Der aktuelle Spielstand geht dabei verloren!</p>
+            <div class="flex-col-gap">
+                <button id="confirm-back-accept-btn" class="primary-btn btn-danger">Ja, Spiel beenden</button>
+                <button id="confirm-back-cancel-btn" class="secondary-btn">Nein, weiterspielen</button>
+            </div>
         </div>
     </div>
 

@@ -37,12 +37,16 @@ export class GameView {
             editGemachtBtn: document.getElementById('edit-gemacht-btn'),
             cancelEditChoiceBtn: document.getElementById('cancel-edit-choice-btn'),
 
-            // --- NEU: Elemente für Game Over & Leaderboard ---
             leaderboardContainer: document.getElementById('leaderboard-container'),
             leaderboardList: document.getElementById('leaderboard-list'),
             gameOverModal: document.getElementById('game-over-modal'),
             podiumContainer: document.getElementById('podium-container'),
-            closeGameOverBtn: document.getElementById('close-game-over-btn')
+            closeGameOverBtn: document.getElementById('close-game-over-btn'),
+
+            // --- NEU: Confirm Back Modal Elemente ---
+            confirmBackModal: document.getElementById('confirm-back-modal'),
+            confirmBackAcceptBtn: document.getElementById('confirm-back-accept-btn'),
+            confirmBackCancelBtn: document.getElementById('confirm-back-cancel-btn')
         };
         
         this.draggedPlayerIndex = null;
@@ -116,13 +120,11 @@ export class GameView {
         this.elements.startGameBtn.disabled = state.activePlayers.length < 2;
     }
 
-    // --- GEÄNDERT: Nimmt nun auch das Leaderboard entgegen ---
     renderGameTable(state, leaderboard = []) {
         const cards = CONFIG.CARDS_SEQUENCE[state.currentRoundIndex];
         this.elements.currentCardsSpan.innerText = cards;
         this.elements.openInputModalBtn.innerText = state.phase === 'ansage' ? `Eingabe starten (${cards} Karten)` : `Stiche eintragen (${cards} Karten)`;
 
-        // Toggle Game Over View Elements
         if (state.isGameOver) {
             this.elements.openInputModalBtn.classList.add('hidden');
             this.elements.leaderboardContainer.classList.remove('hidden');
@@ -153,8 +155,9 @@ export class GameView {
             this.elements.tableHeaderRow.appendChild(th);
         });
 
+        // --- GEÄNDERT: Neue schmälere Klasse für den Status-Header ---
         const thStatus = document.createElement('th');
-        thStatus.className = 'narrow-col';
+        thStatus.className = 'status-col-header'; 
         thStatus.innerText = '±'; 
         this.elements.tableHeaderRow.appendChild(thStatus);
 
@@ -168,7 +171,6 @@ export class GameView {
             const tdRound = document.createElement('td');
             tdRound.className = 'round-cell';
             
-            // In Game Over Mode (or past rounds), allow editing
             let editBtnHtml = (index <= state.currentRoundIndex || state.isGameOver) 
                 ? `<button class="edit-btn" data-rindex="${index}">${svgIcon}</button>` 
                 : '';
@@ -222,7 +224,6 @@ export class GameView {
         });
     }
 
-    // --- NEU: Leaderboard unter Tabelle ---
     renderLeaderboard(leaderboard) {
         this.elements.leaderboardList.innerHTML = leaderboard.map((item, index) => {
             let medal = `${index + 1}.`;
@@ -237,12 +238,10 @@ export class GameView {
         }).join('');
     }
 
-    // --- NEU: Podest Modal ---
     showGameOver(leaderboard) {
         this.elements.gameOverModal.classList.remove('hidden');
         this.elements.podiumContainer.innerHTML = '';
         
-        // Reihenfolge für Podest-Ansicht umbauen: Platz 2, Platz 1, Platz 3
         const podiumOrder = [];
         if (leaderboard.length > 1) podiumOrder.push({ ...leaderboard[1], place: 2 });
         if (leaderboard.length > 0) podiumOrder.push({ ...leaderboard[0], place: 1 });
@@ -258,6 +257,15 @@ export class GameView {
             `;
             this.elements.podiumContainer.appendChild(step);
         });
+    }
+
+    // --- NEU: Confirm Back Modal Logic ---
+    showConfirmBackModal() {
+        this.elements.confirmBackModal.classList.remove('hidden');
+    }
+
+    hideConfirmBackModal() {
+        this.elements.confirmBackModal.classList.add('hidden');
     }
 
     renderModalContent(state, isComplete) {
@@ -396,6 +404,9 @@ export class GameView {
         this.elements.editAnsageBtn.addEventListener('click', () => handler('ansage'));
         this.elements.editGemachtBtn.addEventListener('click', () => handler('stiche'));
     }
-    
     bindCloseGameOver(handler) { this.elements.closeGameOverBtn.addEventListener('click', handler); }
+
+    // --- NEU: Binds für das Confirm Back Modal ---
+    bindConfirmBackAccept(handler) { this.elements.confirmBackAcceptBtn.addEventListener('click', handler); }
+    bindConfirmBackCancel(handler) { this.elements.confirmBackCancelBtn.addEventListener('click', handler); }
 }

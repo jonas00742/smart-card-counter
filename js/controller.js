@@ -37,8 +37,10 @@ export class GameController {
         this.view.bindNumberInput(this.handleNumberInput.bind(this));
         this.view.bindModalSave(this.handleModalSave.bind(this));
 
-        // Game Over Events
+        // Game Over & Custom Confirm Events
         this.view.bindCloseGameOver(this.handleCloseGameOver.bind(this));
+        this.view.bindConfirmBackAccept(this.handleConfirmBackAccept.bind(this));
+        this.view.bindConfirmBackCancel(this.handleConfirmBackCancel.bind(this));
 
         // Edit Choice Events Binden
         this.view.bindEditChoiceClose(this.handleEditChoiceClose.bind(this));
@@ -72,19 +74,43 @@ export class GameController {
 
     handleBackToSetup() { window.history.back(); }
 
+    // --- GEÄNDERT: Logik für das neue UI Modal statt nativem confirm() ---
     handlePopState(event) {
-        if (!this.view.elements.gameScreen.classList.contains('hidden')) {
-            if (confirm("Wirklich zurück? Der aktuelle Spielstand geht verloren!")) {
-                this.model.quitGame();
-                this.view.switchScreen(false);
-                this.view.renderSetup(this.model.state);
-            } else {
-                window.history.pushState({ screen: 'game' }, '', '#game');
-            }
-        } else {
+        const isGameScreenVisible = !this.view.elements.gameScreen.classList.contains('hidden');
+        
+        if (isGameScreenVisible && !this.model.state.isGameOver) {
+            // Trick: Die URL hat sich schon geändert (z.B. auf #setup). 
+            // Wir biegen sie sofort wieder auf #game um, damit der Nutzer im Spiel bleibt.
+            window.history.pushState({ screen: 'game' }, '', '#game');
+            // Dann zeigen wir unser wunderschönes Modal
+            this.view.showConfirmBackModal();
+        } 
+        else if (isGameScreenVisible && this.model.state.isGameOver) {
+            // Wenn das Spiel ohnehin vorbei ist, brauchen wir keine Warnung vor Datenverlust.
+            this.model.quitGame();
+            this.view.switchScreen(false);
+            this.view.renderSetup(this.model.state);
+        } 
+        else {
+            // Wir sind bereits im Setup
             this.view.switchScreen(false);
             this.view.renderSetup(this.model.state);
         }
+    }
+
+    // --- NEU: Handler für die Modal-Buttons ---
+    handleConfirmBackAccept() {
+        this.view.hideConfirmBackModal();
+        this.model.quitGame();
+        // Setzen die URL manuell auf Setup und laden den Bildschirm
+        window.history.replaceState({ screen: 'setup' }, '', '#setup');
+        this.view.switchScreen(false);
+        this.view.renderSetup(this.model.state);
+    }
+
+    handleConfirmBackCancel() {
+        // Modal schließen, die URL haben wir oben in handlePopState ja schon korrigiert
+        this.view.hideConfirmBackModal();
     }
 
     handleOpenInputModal() {
@@ -161,13 +187,12 @@ export class GameController {
             } else {
                 this.model.recalculateAllScores();
                 
-                // --- NEU: Spielende Logik ---
                 if (this.model.state.currentRoundIndex >= CONFIG.TOTAL_ROUNDS - 1) {
                     this.model.state.isGameOver = true;
                     this.model.saveState();
                     this.view.renderGameTable(this.model.state, this.model.getLeaderboard());
                     this.view.showGameOver(this.model.getLeaderboard());
-                    return; // Bricht hier ab, damit die Runde nicht mehr erhöht wird
+                    return; 
                 }
 
                 this.model.state.phase = 'ansage';

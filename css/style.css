@@ -740,3 +740,27 @@ podium-container {
 .rank-name {
     flex: 1;
 }
+
+/* ==========================================================================
+   NEU: Danger Colors & Custom Confirm Modal
+   ========================================================================== */
+.text-danger {
+    color: var(--color-danger);
+}
+
+.btn-danger {
+    background-color: var(--color-danger);
+}
+
+/* Überschreibt das Padding für die Status-Spalte, um sie absolut minimal zu halten */
+.status-col-header {
+    width: 1%;
+    white-space: nowrap;
+    padding: 4px !important; 
+    text-align: center;
+}
+
+.status-cell {
+    text-align: center; 
+    /* width: 1% und padding: 4px haben wir weiter oben schon definiert */
+}
