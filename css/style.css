@@ -95,6 +95,7 @@ main {
 .mb-lg { margin-bottom: 20px; }
 .mt-sm { margin-top: 10px; }
 .mt-md { margin-top: 15px; }
+.mt-lg { margin-top: 20px; }
 .px-xs { padding: 0 4px; }
 
 /* Text */
@@ -373,20 +374,28 @@ th:last-child {
 }
 
 /* Column Specifics */
-.narrow-col,
-.round-cell,
-.player-col,
-.status-cell,
-.status-col-header {
+.player-col {
     width: 1%;
     min-width: max-content !important;
     white-space: nowrap;
     padding: 8px 10px !important;
 }
 
-.status-cell, .status-col-header {
+.narrow-col,
+.round-cell {
+    width: 1%;
+    min-width: max-content !important;
+    white-space: nowrap;
+    padding: 8px 4px !important;
+}
+
+.status-cell,
+.status-col-header {
+    width: 1%;
+    min-width: max-content !important;
+    white-space: nowrap;
     text-align: center;
-    padding: 4px !important;
+    padding: 4px 2px !important;
 }
 
 .dealer-col-header {
@@ -411,14 +420,13 @@ th:last-child {
     width: 22px;
     height: 22px;
     border-radius: 50%;
-    font-size: 0.85rem;
-    font-weight: bold;
     color: var(--color-surface);
     box-shadow: var(--shadow-sm);
 }
 
 .status-badge.success { background-color: var(--color-success); }
 .status-badge.danger { background-color: var(--color-danger); }
+.status-badge.accent { background-color: #111199; }
 
 .edit-btn {
     display: inline-flex;

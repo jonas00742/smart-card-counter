@@ -160,7 +160,7 @@ export class GameView {
             const isDealer = player === currentDealer;
             const th = this.createElement('th', { 
                 className: `player-col ${isDealer ? 'dealer-col-header' : ''}`,
-                text: player.substring(0, 4)
+                text: player.substring(0, 10)
             });
             this.elements.tableHeaderRow.appendChild(th);
         });
@@ -204,9 +204,9 @@ export class GameView {
 
             let statusHtml = '';
             if (allAnsagenMade) {
-                if (sumAnsage === cardCount) statusHtml = '<span class="status-badge success">✓</span>';
-                else if (sumAnsage > cardCount) statusHtml = '<span class="status-badge danger">+</span>';
-                else statusHtml = '<span class="status-badge danger">-</span>';
+                if (sumAnsage === cardCount) statusHtml = '<span class="status-badge success"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span>';
+                else if (sumAnsage > cardCount) statusHtml = '<span class="status-badge danger"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></span>';
+                else statusHtml = '<span class="status-badge accent"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg></span>';
             }
             
             tr.appendChild(this.createElement('td', { className: 'status-cell', html: statusHtml }));
