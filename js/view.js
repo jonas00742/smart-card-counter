@@ -109,14 +109,23 @@ export class GameView {
         this.elements.currentCardsSpan.innerText = cards;
         this.elements.openInputModalBtn.innerText = state.phase === 'ansage' ? `Eingabe starten (${cards} Karten)` : `Stiche eintragen (${cards} Karten)`;
 
+        // Header aufräumen
         while (this.elements.tableHeaderRow.children.length > 1) {
             this.elements.tableHeaderRow.removeChild(this.elements.tableHeaderRow.lastChild);
         }
+        
+        // Spieler-Spaltenköpfe generieren
         state.activePlayers.forEach(player => {
             const th = document.createElement('th');
             th.innerText = player.substring(0, 4);
             this.elements.tableHeaderRow.appendChild(th);
         });
+
+        // --- NEU: Spaltenkopf für die Ansagen-Status-Spalte ---
+        const thStatus = document.createElement('th');
+        thStatus.className = 'narrow-col';
+        thStatus.innerText = '±'; 
+        this.elements.tableHeaderRow.appendChild(thStatus);
 
         this.elements.tableBody.innerHTML = '';
         
@@ -136,9 +145,21 @@ export class GameView {
             tdRound.innerHTML = `<div class="round-cell-content"><span>${cardCount}</span>${editBtnHtml}</div>`;
             tr.appendChild(tdRound);
 
+            // --- NEU: Variablen für die Status-Berechnung vorbereiten ---
+            let sumAnsage = 0;
+            let allAnsagenMade = true;
+
             state.activePlayers.forEach(player => {
                 const td = document.createElement('td');
                 const data = state.roundsData[index][player];
+                
+                // Ansagen für die Status-Spalte summieren
+                if (data.ansage === null) {
+                    allAnsagenMade = false;
+                } else {
+                    sumAnsage += data.ansage;
+                }
+
                 const ansageStr = data.ansage !== null ? data.ansage : '-';
                 const gemachtStr = data.gemacht !== null ? data.gemacht : '-';
                 const scoreStr = data.gemacht !== null ? data.gesamtPunkte : '-';
@@ -152,21 +173,37 @@ export class GameView {
                 `;
                 tr.appendChild(td);
             });
+
+            const tdStatus = document.createElement('td');
+            tdStatus.className = 'status-cell';
+
+            // Zeige den Status erst an, wenn alle Spieler dieser Runde angesagt haben
+            if (allAnsagenMade) {
+                if (sumAnsage === cardCount) {
+                    tdStatus.innerHTML = '<span class="status-badge success">✓</span>';
+                } else if (sumAnsage > cardCount) {
+                    tdStatus.innerHTML = '<span class="status-badge danger">+</span>';
+                } else {
+                    tdStatus.innerHTML = '<span class="status-badge danger">-</span>';
+                }
+            } else {
+                tdStatus.innerHTML = ''; // Leer lassen, falls die Runde noch nicht voll angesagt wurde
+            }
+            
+            tr.appendChild(tdStatus);
             this.elements.tableBody.appendChild(tr);
         });
 
-        // Event-Delegation für dynamisch erstellte Edit-Buttons
+        // Event-Delegation fixen (wie wir es vorhin besprochen hatten)
         this.elements.tableBody.querySelectorAll('.edit-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                // e.currentTarget greift immer auf das Element zu, an dem der Listener hängt (den Button),
-                // selbst wenn man das SVG oder den Path im Button anklickt!
                 const rIndex = parseInt(e.currentTarget.dataset.rindex);
                 this.onRowEditTriggered(rIndex);
             });
         });
     }
 
-renderModalContent(state, isComplete) {
+    renderModalContent(state, isComplete) {
         const player = state.activePlayers[state.currentPlayerInputIndex];
         const rIndex = state.isEditMode ? state.editRoundIndex : state.currentRoundIndex;
         const phase = state.isEditMode ? state.editPhase : state.phase;

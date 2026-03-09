@@ -571,3 +571,33 @@ th {
     color: var(--color-surface);
     border-color: #27ae60;
 }
+
+/* ==========================================================================
+   NEU: Status-Spalte (Ansagen-Kontrolle am Zeilenende)
+   ========================================================================== */
+.status-cell {
+    width: 1%; /* Hält die Spalte so schmal wie möglich */
+    padding: 4px !important;
+    vertical-align: middle;
+}
+
+.status-badge {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: var(--color-surface); /* Weißer Text */
+    box-shadow: var(--shadow-sm);
+}
+
+.status-badge.success {
+    background-color: var(--color-success); /* Dein bestehendes Grün */
+}
+
+.status-badge.danger {
+    background-color: var(--color-danger); /* Dein bestehendes Rot */
+}
