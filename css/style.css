@@ -569,13 +569,27 @@ th:last-child {
     border-top: 8px solid var(--color-success);
 }
 
-.phase-stiche .number-btn {
+/* Phase Stiche: Default Buttons (Non-Target) -> Grey/Black */
+.phase-stiche .number-btn.non-target {
+    border-color: #bdc3c7;
+    color: var(--color-text-muted);
+}
+
+.phase-stiche .number-btn.non-target:active, 
+.phase-stiche .number-btn.non-target.selected {
+    background: #bdc3c7;
+    color: var(--color-surface);
+    border-color: #bdc3c7;
+}
+
+/* Phase Stiche: Target Bid Button -> Green */
+.phase-stiche .number-btn.target-bid {
     border-color: var(--color-success);
     color: var(--color-success);
 }
 
-.phase-stiche .number-btn:active, 
-.phase-stiche .number-btn.selected {
+.phase-stiche .number-btn.target-bid:active, 
+.phase-stiche .number-btn.target-bid.selected {
     background: var(--color-success);
     color: var(--color-surface);
     border-color: #27ae60;

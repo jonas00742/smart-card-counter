@@ -333,6 +333,7 @@ export class GameView {
 
         this.elements.buttonGrid.innerHTML = '';
         const currentValue = state.roundsData[rIndex][player][phase === 'ansage' ? 'ansage' : 'gemacht'];
+        const ansageValue = state.roundsData[rIndex][player].ansage;
 
         let maxButtons = cards;
         
@@ -344,9 +345,16 @@ export class GameView {
         }
 
         for (let i = 0; i <= maxButtons; i++) {
+            let extraClass = '';
+            if (phase === 'stiche') {
+                // Highlight the button that matches the bid, others are neutral
+                if (i === ansageValue) extraClass = ' target-bid';
+                else extraClass = ' non-target';
+            }
+
             const btn = this.createElement('button', {
                 type: 'button',
-                className: `number-btn ${currentValue === i ? 'selected' : ''}`,
+                className: `number-btn${extraClass} ${currentValue === i ? 'selected' : ''}`,
                 text: i,
                 events: { click: () => this.onNumberInput(i) }
             });
