@@ -175,8 +175,7 @@ export class GameController {
 
     handleNumberInput(val) {
         // Stop blinking when user starts entering 'ansage' for the final round.
-        const rIndex = this.model.state.isEditMode ? this.model.state.editRoundIndex : this.model.state.currentRoundIndex;
-        const phase = this.model.state.isEditMode ? this.model.state.editPhase : this.model.state.phase;
+        const { rIndex, phase } = this.model.currentContext;
 
         if (rIndex === CONFIG.TOTAL_ROUNDS - 1 && phase === 'ansage') {
             this.view.stopPenultimateRoundBlinking();
@@ -194,8 +193,7 @@ export class GameController {
     }
 
     handleModalSave() {
-        const rIndex = this.model.state.isEditMode ? this.model.state.editRoundIndex : this.model.state.currentRoundIndex;
-        const phase = this.model.state.isEditMode ? this.model.state.editPhase : this.model.state.phase;
+        const { rIndex, phase } = this.model.currentContext;
 
         if (phase === 'stiche') {
             const validation = this.model.validateSticheSum(rIndex);
@@ -210,7 +208,6 @@ export class GameController {
         
         if (this.model.state.isEditMode) {
             this.model.recalculateAllScores();
-            this.model.state.globalEditMode = false; 
         } else {
             if (this.model.state.phase === 'ansage') {
                 this.model.state.phase = 'stiche';

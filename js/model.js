@@ -16,7 +16,6 @@ export class GameModel {
             phase: 'ansage',
             roundsData: [],
             isGameOver: false,
-            globalEditMode: false,
             isEditMode: false,
             editRoundIndex: 0,
             editPhase: 'ansage',
@@ -30,7 +29,6 @@ export class GameModel {
             try {
                 this.state = JSON.parse(saved);
                 // Reset transient flags
-                this.state.globalEditMode = false;
                 this.state.isEditMode = false;
                 
                 // Backwards compatibility checks
@@ -133,12 +131,17 @@ export class GameModel {
         if (newIndex !== -1) this.state.startingDealerIndex = newIndex;
         this.saveState();
     }
+
+    get currentContext() {
+        return {
+            rIndex: this.state.isEditMode ? this.state.editRoundIndex : this.state.currentRoundIndex,
+            phase: this.state.isEditMode ? this.state.editPhase : this.state.phase
+        };
+    }
     
     setInputValue(value) {
         const player = this.state.activePlayers[this.state.currentPlayerInputIndex];
-        const rIndex = this.state.isEditMode ? this.state.editRoundIndex : this.state.currentRoundIndex;
-        const phase = this.state.isEditMode ? this.state.editPhase : this.state.phase;
-        
+        const { rIndex, phase } = this.currentContext;
         this.state.roundsData[rIndex][player][phase === 'ansage' ? 'ansage' : 'gemacht'] = value;
 
         // If a user manually sets a value, they are no longer considered auto-filled
@@ -151,9 +154,7 @@ export class GameModel {
     }
 
     isCurrentPhaseComplete() {
-        const rIndex = this.state.isEditMode ? this.state.editRoundIndex : this.state.currentRoundIndex;
-        const phase = this.state.isEditMode ? this.state.editPhase : this.state.phase;
-        
+        const { rIndex, phase } = this.currentContext;
         return this.state.activePlayers.every(player => {
             const key = phase === 'ansage' ? 'ansage' : 'gemacht';
             return this.state.roundsData[rIndex][player][key] !== null;
@@ -161,8 +162,7 @@ export class GameModel {
     }
 
     isPhaseReadyForSave() {
-        const rIndex = this.state.isEditMode ? this.state.editRoundIndex : this.state.currentRoundIndex;
-        const phase = this.state.isEditMode ? this.state.editPhase : this.state.phase;
+        const { rIndex, phase } = this.currentContext;
 
         // 1. Are all inputs filled for the current phase?
         if (!this.isCurrentPhaseComplete()) {
@@ -186,8 +186,7 @@ export class GameModel {
     resetAutoFilledValues() {
         if (this.autoFilledPlayers.length === 0) return;
 
-        const rIndex = this.state.isEditMode ? this.state.editRoundIndex : this.state.currentRoundIndex;
-        const roundData = this.state.roundsData[rIndex];
+        const roundData = this.state.roundsData[this.currentContext.rIndex];
 
         this.autoFilledPlayers.forEach(player => {
             roundData[player].gemacht = null;
@@ -198,8 +197,7 @@ export class GameModel {
     }
 
     applyAutoFill() {
-        const rIndex = this.state.isEditMode ? this.state.editRoundIndex : this.state.currentRoundIndex;
-        const phase = this.state.isEditMode ? this.state.editPhase : this.state.phase;
+        const { rIndex, phase } = this.currentContext;
         
         // Auto-fill only applies to 'stiche' phase (actual tricks made)
         if (phase !== 'stiche') return;

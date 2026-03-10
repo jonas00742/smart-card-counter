@@ -65,18 +65,19 @@ export class GameView {
             closeInterimBtn: document.getElementById('close-interim-btn')
         };
         
-        this.draggedPlayerIndex = null;
         this.playerToDelete = null;
 
         // Bind internal UI events (Cancel/Close buttons)
         this.elements.cancelDeletePlayerBtn.addEventListener('click', () => this.hideDeletePlayerModal());
-        this.elements.deletePlayerModal.addEventListener('click', (e) => { if (e.target === this.elements.deletePlayerModal) this.hideDeletePlayerModal(); });
-        
+        this._bindBackdropClick(this.elements.deletePlayerModal, () => this.hideDeletePlayerModal());
         this.elements.closeValidationBtn.addEventListener('click', () => this.hideValidationAlert());
-        this.elements.validationModal.addEventListener('click', (e) => { if (e.target === this.elements.validationModal) this.hideValidationAlert(); });
-
+        this._bindBackdropClick(this.elements.validationModal, () => this.hideValidationAlert());
         this.elements.closeInterimBtn.addEventListener('click', () => this.hideInterimModal());
-        this.elements.interimModal.addEventListener('click', (e) => { if (e.target === this.elements.interimModal) this.hideInterimModal(); });
+        this._bindBackdropClick(this.elements.interimModal, () => this.hideInterimModal());
+
+        // Initialize Back Button appearance
+        this.elements.backToSetupBtn.textContent = '◀';
+        this.elements.backToSetupBtn.classList.add('header-back-btn');
     }
 
     // Helper to create DOM elements cleanly
@@ -93,6 +94,21 @@ export class GameView {
         
         children.forEach(child => child && el.appendChild(child));
         return el;
+    }
+
+    _bindBackdropClick(modal, handler) {
+        modal.addEventListener('click', (e) => { if (e.target === modal) handler(); });
+    }
+
+    _getIcon(type) {
+        const icons = {
+            drag: `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>`,
+            edit: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>`,
+            check: `<svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`,
+            cross: `<svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>`,
+            dash: `<svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>`
+        };
+        return icons[type] || '';
     }
 
     renderSetup(state) {
@@ -119,10 +135,9 @@ export class GameView {
         } else {
             state.activePlayers.forEach((player, index) => {
                 const row = this.createElement('li', { className: 'active-player-row' });
-                const dragIcon = `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>`;
                 
                 const leftSide = this.createElement('div', { className: 'player-row-left' },
-                    this.createElement('div', { className: 'drag-handle-btn', html: dragIcon }),
+                    this.createElement('div', { className: 'drag-handle-btn', html: this._getIcon('drag') }),
                     this.createElement('span', { html: `<strong>${index + 1}.</strong> ${player}` })
                 );
                 
@@ -180,14 +195,13 @@ export class GameView {
         this.elements.tableHeaderRow.appendChild(this.createElement('th', { className: 'status-col-header', text: '±' }));
 
         this.elements.tableBody.innerHTML = '';
-        const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>`;
 
         CONFIG.CARDS_SEQUENCE.forEach((cardCount, index) => {
             const tr = this.createElement('tr');
             if (index === state.currentRoundIndex && !state.isGameOver) tr.style.backgroundColor = 'var(--color-highlight-row)';
 
             const editBtnHtml = (index <= state.currentRoundIndex || state.isGameOver) 
-                ? `<button class="edit-btn" data-rindex="${index}">${svgIcon}</button>` 
+                ? `<button class="edit-btn" data-rindex="${index}">${this._getIcon('edit')}</button>` 
                 : '';
             
             const tdRound = this.createElement('td', { className: 'round-cell', html: `<div class="round-cell-content"><span>${cardCount}</span>${editBtnHtml}</div>` });
@@ -216,9 +230,9 @@ export class GameView {
 
             let statusHtml = '';
             if (allAnsagenMade) {
-                if (sumAnsage === cardCount) statusHtml = '<span class="status-badge success"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span>';
-                else if (sumAnsage > cardCount) statusHtml = '<span class="status-badge danger"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></span>';
-                else statusHtml = '<span class="status-badge accent"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg></span>';
+                if (sumAnsage === cardCount) statusHtml = `<span class="status-badge success">${this._getIcon('check')}</span>`;
+                else if (sumAnsage > cardCount) statusHtml = `<span class="status-badge danger">${this._getIcon('cross')}</span>`;
+                else statusHtml = `<span class="status-badge accent">${this._getIcon('dash')}</span>`;
             }
             
             tr.appendChild(this.createElement('td', { className: 'status-cell', html: statusHtml }));
@@ -233,8 +247,8 @@ export class GameView {
         });
     }
 
-    renderLeaderboard(leaderboard) {
-        this.elements.leaderboardList.innerHTML = leaderboard.map((item, index) => {
+    _generateLeaderboardHtml(leaderboard, suffix = '') {
+        return leaderboard.map((item, index) => {
             let medal = `${index + 1}.`;
             if (index === 0) medal = '🥇';
             if (index === 1) medal = '🥈';
@@ -242,23 +256,17 @@ export class GameView {
             return `<li>
                 <span class="rank-medal">${medal}</span> 
                 <span class="rank-name">${item.name}</span> 
-                <strong>${item.score} Pkt</strong>
+                <strong>${item.score}${suffix}</strong>
             </li>`;
         }).join('');
     }
 
+    renderLeaderboard(leaderboard) {
+        this.elements.leaderboardList.innerHTML = this._generateLeaderboardHtml(leaderboard, ' Pkt');
+    }
+
     renderInterimModal(leaderboard) {
-        this.elements.interimList.innerHTML = leaderboard.map((item, index) => {
-            let medal = `${index + 1}.`;
-            if (index === 0) medal = '🥇';
-            if (index === 1) medal = '🥈';
-            if (index === 2) medal = '🥉';
-            return `<li>
-                <span class="rank-medal">${medal}</span> 
-                <span class="rank-name">${item.name}</span> 
-                <strong>${item.score}</strong>
-            </li>`;
-        }).join('');
+        this.elements.interimList.innerHTML = this._generateLeaderboardHtml(leaderboard);
     }
 
     showGameOver(leaderboard) {
@@ -321,16 +329,16 @@ export class GameView {
     renderModalContent(state, isComplete) {
         const player = state.activePlayers[state.currentPlayerInputIndex];
         const rIndex = state.isEditMode ? state.editRoundIndex : state.currentRoundIndex;
-        const phase = state.isEditMode ? state.editPhase : state.phase;
         const cards = CONFIG.CARDS_SEQUENCE[rIndex];
-        
+        const phase = state.isEditMode ? state.editPhase : state.phase;
+
         this.elements.modal.classList.remove('phase-ansage', 'phase-stiche');
         this.elements.modal.classList.add(`phase-${phase}`);
-        
+
         let titlePrefix = state.isEditMode ? "Ändern: " : "";
         this.elements.modalTitle.innerText = phase === 'ansage' ? `${titlePrefix}Stiche ansagen?` : `${titlePrefix}Stiche gemacht?`;
         this.elements.modalSubtitle.innerText = player;
-        
+
         this.elements.modalIndicators.innerHTML = state.activePlayers.map((p, idx) => {
             const val = state.roundsData[rIndex][p][phase === 'ansage' ? 'ansage' : 'gemacht'];
             return `<div class="indicator-dot ${val !== null ? 'filled' : ''} ${idx === state.currentPlayerInputIndex ? 'active' : ''}"></div>`;
@@ -341,7 +349,7 @@ export class GameView {
         const ansageValue = state.roundsData[rIndex][player].ansage;
 
         let maxButtons = cards;
-        
+
         if (phase === 'stiche') {
             const sumOthers = state.activePlayers.reduce((sum, p) => {
                 return p !== player ? sum + (state.roundsData[rIndex][p].gemacht || 0) : sum;
@@ -515,7 +523,7 @@ export class GameView {
     bindTriggerRowEdit(handler) { this.onRowEditTriggered = handler; }
     bindModalCancel(handler) {
         this.elements.cancelInputBtn.addEventListener('click', handler);
-        this.elements.modal.addEventListener('click', (e) => { if (e.target === this.elements.modal) handler(); });
+        this._bindBackdropClick(this.elements.modal, handler);
     }
     bindModalPrev(handler) { this.elements.modalPrevBtn.addEventListener('click', handler); }
     bindModalNext(handler) { this.elements.modalNextBtn.addEventListener('click', handler); }
@@ -523,7 +531,7 @@ export class GameView {
     bindModalSave(handler) { this.elements.saveInputBtn.addEventListener('click', handler); }
     bindEditChoiceClose(handler) {
         this.elements.cancelEditChoiceBtn.addEventListener('click', handler);
-        this.elements.editChoiceModal.addEventListener('click', (e) => { if (e.target === this.elements.editChoiceModal) handler(); });
+        this._bindBackdropClick(this.elements.editChoiceModal, handler);
     }
     bindEditChoiceSelect(handler) {
         this.elements.editAnsageBtn.addEventListener('click', () => handler('ansage'));
@@ -531,13 +539,13 @@ export class GameView {
     }
     bindCloseGameOver(handler) { 
         this.elements.closeGameOverBtn.addEventListener('click', handler); 
-        this.elements.gameOverModal.addEventListener('click', (e) => { if (e.target === this.elements.gameOverModal) handler(); });
+        this._bindBackdropClick(this.elements.gameOverModal, handler);
     }
 
     bindConfirmBackAccept(handler) { this.elements.confirmBackAcceptBtn.addEventListener('click', handler); }
     bindConfirmBackCancel(handler) { 
         this.elements.confirmBackCancelBtn.addEventListener('click', handler); 
-        this.elements.confirmBackModal.addEventListener('click', (e) => { if (e.target === this.elements.confirmBackModal) handler(); });
+        this._bindBackdropClick(this.elements.confirmBackModal, handler);
     }
 
     bindToggleInterim(handler) { this.elements.fabInterimBtn.addEventListener('click', handler); }

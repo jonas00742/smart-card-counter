@@ -1,6 +1,6 @@
 {
     "name": "Smart Card Counter",
-    "short_name": "StichZähler",
+    "short_name": "Stich Zähler",
     "description": "Ein smarter PWA-Zähler für Kartenspiele",
     "start_url": ".",
     "display": "standalone",
