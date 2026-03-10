@@ -57,7 +57,7 @@ html, body {
     color: var(--color-text-main);
     overscroll-behavior: none;
     touch-action: pan-y;
-    -webkit-user-select: none;
+    user-select: none;
 }
 
 h1, h2 {
