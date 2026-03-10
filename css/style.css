@@ -675,3 +675,19 @@ th:last-child {
     color: var(--color-text-muted);
     margin-bottom: 8px;
 }
+
+/* ==========================================================================
+   10. ANIMATIONS
+   ========================================================================== */
+@keyframes blink-red-warning {
+    0%, 100% { background-color: var(--color-bg); }
+    50% { background-color: var(--color-danger); }
+}
+
+.penultimate-round-warning {
+    animation: blink-red-warning 1s infinite;
+}
+
+.penultimate-round-warning .sticky-top-container {
+    animation: blink-red-warning 1s infinite;
+}

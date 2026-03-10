@@ -57,6 +57,19 @@ export class GameController {
             window.history.replaceState({ screen: 'game' }, '', '#game');
             this.view.switchScreen(true);
             this.view.renderGameTable(this.model.state, this.model.getLeaderboard());
+
+            // Check if we should be blinking on page load
+            const { currentRoundIndex, phase, roundsData, activePlayers } = this.model.state;
+            if (currentRoundIndex === CONFIG.TOTAL_ROUNDS - 1 && phase === 'ansage') {
+                if (roundsData[currentRoundIndex]) { // Ensure round data exists
+                    const lastRoundData = roundsData[currentRoundIndex];
+                    const isAnsageStarted = activePlayers.some(p => lastRoundData[p] && lastRoundData[p].ansage !== null);
+                    
+                    if (!isAnsageStarted) {
+                        this.view.startPenultimateRoundBlinking();
+                    }
+                }
+            }
         } else {
             window.history.replaceState({ screen: 'setup' }, '', '#setup');
             this.view.renderSetup(this.model.state);
@@ -151,6 +164,14 @@ export class GameController {
     }
 
     handleNumberInput(val) {
+        // Stop blinking when user starts entering 'ansage' for the final round.
+        const rIndex = this.model.state.isEditMode ? this.model.state.editRoundIndex : this.model.state.currentRoundIndex;
+        const phase = this.model.state.isEditMode ? this.model.state.editPhase : this.model.state.phase;
+
+        if (rIndex === CONFIG.TOTAL_ROUNDS - 1 && phase === 'ansage') {
+            this.view.stopPenultimateRoundBlinking();
+        }
+
         this.model.setInputValue(val);
         this.view.renderModalContent(this.model.state, this.model.isCurrentPhaseComplete());
     }
@@ -176,6 +197,11 @@ export class GameController {
             if (this.model.state.phase === 'ansage') {
                 this.model.state.phase = 'stiche';
             } else {
+                // Check if the penultimate round's tricks were just entered.
+                if (this.model.state.currentRoundIndex === CONFIG.TOTAL_ROUNDS - 2) {
+                    this.view.startPenultimateRoundBlinking();
+                }
+
                 this.model.recalculateAllScores();
                 
                 if (this.model.state.currentRoundIndex >= CONFIG.TOTAL_ROUNDS - 1) {

@@ -433,6 +433,14 @@ export class GameView {
         handle.addEventListener('pointerdown', handleDragStart);
     }
 
+    startPenultimateRoundBlinking() {
+        document.body.classList.add('penultimate-round-warning');
+    }
+
+    stopPenultimateRoundBlinking() {
+        document.body.classList.remove('penultimate-round-warning');
+    }
+
     bindAddPlayer(handler) {
         this.elements.addNewPlayerBtn.addEventListener('click', () => {
             const name = this.elements.newPlayerInput.value.trim();
