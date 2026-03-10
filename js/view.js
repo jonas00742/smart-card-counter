@@ -7,6 +7,7 @@ export class GameView {
             gameScreen: document.getElementById('game-screen'),
             setupHeader: document.getElementById('setup-header'),
             gameHeader: document.getElementById('game-header'),
+            backToSetupBtn: document.getElementById('back-to-setup-btn'),
             currentCardsSpan: document.getElementById('current-cards'),
             
             playerPool: document.getElementById('available-players-container'),
@@ -152,10 +153,12 @@ export class GameView {
         if (state.isGameOver) {
             this.elements.openInputModalBtn.classList.add('hidden');
             this.elements.leaderboardContainer.classList.remove('hidden');
+            this.elements.fabInterimBtn.classList.add('hidden');
             this.renderLeaderboard(leaderboard);
         } else {
             this.elements.openInputModalBtn.classList.remove('hidden');
             this.elements.leaderboardContainer.classList.add('hidden');
+            this.elements.fabInterimBtn.classList.remove('hidden');
         }
 
         // Clear header except first column
@@ -307,10 +310,12 @@ export class GameView {
     showInterimModal(leaderboard) {
         this.renderInterimModal(leaderboard);
         this.elements.interimModal.classList.remove('hidden');
+        this.elements.fabInterimBtn.classList.add('hidden');
     }
 
     hideInterimModal() {
         this.elements.interimModal.classList.add('hidden');
+        this.elements.fabInterimBtn.classList.remove('hidden');
     }
 
     renderModalContent(state, isComplete) {
@@ -506,6 +511,7 @@ export class GameView {
     bindStartGame(handler) { this.elements.startGameBtn.addEventListener('click', handler); }
 
     bindOpenInputModal(handler) { this.elements.openInputModalBtn.addEventListener('click', handler); }
+    bindGoBack(handler) { this.elements.backToSetupBtn.addEventListener('click', handler); }
     bindTriggerRowEdit(handler) { this.onRowEditTriggered = handler; }
     bindModalCancel(handler) {
         this.elements.cancelInputBtn.addEventListener('click', handler);

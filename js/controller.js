@@ -31,6 +31,7 @@ export class GameController {
 
         // Game Table
         this.view.bindOpenInputModal(this.handleOpenInputModal.bind(this));
+        this.view.bindGoBack(this.handleGoBack.bind(this));
         this.view.bindTriggerRowEdit(this.handleTriggerRowEdit.bind(this));
 
         // Modal
@@ -120,6 +121,10 @@ export class GameController {
 
     handleConfirmBackCancel() {
         this.view.hideConfirmBackModal();
+    }
+
+    handleGoBack() {
+        this.view.showConfirmBackModal();
     }
 
     handleOpenInputModal() {
