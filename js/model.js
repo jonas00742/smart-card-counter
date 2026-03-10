@@ -76,7 +76,12 @@ export class GameModel {
     getLeaderboard() {
         if (!this.state.roundsData || this.state.roundsData.length === 0) return [];
         
-        const currentData = this.state.roundsData[this.state.currentRoundIndex];
+        let targetIndex = this.state.currentRoundIndex - 1;
+        if (this.state.isGameOver) targetIndex = this.state.currentRoundIndex;
+
+        if (targetIndex < 0) return this.state.activePlayers.map(p => ({ name: p, score: 0 }));
+
+        const currentData = this.state.roundsData[targetIndex];
         return this.state.activePlayers.map(player => ({
             name: player,
             score: currentData[player].gesamtPunkte

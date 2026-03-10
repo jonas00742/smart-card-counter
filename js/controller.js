@@ -48,6 +48,9 @@ export class GameController {
         // Edit Choice
         this.view.bindEditChoiceClose(this.handleEditChoiceClose.bind(this));
         this.view.bindEditChoiceSelect(this.handleEditChoiceSelect.bind(this));
+
+        // Interim FAB
+        this.view.bindToggleInterim(this.handleToggleInterim.bind(this));
     }
 
     initRouter() {
@@ -227,6 +230,10 @@ export class GameController {
     handleEditChoiceSelect(phase) {
         this.view.elements.editChoiceModal.classList.add('hidden');
         this.startEditModal(phase);
+    }
+
+    handleToggleInterim() {
+        this.view.showInterimModal(this.model.getLeaderboard());
     }
 
     startEditModal(phase) {

@@ -137,6 +137,18 @@
         </div>
     </div>
 
+    <div id="interim-modal" class="modal hidden flex-center" role="dialog" aria-modal="true" aria-labelledby="interim-title">
+        <div class="modal-content">
+            <h2 id="interim-title" class="text-center mb-md">🏆 Zwischenstand</h2>
+            <ol id="interim-list" class="leaderboard-list mb-lg"></ol>
+            <button type="button" id="close-interim-btn" class="primary-btn">Weiter geht's</button>
+        </div>
+    </div>
+
+    <button type="button" id="fab-interim-btn" class="fab-btn hidden" aria-label="Zwischenstand anzeigen">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M19 5h-2V3a1 1 0 0 0-1-1h-8a1 1 0 0 0-1 1v2H5c-1.103 0-2 .897-2 2v1c0 3.309 2.691 6 6 6h6c3.309 0 6-2.691 6-6V7c0-1.103-.897-2-2-2zm-11 0h8v2h-8V5zm0 4h8c0 2.206-1.794 4-4 4s-4-1.794-4-4z"/><path d="M13 14h-2v3H8v2h8v-2h-3z"/></svg>
+    </button>
+
     <script type="module" src="js/app.js"></script>
 </body>
 </html>

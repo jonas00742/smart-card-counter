@@ -55,7 +55,13 @@ export class GameView {
 
             validationModal: document.getElementById('validation-modal'),
             validationText: document.getElementById('validation-text'),
-            closeValidationBtn: document.getElementById('close-validation-btn')
+            closeValidationBtn: document.getElementById('close-validation-btn'),
+
+            // FAB & Interim Modal
+            fabInterimBtn: document.getElementById('fab-interim-btn'),
+            interimModal: document.getElementById('interim-modal'),
+            interimList: document.getElementById('interim-list'),
+            closeInterimBtn: document.getElementById('close-interim-btn')
         };
         
         this.draggedPlayerIndex = null;
@@ -67,6 +73,9 @@ export class GameView {
         
         this.elements.closeValidationBtn.addEventListener('click', () => this.hideValidationAlert());
         this.elements.validationModal.addEventListener('click', (e) => { if (e.target === this.elements.validationModal) this.hideValidationAlert(); });
+
+        this.elements.closeInterimBtn.addEventListener('click', () => this.hideInterimModal());
+        this.elements.interimModal.addEventListener('click', (e) => { if (e.target === this.elements.interimModal) this.hideInterimModal(); });
     }
 
     // Helper to create DOM elements cleanly
@@ -235,6 +244,20 @@ export class GameView {
         }).join('');
     }
 
+    renderInterimModal(leaderboard) {
+        this.elements.interimList.innerHTML = leaderboard.map((item, index) => {
+            let medal = `${index + 1}.`;
+            if (index === 0) medal = '🥇';
+            if (index === 1) medal = '🥈';
+            if (index === 2) medal = '🥉';
+            return `<li>
+                <span class="rank-medal">${medal}</span> 
+                <span class="rank-name">${item.name}</span> 
+                <strong>${item.score}</strong>
+            </li>`;
+        }).join('');
+    }
+
     showGameOver(leaderboard) {
         this.elements.gameOverModal.classList.remove('hidden');
         this.elements.podiumContainer.innerHTML = '';
@@ -279,6 +302,15 @@ export class GameView {
 
     hideValidationAlert() {
         this.elements.validationModal.classList.add('hidden');
+    }
+
+    showInterimModal(leaderboard) {
+        this.renderInterimModal(leaderboard);
+        this.elements.interimModal.classList.remove('hidden');
+    }
+
+    hideInterimModal() {
+        this.elements.interimModal.classList.add('hidden');
     }
 
     renderModalContent(state, isComplete) {
@@ -333,11 +365,13 @@ export class GameView {
             this.elements.gameScreen.classList.remove('hidden');
             this.elements.setupHeader.classList.add('hidden');
             this.elements.gameHeader.classList.remove('hidden');
+            this.elements.fabInterimBtn.classList.remove('hidden');
         } else {
             this.elements.gameScreen.classList.add('hidden');
             this.elements.setupScreen.classList.remove('hidden');
             this.elements.gameHeader.classList.add('hidden');
             this.elements.setupHeader.classList.remove('hidden');
+            this.elements.fabInterimBtn.classList.add('hidden');
         }
     }
 
@@ -491,4 +525,6 @@ export class GameView {
         this.elements.confirmBackCancelBtn.addEventListener('click', handler); 
         this.elements.confirmBackModal.addEventListener('click', (e) => { if (e.target === this.elements.confirmBackModal) handler(); });
     }
+
+    bindToggleInterim(handler) { this.elements.fabInterimBtn.addEventListener('click', handler); }
 }
