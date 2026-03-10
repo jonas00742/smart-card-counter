@@ -1,17 +1,17 @@
 const CACHE_NAME = 'smart-counter-v26';
 
 const ASSETS_TO_CACHE = [
-    './',
-    './index.html',
-    './css/style.css',
-    './js/config.js',
-    './js/model.js',
-    './js/view.js',
-    './js/controller.js',
-    './js/app.js',
-    './manifest.json',
-    './assets/icon-192.png',
-    './assets/icon-512.png'
+    '../',
+    '../index.html',
+    '../css/style.css',
+    './config.js',
+    './model.js',
+    './view.js',
+    './controller.js',
+    './app.js',
+    '../manifest.json',
+    '../assets/icon-192.png',
+    '../assets/icon-512.png'
 ];
 
 // 1. INSTALL

@@ -10,8 +10,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js')
+        navigator.serviceWorker.register('./js/sw.js')
             .then(reg => console.log('SW registered:', reg.scope))
             .catch(err => console.error('SW registration failed:', err));
+    });
+
+    // Reload the page when a new Service Worker takes control (updates)
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+        window.location.reload();
     });
 }
