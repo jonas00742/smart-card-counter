@@ -123,6 +123,7 @@ export class GameController {
     }
 
     handleOpenInputModal() {
+        this.model.clearAutoFillTracker();
         this.model.state.isEditMode = false;
         const rIndex = this.model.state.currentRoundIndex;
         const phase = this.model.state.phase;
@@ -132,7 +133,7 @@ export class GameController {
         });
         
         this.model.state.currentPlayerInputIndex = firstEmptyIdx !== -1 ? firstEmptyIdx : 0;
-        this.view.renderModalContent(this.model.state, this.model.isCurrentPhaseComplete());
+        this.view.renderModalContent(this.model.state, this.model.isPhaseReadyForSave());
         this.view.elements.modal.classList.remove('hidden');
     }
 
@@ -148,6 +149,7 @@ export class GameController {
     }
 
     handleModalCancel() {
+        this.model.clearAutoFillTracker();
         this.view.elements.modal.classList.add('hidden');
         this.view.renderGameTable(this.model.state, this.model.getLeaderboard());
     }
@@ -155,14 +157,14 @@ export class GameController {
     handleModalPrev() {
         if (this.model.state.currentPlayerInputIndex > 0) {
             this.model.state.currentPlayerInputIndex--;
-            this.view.renderModalContent(this.model.state, this.model.isCurrentPhaseComplete());
+            this.view.renderModalContent(this.model.state, this.model.isPhaseReadyForSave());
         }
     }
 
     handleModalNext() {
         if (this.model.state.currentPlayerInputIndex < this.model.state.activePlayers.length - 1) {
             this.model.state.currentPlayerInputIndex++;
-            this.view.renderModalContent(this.model.state, this.model.isCurrentPhaseComplete());
+            this.view.renderModalContent(this.model.state, this.model.isPhaseReadyForSave());
         }
     }
 
@@ -175,8 +177,15 @@ export class GameController {
             this.view.stopPenultimateRoundBlinking();
         }
 
+        // If the phase was ready, it means auto-fill might have been applied.
+        // Any new input invalidates that, so we clear auto-filled values first.
+        if (this.model.isPhaseReadyForSave()) {
+            this.model.resetAutoFilledValues();
+        }
+
         this.model.setInputValue(val);
-        this.view.renderModalContent(this.model.state, this.model.isCurrentPhaseComplete());
+        this.model.applyAutoFill();
+        this.view.renderModalContent(this.model.state, this.model.isPhaseReadyForSave());
     }
 
     handleModalSave() {
@@ -191,6 +200,7 @@ export class GameController {
             }
         }
 
+        this.model.clearAutoFillTracker();
         this.view.elements.modal.classList.add('hidden');
         
         if (this.model.state.isEditMode) {
@@ -241,7 +251,7 @@ export class GameController {
         this.model.state.editPhase = phase;
         this.model.state.currentPlayerInputIndex = 0;
         
-        this.view.renderModalContent(this.model.state, this.model.isCurrentPhaseComplete());
+        this.view.renderModalContent(this.model.state, this.model.isPhaseReadyForSave());
         this.view.elements.modal.classList.remove('hidden');
     }
 

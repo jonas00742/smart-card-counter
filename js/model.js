@@ -4,6 +4,7 @@ export class GameModel {
     constructor() {
         this.STORAGE_KEY = 'smartCounterState';
         this.loadState();
+        this.autoFilledPlayers = [];
     }
 
     get defaultState() {
@@ -139,6 +140,13 @@ export class GameModel {
         const phase = this.state.isEditMode ? this.state.editPhase : this.state.phase;
         
         this.state.roundsData[rIndex][player][phase === 'ansage' ? 'ansage' : 'gemacht'] = value;
+
+        // If a user manually sets a value, they are no longer considered auto-filled
+        const autoFillIndex = this.autoFilledPlayers.indexOf(player);
+        if (autoFillIndex > -1) {
+            this.autoFilledPlayers.splice(autoFillIndex, 1);
+        }
+
         this.saveState();
     }
 
@@ -150,6 +158,84 @@ export class GameModel {
             const key = phase === 'ansage' ? 'ansage' : 'gemacht';
             return this.state.roundsData[rIndex][player][key] !== null;
         });
+    }
+
+    isPhaseReadyForSave() {
+        const rIndex = this.state.isEditMode ? this.state.editRoundIndex : this.state.currentRoundIndex;
+        const phase = this.state.isEditMode ? this.state.editPhase : this.state.phase;
+
+        // 1. Are all inputs filled for the current phase?
+        if (!this.isCurrentPhaseComplete()) {
+            return false;
+        }
+
+        // 2. If it's the 'stiche' phase, we have an additional validation.
+        if (phase === 'stiche') {
+            const validation = this.validateSticheSum(rIndex);
+            return validation.valid;
+        }
+
+        // 3. For 'ansage' phase, just being complete is enough.
+        return true;
+    }
+
+    clearAutoFillTracker() {
+        this.autoFilledPlayers = [];
+    }
+
+    resetAutoFilledValues() {
+        if (this.autoFilledPlayers.length === 0) return;
+
+        const rIndex = this.state.isEditMode ? this.state.editRoundIndex : this.state.currentRoundIndex;
+        const roundData = this.state.roundsData[rIndex];
+
+        this.autoFilledPlayers.forEach(player => {
+            roundData[player].gemacht = null;
+        });
+
+        this.clearAutoFillTracker(); // Clear the tracking array after use
+        this.saveState();
+    }
+
+    applyAutoFill() {
+        const rIndex = this.state.isEditMode ? this.state.editRoundIndex : this.state.currentRoundIndex;
+        const phase = this.state.isEditMode ? this.state.editPhase : this.state.phase;
+        
+        // Auto-fill only applies to 'stiche' phase (actual tricks made)
+        if (phase !== 'stiche') return;
+
+        const cards = CONFIG.CARDS_SEQUENCE[rIndex];
+        const roundData = this.state.roundsData[rIndex];
+        
+        let sumGemacht = 0;
+        const missingPlayers = [];
+        
+        this.state.activePlayers.forEach(p => {
+            const val = roundData[p].gemacht;
+            if (val !== null) sumGemacht += val;
+            else missingPlayers.push(p);
+        });
+
+        // Case 2: All cards distributed -> remaining players get 0
+        if (sumGemacht >= cards && missingPlayers.length > 0) {
+            missingPlayers.forEach(p => { 
+                roundData[p].gemacht = 0; 
+                if (!this.autoFilledPlayers.includes(p)) {
+                    this.autoFilledPlayers.push(p);
+                }
+            });
+            this.saveState();
+        } 
+        // Case 1: Only one player left -> gets the remainder
+        else if (missingPlayers.length === 1) {
+            const remainder = Math.max(0, cards - sumGemacht);
+            const playerToFill = missingPlayers[0];
+            roundData[playerToFill].gemacht = remainder;
+            if (!this.autoFilledPlayers.includes(playerToFill)) {
+                this.autoFilledPlayers.push(playerToFill);
+            }
+            this.saveState();
+        }
     }
 
     recalculateAllScores() {
