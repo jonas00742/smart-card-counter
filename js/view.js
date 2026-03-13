@@ -410,6 +410,9 @@ export class GameView {
             const rect = row.getBoundingClientRect();
             const offsetY = e.clientY - rect.top;
             
+            const container = this.elements.activePlayersList;
+            const containerRect = container.getBoundingClientRect();
+
             // 2. Create placeholder to hold the space
             const placeholder = document.createElement('li');
             placeholder.className = 'active-player-row placeholder';
@@ -431,10 +434,14 @@ export class GameView {
                 moveEvent.preventDefault();
                 
                 // Move the floating row
-                const currentTop = moveEvent.clientY - offsetY;
+                let currentTop = moveEvent.clientY - offsetY;
+
+                // Constrain movement to container bounds
+                if (currentTop < containerRect.top) currentTop = containerRect.top;
+                if (currentTop > containerRect.bottom - rect.height) currentTop = containerRect.bottom - rect.height;
+
                 row.style.top = `${currentTop}px`;
                 
-                const container = this.elements.activePlayersList;
                 // Find siblings (excluding the floating row and the placeholder itself)
                 const siblings = [...container.querySelectorAll('.active-player-row:not(.dragging):not(.placeholder)')];
                 
