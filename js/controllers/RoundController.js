@@ -19,7 +19,7 @@ export class RoundController {
         this.eventBus.on('MODAL_RESET', this.handleModalReset.bind(this));
         this.eventBus.on('MODAL_SAVE', this.handleModalSave.bind(this));
 
-        this.eventBus.on('GAME_OVER_CLOSE', () => this.view.elements.gameOverModal.classList.add('hidden'));
+        this.eventBus.on('GAME_OVER_CLOSE', () => this.view.hideGameOverModal());
         this.eventBus.on('EDIT_CHOICE_CLOSE', this.handleEditChoiceClose.bind(this));
         this.eventBus.on('EDIT_CHOICE_SELECT', this.handleEditChoiceSelect.bind(this));
         this.eventBus.on('TOGGLE_INTERIM', () => this.view.showInterimModal(this.model.getLeaderboard()));
@@ -36,8 +36,8 @@ export class RoundController {
         this.model.state.currentPlayerInputIndex = firstEmptyIdx !== -1 ? firstEmptyIdx : 0;
         
         this.view.renderModalContent(this.model.state, this.model.isPhaseReadyForSave());
-        this.view.elements.modal.classList.remove('hidden');
-        this.view.elements.fabInterimBtn.classList.add('hidden');
+        this.view.showInputModal();
+        this.view.toggleFab(false);
     }
 
     handleTriggerRowEdit(rIndex) {
@@ -46,8 +46,8 @@ export class RoundController {
         const isCurrentRoundStichePhase = rIndex === this.model.state.currentRoundIndex && this.model.state.phase === 'stiche';
 
         if (isPastRound || isCurrentRoundStichePhase) {
-            this.view.elements.editChoiceModal.classList.remove('hidden');
-            this.view.elements.fabInterimBtn.classList.add('hidden');
+            this.view.showEditChoiceModal();
+            this.view.toggleFab(false);
         } else {
             this.startEditModal('ansage');
         }
@@ -55,7 +55,7 @@ export class RoundController {
 
     handleModalCancel() {
         this.model.clearAutoFillTracker();
-        this.view.elements.modal.classList.add('hidden');
+        this.view.hideInputModal();
         this.view.renderGameTable(this.model.state, this.model.getLeaderboard());
     }
 
@@ -97,7 +97,7 @@ export class RoundController {
         }
 
         this.model.clearAutoFillTracker();
-        this.view.elements.modal.classList.add('hidden');
+        this.view.hideInputModal();
         
         if (this.model.state.isEditMode) {
             this.model.recalculateAllScores();
@@ -124,12 +124,12 @@ export class RoundController {
     }
 
     handleEditChoiceClose() { 
-        this.view.elements.editChoiceModal.classList.add('hidden'); 
-        this.view.elements.fabInterimBtn.classList.remove('hidden');
+        this.view.hideEditChoiceModal();
+        this.view.toggleFab(true);
     }
 
     handleEditChoiceSelect(phase) {
-        this.view.elements.editChoiceModal.classList.add('hidden');
+        this.view.hideEditChoiceModal();
         this.startEditModal(phase);
     }
 
@@ -138,7 +138,7 @@ export class RoundController {
         this.model.state.editPhase = phase;
         this.model.state.currentPlayerInputIndex = 0;
         this.view.renderModalContent(this.model.state, this.model.isPhaseReadyForSave());
-        this.view.elements.modal.classList.remove('hidden');
-        this.view.elements.fabInterimBtn.classList.add('hidden');
+        this.view.showInputModal();
+        this.view.toggleFab(false);
     }
 }

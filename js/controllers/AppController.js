@@ -47,7 +47,7 @@ export class AppController {
     }
 
     handlePopState() {
-        const isGameScreenVisible = !this.view.elements.gameScreen.classList.contains('hidden');
+        const isGameScreenVisible = this.view.isGameScreenVisible();
         if (isGameScreenVisible && !this.model.state.isGameOver) {
             window.history.pushState({ screen: 'game' }, '', '#game');
             this.view.showConfirmBackModal();

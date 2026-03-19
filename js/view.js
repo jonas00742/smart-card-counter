@@ -16,19 +16,6 @@ export class GameView {
             setupHeader: document.getElementById('setup-header'),
             gameHeader: document.getElementById('game-header')
         };
-        
-        // The Proxy maintains flawless compatibility. Any Controller access to 
-        // `this.view.elements.xxx` gets routed seamlessly to the correct sub-view component.
-        this.elements = new Proxy({}, {
-            get: (target, prop) => {
-                if (this._appElements[prop]) return this._appElements[prop];
-                if (this.setup.elements[prop]) return this.setup.elements[prop];
-                if (this.table.elements[prop]) return this.table.elements[prop];
-                if (this.inputModal.elements[prop]) return this.inputModal.elements[prop];
-                if (this.modals.elements[prop]) return this.modals.elements[prop];
-                return undefined;
-            }
-        });
     }
 
     switchScreen(toGame) {
@@ -38,6 +25,17 @@ export class GameView {
         this._appElements.gameHeader.classList.toggle('hidden', !toGame);
         this.modals.elements.fabInterimBtn.classList.toggle('hidden', !toGame);
     }
+
+    // --- State Queries ---
+    isGameScreenVisible() { return !this._appElements.gameScreen.classList.contains('hidden'); }
+
+    // --- Modal / UI Toggles ---
+    showInputModal() { this.inputModal.elements.modal.classList.remove('hidden'); }
+    hideInputModal() { this.inputModal.elements.modal.classList.add('hidden'); }
+    showEditChoiceModal() { this.modals.elements.editChoiceModal.classList.remove('hidden'); }
+    hideEditChoiceModal() { this.modals.elements.editChoiceModal.classList.add('hidden'); }
+    hideGameOverModal() { this.modals.elements.gameOverModal.classList.add('hidden'); }
+    toggleFab(show) { this.modals.elements.fabInterimBtn.classList.toggle('hidden', !show); }
 
     // --- View Rendering Delegation ---
     renderSetup(state) { this.setup.renderSetup(state); }
