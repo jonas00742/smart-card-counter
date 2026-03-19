@@ -1,7 +1,8 @@
 import { createElement, bindBackdropClick, generateLeaderboardHtml } from '../utils/dom.js';
 
 export class FeedbackModals {
-    constructor() {
+    constructor(eventBus) {
+        this.eventBus = eventBus;
         this.elements = {
             editChoiceModal: document.getElementById('edit-choice-modal'),
             editAnsageBtn: document.getElementById('edit-ansage-btn'),
@@ -30,6 +31,22 @@ export class FeedbackModals {
         bindBackdropClick(this.elements.validationModal, () => this.hideValidationAlert());
         this.elements.closeInterimBtn.addEventListener('click', () => this.hideInterimModal());
         bindBackdropClick(this.elements.interimModal, () => this.hideInterimModal());
+
+        this.elements.cancelEditChoiceBtn.addEventListener('click', () => this.eventBus.emit('EDIT_CHOICE_CLOSE'));
+        bindBackdropClick(this.elements.editChoiceModal, () => this.eventBus.emit('EDIT_CHOICE_CLOSE'));
+
+        this.elements.editAnsageBtn.addEventListener('click', () => this.eventBus.emit('EDIT_CHOICE_SELECT', 'ansage'));
+        this.elements.editGemachtBtn.addEventListener('click', () => this.eventBus.emit('EDIT_CHOICE_SELECT', 'stiche'));
+
+        this.elements.closeGameOverBtn.addEventListener('click', () => this.eventBus.emit('GAME_OVER_CLOSE'));
+        bindBackdropClick(this.elements.gameOverModal, () => this.eventBus.emit('GAME_OVER_CLOSE'));
+
+        this.elements.confirmBackAcceptBtn.addEventListener('click', () => this.eventBus.emit('CONFIRM_BACK_ACCEPT'));
+        
+        this.elements.confirmBackCancelBtn.addEventListener('click', () => this.eventBus.emit('CONFIRM_BACK_CANCEL'));
+        bindBackdropClick(this.elements.confirmBackModal, () => this.eventBus.emit('CONFIRM_BACK_CANCEL'));
+
+        this.elements.fabInterimBtn.addEventListener('click', () => this.eventBus.emit('TOGGLE_INTERIM'));
     }
 
     showGameOver(leaderboard) {
@@ -71,23 +88,4 @@ export class FeedbackModals {
         this.elements.interimModal.classList.add('hidden');
         this.elements.fabInterimBtn.classList.remove('hidden');
     }
-
-    bindEditChoiceClose(handler) {
-        this.elements.cancelEditChoiceBtn.addEventListener('click', handler);
-        bindBackdropClick(this.elements.editChoiceModal, handler);
-    }
-    bindEditChoiceSelect(handler) {
-        this.elements.editAnsageBtn.addEventListener('click', () => handler('ansage'));
-        this.elements.editGemachtBtn.addEventListener('click', () => handler('stiche'));
-    }
-    bindCloseGameOver(handler) { 
-        this.elements.closeGameOverBtn.addEventListener('click', handler); 
-        bindBackdropClick(this.elements.gameOverModal, handler);
-    }
-    bindConfirmBackAccept(handler) { this.elements.confirmBackAcceptBtn.addEventListener('click', handler); }
-    bindConfirmBackCancel(handler) { 
-        this.elements.confirmBackCancelBtn.addEventListener('click', handler); 
-        bindBackdropClick(this.elements.confirmBackModal, handler);
-    }
-    bindToggleInterim(handler) { this.elements.fabInterimBtn.addEventListener('click', handler); }
 }

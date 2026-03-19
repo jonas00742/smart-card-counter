@@ -2,7 +2,8 @@ import { createElement, getIcon, generateLeaderboardHtml } from '../utils/dom.js
 import { CONFIG } from '../config.js';
 
 export class GameTableView {
-    constructor() {
+    constructor(eventBus) {
+        this.eventBus = eventBus;
         this.elements = {
             backToSetupBtn: document.getElementById('back-to-setup-btn'),
             currentCardsSpan: document.getElementById('current-cards'),
@@ -17,6 +18,9 @@ export class GameTableView {
         
         this.elements.backToSetupBtn.textContent = '◀';
         this.elements.backToSetupBtn.classList.add('header-back-btn');
+
+        this.elements.backToSetupBtn.addEventListener('click', () => this.eventBus.emit('GAME_GO_BACK'));
+        this.elements.openInputModalBtn.addEventListener('click', () => this.eventBus.emit('GAME_OPEN_MODAL'));
     }
 
     renderGameTable(state, leaderboard = []) {
@@ -130,7 +134,7 @@ export class GameTableView {
         this.elements.tableBody.querySelectorAll('.edit-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const rIndex = parseInt(e.currentTarget.dataset.rindex);
-                this.onRowEditTriggered(rIndex);
+                this.eventBus.emit('GAME_TRIGGER_EDIT', rIndex);
             });
         });
     }
@@ -141,8 +145,4 @@ export class GameTableView {
 
     startPenultimateRoundBlinking() { document.body.classList.add('penultimate-round-warning'); }
     stopPenultimateRoundBlinking() { document.body.classList.remove('penultimate-round-warning'); }
-
-    bindGoBack(handler) { this.elements.backToSetupBtn.addEventListener('click', handler); }
-    bindOpenInputModal(handler) { this.elements.openInputModalBtn.addEventListener('click', handler); }
-    bindTriggerRowEdit(handler) { this.onRowEditTriggered = handler; }
 }

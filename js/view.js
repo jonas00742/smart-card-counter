@@ -4,11 +4,11 @@ import { InputModal } from './components/InputModal.js';
 import { FeedbackModals } from './components/FeedbackModals.js';
 
 export class GameView {
-    constructor() {
-        this.setup = new SetupView();
-        this.table = new GameTableView();
-        this.inputModal = new InputModal();
-        this.modals = new FeedbackModals();
+    constructor(eventBus) {
+        this.setup = new SetupView(eventBus);
+        this.table = new GameTableView(eventBus);
+        this.inputModal = new InputModal(eventBus);
+        this.modals = new FeedbackModals(eventBus);
 
         this._appElements = {
             setupScreen: document.getElementById('setup-screen'),
@@ -53,31 +53,4 @@ export class GameView {
     startPenultimateRoundBlinking() { this.table.startPenultimateRoundBlinking(); }
     stopPenultimateRoundBlinking() { this.table.stopPenultimateRoundBlinking(); }
     toggleInstallButton(show) { this.setup.toggleInstallButton(show); }
-
-    // --- Event Bindings Delegation ---
-    bindAddPlayer(h) { this.setup.bindAddPlayer(h); }
-    bindInstallApp(h) { this.setup.bindInstallApp(h); }
-    bindTogglePlayer(h) { this.setup.bindTogglePlayer(h); }
-    bindRemovePlayer(h) { this.setup.bindRemovePlayer(h); }
-    bindReorderPlayers(h) { this.setup.bindReorderPlayers(h); }
-    bindSetDealer(h) { this.setup.bindSetDealer(h); }
-    bindStartGame(h) { this.setup.bindStartGame(h); }
-
-    bindGoBack(h) { this.table.bindGoBack(h); }
-    bindOpenInputModal(h) { this.table.bindOpenInputModal(h); }
-    bindTriggerRowEdit(h) { this.table.bindTriggerRowEdit(h); }
-
-    bindModalCancel(h) { this.inputModal.bindModalCancel(h); }
-    bindModalPrev(h) { this.inputModal.bindModalPrev(h); }
-    bindModalNext(h) { this.inputModal.bindModalNext(h); }
-    bindNumberInput(h) { this.inputModal.bindNumberInput(h); }
-    bindModalReset(h) { this.inputModal.bindModalReset(h); }
-    bindModalSave(h) { this.inputModal.bindModalSave(h); }
-
-    bindEditChoiceClose(h) { this.modals.bindEditChoiceClose(h); }
-    bindEditChoiceSelect(h) { this.modals.bindEditChoiceSelect(h); }
-    bindCloseGameOver(h) { this.modals.bindCloseGameOver(h); }
-    bindConfirmBackAccept(h) { this.modals.bindConfirmBackAccept(h); }
-    bindConfirmBackCancel(h) { this.modals.bindConfirmBackCancel(h); }
-    bindToggleInterim(h) { this.modals.bindToggleInterim(h); }
 }

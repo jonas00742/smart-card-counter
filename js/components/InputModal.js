@@ -2,7 +2,8 @@ import { createElement, bindBackdropClick } from '../utils/dom.js';
 import { CONFIG } from '../config.js';
 
 export class InputModal {
-    constructor() {
+    constructor(eventBus) {
+        this.eventBus = eventBus;
         this.elements = {
             modal: document.getElementById('input-modal'),
             modalTitle: document.getElementById('modal-title'),
@@ -15,6 +16,13 @@ export class InputModal {
             cancelInputBtn: document.getElementById('cancel-input-btn'),
             resetInputBtn: document.getElementById('reset-input-btn')
         };
+
+        this.elements.cancelInputBtn.addEventListener('click', () => this.eventBus.emit('MODAL_CANCEL'));
+        bindBackdropClick(this.elements.modal, () => this.eventBus.emit('MODAL_CANCEL'));
+        this.elements.modalPrevBtn.addEventListener('click', () => this.eventBus.emit('MODAL_PREV'));
+        this.elements.modalNextBtn.addEventListener('click', () => this.eventBus.emit('MODAL_NEXT'));
+        if (this.elements.resetInputBtn) this.elements.resetInputBtn.addEventListener('click', () => this.eventBus.emit('MODAL_RESET'));
+        this.elements.saveInputBtn.addEventListener('click', () => this.eventBus.emit('MODAL_SAVE'));
     }
 
     renderModalContent(state, isComplete) {
@@ -60,7 +68,7 @@ export class InputModal {
                 type: 'button',
                 className: `number-btn${extraClass} ${currentValue === i ? 'selected' : ''}`,
                 text: i,
-                events: { click: () => this.onNumberInput(i) }
+                events: { click: () => this.eventBus.emit('MODAL_NUMBER_INPUT', i) }
             });
             this.elements.buttonGrid.appendChild(btn);
         }
@@ -78,14 +86,4 @@ export class InputModal {
 
         this.elements.saveInputBtn.classList.toggle('hidden', !isComplete);
     }
-
-    bindModalCancel(handler) {
-        this.elements.cancelInputBtn.addEventListener('click', handler);
-        bindBackdropClick(this.elements.modal, handler);
-    }
-    bindModalPrev(handler) { this.elements.modalPrevBtn.addEventListener('click', handler); }
-    bindModalNext(handler) { this.elements.modalNextBtn.addEventListener('click', handler); }
-    bindNumberInput(handler) { this.onNumberInput = handler; }
-    bindModalReset(handler) { if (this.elements.resetInputBtn) this.elements.resetInputBtn.addEventListener('click', handler); }
-    bindModalSave(handler) { this.elements.saveInputBtn.addEventListener('click', handler); }
 }

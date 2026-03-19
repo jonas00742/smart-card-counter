@@ -1,11 +1,18 @@
 import { GameModel } from './model.js';
 import { GameView } from './view.js';
-import { GameController } from './controller.js';
+import { EventBus } from './core/EventBus.js';
+import { AppController } from './controllers/AppController.js';
+import { SetupController } from './controllers/SetupController.js';
+import { RoundController } from './controllers/RoundController.js';
 
 document.addEventListener('DOMContentLoaded', () => {
+    const eventBus = new EventBus();
     const model = new GameModel();
-    const view = new GameView();
-    new GameController(model, view);
+    const view = new GameView(eventBus);
+    
+    new AppController(model, view, eventBus);
+    new SetupController(model, view, eventBus);
+    new RoundController(model, view, eventBus);
 });
 
 if ('serviceWorker' in navigator) {
