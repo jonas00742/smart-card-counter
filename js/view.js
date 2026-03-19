@@ -1,598 +1,83 @@
-import { CONFIG } from './config.js';
-
-const ICONS = {
-    drag: `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>`,
-    edit: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>`,
-    check: `<svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`,
-    cross: `<svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>`,
-    dash: `<svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>`,
-    warning: `<svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`
-};
+import { SetupView } from './components/SetupView.js';
+import { GameTableView } from './components/GameTableView.js';
+import { InputModal } from './components/InputModal.js';
+import { FeedbackModals } from './components/FeedbackModals.js';
 
 export class GameView {
     constructor() {
-        this.elements = {
+        this.setup = new SetupView();
+        this.table = new GameTableView();
+        this.inputModal = new InputModal();
+        this.modals = new FeedbackModals();
+
+        this._appElements = {
             setupScreen: document.getElementById('setup-screen'),
             gameScreen: document.getElementById('game-screen'),
             setupHeader: document.getElementById('setup-header'),
-            gameHeader: document.getElementById('game-header'),
-            backToSetupBtn: document.getElementById('back-to-setup-btn'),
-            currentCardsSpan: document.getElementById('current-cards'),
-            
-            playerPool: document.getElementById('available-players-container'),
-            activePlayersList: document.getElementById('active-players-container'),
-            newPlayerInput: document.getElementById('new-player-name'),
-            addNewPlayerBtn: document.getElementById('add-new-player-btn'),
-            installAppBtn: document.getElementById('install-app-btn'),
-            startGameBtn: document.getElementById('start-game-btn'),
-            
-            scoreTable: document.getElementById('score-table'),
-            tableHeaderRow: document.getElementById('table-header-row'),
-            tableBody: document.getElementById('table-body'),
-            openInputModalBtn: document.getElementById('open-input-modal-btn'),
-            
-            modal: document.getElementById('input-modal'),
-            modalTitle: document.getElementById('modal-title'),
-            modalSubtitle: document.getElementById('modal-subtitle'),
-            modalPrevBtn: document.getElementById('modal-prev-btn'),
-            modalNextBtn: document.getElementById('modal-next-btn'),
-            modalIndicators: document.getElementById('modal-indicators'),
-            buttonGrid: document.getElementById('dynamic-button-grid'),
-            saveInputBtn: document.getElementById('save-input-btn'),
-            cancelInputBtn: document.getElementById('cancel-input-btn'),
-            resetInputBtn: document.getElementById('reset-input-btn'),
-
-            editChoiceModal: document.getElementById('edit-choice-modal'),
-            editAnsageBtn: document.getElementById('edit-ansage-btn'),
-            editGemachtBtn: document.getElementById('edit-gemacht-btn'),
-            cancelEditChoiceBtn: document.getElementById('cancel-edit-choice-btn'),
-
-            leaderboardContainer: document.getElementById('leaderboard-container'),
-            leaderboardList: document.getElementById('leaderboard-list'),
-            gameOverModal: document.getElementById('game-over-modal'),
-            podiumContainer: document.getElementById('podium-container'),
-            closeGameOverBtn: document.getElementById('close-game-over-btn'),
-
-            // --- NEU: Confirm Back Modal Elemente ---
-            confirmBackModal: document.getElementById('confirm-back-modal'),
-            confirmBackAcceptBtn: document.getElementById('confirm-back-accept-btn'),
-            confirmBackCancelBtn: document.getElementById('confirm-back-cancel-btn'),
-
-            // Custom Delete & Validation Modals
-            deletePlayerModal: document.getElementById('delete-player-modal'),
-            deletePlayerText: document.getElementById('delete-player-text'),
-            confirmDeletePlayerBtn: document.getElementById('confirm-delete-player-btn'),
-            cancelDeletePlayerBtn: document.getElementById('cancel-delete-player-btn'),
-
-            validationModal: document.getElementById('validation-modal'),
-            validationText: document.getElementById('validation-text'),
-            closeValidationBtn: document.getElementById('close-validation-btn'),
-
-            // FAB & Interim Modal
-            fabInterimBtn: document.getElementById('fab-interim-btn'),
-            interimModal: document.getElementById('interim-modal'),
-            interimList: document.getElementById('interim-list'),
-            closeInterimBtn: document.getElementById('close-interim-btn')
+            gameHeader: document.getElementById('game-header')
         };
         
-        this.playerToDelete = null;
-
-        // Bind internal UI events (Cancel/Close buttons)
-        this.elements.cancelDeletePlayerBtn.addEventListener('click', () => this.hideDeletePlayerModal());
-        this._bindBackdropClick(this.elements.deletePlayerModal, () => this.hideDeletePlayerModal());
-        this.elements.closeValidationBtn.addEventListener('click', () => this.hideValidationAlert());
-        this._bindBackdropClick(this.elements.validationModal, () => this.hideValidationAlert());
-        this.elements.closeInterimBtn.addEventListener('click', () => this.hideInterimModal());
-        this._bindBackdropClick(this.elements.interimModal, () => this.hideInterimModal());
-
-        // Initialize Back Button appearance
-        this.elements.backToSetupBtn.textContent = '◀';
-        this.elements.backToSetupBtn.classList.add('header-back-btn');
-    }
-
-    // Helper to create DOM elements cleanly
-    createElement(tag, options = {}, ...children) {
-        const el = document.createElement(tag);
-        const { className, text, html, dataset, events, ...attrs } = options;
-        
-        if (className) el.className = className;
-        if (text !== undefined && text !== null) el.textContent = text;
-        if (html) el.innerHTML = html;
-        if (dataset) Object.entries(dataset).forEach(([k, v]) => el.dataset[k] = v);
-        if (events) Object.entries(events).forEach(([k, v]) => el.addEventListener(k, v));
-        Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, v));
-        
-        children.forEach(child => child && el.appendChild(child));
-        return el;
-    }
-
-    _bindBackdropClick(modal, handler) {
-        modal.addEventListener('click', (e) => { if (e.target === modal) handler(); });
-    }
-
-    _getIcon(type) {
-        return ICONS[type] || '';
-    }
-
-    renderSetup(state) {
-        this.elements.playerPool.innerHTML = '';
-        state.availablePlayers.forEach(player => {
-            const chip = this.createElement('li', { className: `player-chip ${state.activePlayers.includes(player) ? 'selected' : ''}` },
-                this.createElement('span', { text: player, events: { click: () => this.onPlayerToggle(player) } }),
-                this.createElement('button', { 
-                    type: 'button',
-                    className: 'delete-player-btn',
-                    html: '&times;',
-                    events: { click: (e) => {
-                        e.stopPropagation();
-                        this.showDeletePlayerModal(player);
-                    }}
-                })
-            );
-            this.elements.playerPool.appendChild(chip);
-        });
-
-        this.elements.activePlayersList.innerHTML = '';
-        if (state.activePlayers.length === 0) {
-            this.elements.activePlayersList.innerHTML = '<li><p class="subtitle text-sm">Noch keine Spieler gewählt.</p></li>';
-        } else {
-            state.activePlayers.forEach((player, index) => {
-                const row = this.createElement('li', { className: 'active-player-row' });
-                
-                const leftSide = this.createElement('div', { className: 'player-row-left' },
-                    this.createElement('div', { className: 'drag-handle-btn', html: this._getIcon('drag') }),
-                    this.createElement('span', { html: `<strong>${index + 1}.</strong> ${player}` })
-                );
-                
-                const isDealer = index === state.startingDealerIndex;
-                const rightSide = this.createElement('div', { className: 'player-row-right' },
-                    this.createElement('button', {
-                        type: 'button',
-                        className: `dealer-btn ${isDealer ? 'active' : ''}`,
-                        text: isDealer ? '🃏 Geber' : 'Geber',
-                        events: { click: () => this.onSetDealer(index) }
-                    })
-                );
-                
-                row.appendChild(leftSide);
-                row.appendChild(rightSide);
-                this.setupDragEvents(row);
-                this.elements.activePlayersList.appendChild(row);
-            });
-        }
-        this.elements.startGameBtn.disabled = state.activePlayers.length < 2;
-    }
-
-    renderGameTable(state, leaderboard = []) {
-        const cards = CONFIG.CARDS_SEQUENCE[state.currentRoundIndex];
-        this.elements.currentCardsSpan.innerText = cards;
-        
-        let allEntered = true;
-        let someEntered = false;
-
-        if (!state.isGameOver) {
-            const key = state.phase === 'ansage' ? 'ansage' : 'gemacht';
-            state.activePlayers.forEach(p => {
-                const val = state.roundsData[state.currentRoundIndex][p][key];
-                if (val !== null) someEntered = true;
-                else allEntered = false;
-            });
-
-            this.elements.openInputModalBtn.classList.remove('pulse-animation', 'btn-continue');
-            if (allEntered) {
-                this.elements.openInputModalBtn.innerText = `Eingabe bestätigen (${cards} Karten)`;
-                this.elements.openInputModalBtn.classList.add('pulse-animation');
-            } else if (someEntered) {
-                this.elements.openInputModalBtn.innerText = `Eingabe fortsetzen (${cards} Karten)`;
-                this.elements.openInputModalBtn.classList.add('btn-continue');
-            } else {
-                this.elements.openInputModalBtn.innerText = state.phase === 'ansage' ? `Eingabe starten (${cards} Karten)` : `Stiche eintragen (${cards} Karten)`;
+        // The Proxy maintains flawless compatibility. Any Controller access to 
+        // `this.view.elements.xxx` gets routed seamlessly to the correct sub-view component.
+        this.elements = new Proxy({}, {
+            get: (target, prop) => {
+                if (this._appElements[prop]) return this._appElements[prop];
+                if (this.setup.elements[prop]) return this.setup.elements[prop];
+                if (this.table.elements[prop]) return this.table.elements[prop];
+                if (this.inputModal.elements[prop]) return this.inputModal.elements[prop];
+                if (this.modals.elements[prop]) return this.modals.elements[prop];
+                return undefined;
             }
-        }
-        
-        this.elements.openInputModalBtn.classList.toggle('hidden', state.isGameOver);
-        this.elements.leaderboardContainer.classList.toggle('hidden', !state.isGameOver);
-        this.elements.fabInterimBtn.classList.toggle('hidden', state.isGameOver);
-        if (state.isGameOver) {
-            this.renderLeaderboard(leaderboard);
-        }
-
-        // Clear header except first column
-        Array.from(this.elements.tableHeaderRow.children).slice(1).forEach(el => el.remove());
-
-        const numPlayers = state.activePlayers.length;
-        const currentDealerIndex = numPlayers > 0 ? (state.startingDealerIndex + state.currentRoundIndex) % numPlayers : 0;
-        const currentDealer = state.activePlayers[currentDealerIndex];
-        
-        state.activePlayers.forEach(player => {
-            const isDealer = player === currentDealer;
-            const th = this.createElement('th', { 
-                className: `player-col ${isDealer ? 'dealer-col-header' : ''}`,
-                text: player.substring(0, 10)
-            });
-            this.elements.tableHeaderRow.appendChild(th);
         });
-
-        this.elements.tableHeaderRow.appendChild(this.createElement('th', { className: 'status-col-header', text: '±' }));
-
-        this.elements.tableBody.innerHTML = '';
-
-        CONFIG.CARDS_SEQUENCE.forEach((cardCount, index) => {
-            const tr = this.createElement('tr');
-            
-            let sumAnsage = 0;
-            let allAnsagenMade = true;
-            let isRowIncomplete = false;
-
-            const isPastAnsage = index < state.currentRoundIndex || (index === state.currentRoundIndex && state.phase === 'stiche') || state.isGameOver;
-            const isPastGemacht = index < state.currentRoundIndex || state.isGameOver;
-
-            state.activePlayers.forEach(player => {
-                const data = state.roundsData[index][player];
-                if (data.ansage === null) allAnsagenMade = false;
-                else sumAnsage += data.ansage;
-
-                if (isPastAnsage && data.ansage === null) isRowIncomplete = true;
-                if (isPastGemacht && data.gemacht === null) isRowIncomplete = true;
-            });
-
-            if (isRowIncomplete) tr.classList.add('row-warning');
-            else if (index === state.currentRoundIndex && !state.isGameOver) tr.style.backgroundColor = 'var(--color-highlight-row)';
-
-            const editBtnHtml = (index <= state.currentRoundIndex || state.isGameOver) 
-                ? `<button class="edit-btn" data-rindex="${index}">${this._getIcon('edit')}</button>` 
-                : '';
-            
-            const tdRound = this.createElement('td', { className: 'round-cell', html: `<div class="round-cell-content"><span>${cardCount}</span>${editBtnHtml}</div>` });
-            tr.appendChild(tdRound);
-
-            state.activePlayers.forEach(player => {
-                const data = state.roundsData[index][player];
-
-                const ansageStr = data.ansage ?? '-';
-                const gemachtStr = data.gemacht ?? '-';
-                const scoreStr = data.gemacht !== null ? data.gesamtPunkte : '-';
-                const scoreColor = data.punkte < 0 ? 'var(--color-danger)' : 'inherit';
-
-                const td = this.createElement('td', { 
-                    className: 'player-col',
-                    html: `<div class="cell-data"><span class="cell-stats">${ansageStr} / ${gemachtStr}</span><span class="cell-score" style="color: ${scoreColor}">${scoreStr}</span></div>`
-                });
-                tr.appendChild(td);
-            });
-
-            let statusHtml = '';
-            if (isRowIncomplete) {
-                statusHtml = `<span class="status-badge warning" title="Unvollständig">${this._getIcon('warning')}</span>`;
-            } else if (allAnsagenMade) {
-                if (sumAnsage === cardCount) statusHtml = `<span class="status-badge success">${this._getIcon('check')}</span>`;
-                else if (sumAnsage > cardCount) statusHtml = `<span class="status-badge danger">${this._getIcon('cross')}</span>`;
-                else statusHtml = `<span class="status-badge accent">${this._getIcon('dash')}</span>`;
-            }
-            
-            tr.appendChild(this.createElement('td', { className: 'status-cell', html: statusHtml }));
-            this.elements.tableBody.appendChild(tr);
-        });
-
-        this.elements.tableBody.querySelectorAll('.edit-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const rIndex = parseInt(e.currentTarget.dataset.rindex);
-                this.onRowEditTriggered(rIndex);
-            });
-        });
-    }
-
-    _generateLeaderboardHtml(leaderboard, suffix = '') {
-        return leaderboard.map((item, index) => {
-            let medal = `${index + 1}.`;
-            if (index === 0) medal = '🥇';
-            if (index === 1) medal = '🥈';
-            if (index === 2) medal = '🥉';
-            return `<li>
-                <span class="rank-medal">${medal}</span> 
-                <span class="rank-name">${item.name}</span> 
-                <strong>${item.score}${suffix}</strong>
-            </li>`;
-        }).join('');
-    }
-
-    renderLeaderboard(leaderboard) {
-        this.elements.leaderboardList.innerHTML = this._generateLeaderboardHtml(leaderboard, ' Pkt');
-    }
-
-    renderInterimModal(leaderboard) {
-        this.elements.interimList.innerHTML = this._generateLeaderboardHtml(leaderboard);
-    }
-
-    showGameOver(leaderboard) {
-        this.elements.gameOverModal.classList.remove('hidden');
-        this.elements.podiumContainer.innerHTML = '';
-        
-        const podiumOrder = [];
-        if (leaderboard.length > 1) podiumOrder.push({ ...leaderboard[1], place: 2 });
-        if (leaderboard.length > 0) podiumOrder.push({ ...leaderboard[0], place: 1 });
-        if (leaderboard.length > 2) podiumOrder.push({ ...leaderboard[2], place: 3 });
-
-        podiumOrder.forEach(item => {
-            const step = this.createElement('div', { 
-                className: `podium-step place-${item.place}`,
-                html: `<div class="podium-name">${item.name}</div><div class="podium-score">${item.score} Pkt</div><div class="podium-block">${item.place}</div>`
-            });
-            this.elements.podiumContainer.appendChild(step);
-        });
-    }
-
-    showConfirmBackModal() {
-        this.elements.confirmBackModal.classList.remove('hidden');
-    }
-
-    hideConfirmBackModal() {
-        this.elements.confirmBackModal.classList.add('hidden');
-    }
-
-    showDeletePlayerModal(player) {
-        this.playerToDelete = player;
-        this.elements.deletePlayerText.innerText = `Möchtest du ${player} wirklich entfernen?`;
-        this.elements.deletePlayerModal.classList.remove('hidden');
-    }
-
-    hideDeletePlayerModal() {
-        this.elements.deletePlayerModal.classList.add('hidden');
-        this.playerToDelete = null;
-    }
-
-    showValidationAlert(message) {
-        this.elements.validationText.innerText = message;
-        this.elements.validationModal.classList.remove('hidden');
-    }
-
-    hideValidationAlert() {
-        this.elements.validationModal.classList.add('hidden');
-    }
-
-    showInterimModal(leaderboard) {
-        this.renderInterimModal(leaderboard);
-        this.elements.interimModal.classList.remove('hidden');
-        this.elements.fabInterimBtn.classList.add('hidden');
-    }
-
-    hideInterimModal() {
-        this.elements.interimModal.classList.add('hidden');
-        this.elements.fabInterimBtn.classList.remove('hidden');
-    }
-
-    renderModalContent(state, isComplete) {
-        const player = state.activePlayers[state.currentPlayerInputIndex];
-        const rIndex = state.isEditMode ? state.editRoundIndex : state.currentRoundIndex;
-        const cards = CONFIG.CARDS_SEQUENCE[rIndex];
-        const phase = state.isEditMode ? state.editPhase : state.phase;
-        const key = phase === 'ansage' ? 'ansage' : 'gemacht';
-
-        this.elements.modal.classList.remove('phase-ansage', 'phase-stiche');
-        this.elements.modal.classList.add(`phase-${phase}`);
-
-        const titlePrefix = state.isEditMode ? "Ändern: " : "";
-        this.elements.modalTitle.innerText = `${titlePrefix}Stiche ${phase === 'ansage' ? 'ansagen' : 'gemacht'}?`;
-        this.elements.modalSubtitle.innerText = player;
-
-        this.elements.modalIndicators.innerHTML = state.activePlayers.map((p, idx) => {
-            const val = state.roundsData[rIndex][p][key];
-            return `<div class="indicator-dot ${val !== null ? 'filled' : ''} ${idx === state.currentPlayerInputIndex ? 'active' : ''}"></div>`;
-        }).join('');
-
-        this.elements.buttonGrid.innerHTML = '';
-        const currentValue = state.roundsData[rIndex][player][key];
-        const ansageValue = state.roundsData[rIndex][player].ansage;
-
-        let maxButtons = cards;
-
-        if (phase === 'stiche') {
-            const sumOthers = state.activePlayers.reduce((sum, p) => {
-                return p !== player ? sum + (state.roundsData[rIndex][p].gemacht || 0) : sum;
-            }, 0);
-            maxButtons = Math.max(0, cards - sumOthers); 
-        }
-
-        for (let i = 0; i <= maxButtons; i++) {
-            let extraClass = '';
-            if (phase === 'stiche') {
-                // Highlight the button that matches the bid, others are neutral
-                if (i === ansageValue) extraClass = ' target-bid';
-                else extraClass = ' non-target';
-            }
-
-            const btn = this.createElement('button', {
-                type: 'button',
-                className: `number-btn${extraClass} ${currentValue === i ? 'selected' : ''}`,
-                text: i,
-                events: { click: () => this.onNumberInput(i) }
-            });
-            this.elements.buttonGrid.appendChild(btn);
-        }
-
-        this.elements.modalPrevBtn.style.visibility = state.currentPlayerInputIndex > 0 ? 'visible' : 'hidden';
-        this.elements.modalNextBtn.style.visibility = state.currentPlayerInputIndex < state.activePlayers.length - 1 ? 'visible' : 'hidden';
-        
-        if (this.elements.resetInputBtn) {
-            this.elements.resetInputBtn.classList.toggle('hidden', phase !== 'stiche');
-            if (phase === 'stiche') {
-                const hasAnyInput = state.activePlayers.some(p => state.roundsData[rIndex][p].gemacht !== null);
-                this.elements.resetInputBtn.disabled = !hasAnyInput;
-            }
-        }
-
-        this.elements.saveInputBtn.classList.toggle('hidden', !isComplete);
     }
 
     switchScreen(toGame) {
-        this.elements.setupScreen.classList.toggle('hidden', toGame);
-        this.elements.gameScreen.classList.toggle('hidden', !toGame);
-        this.elements.setupHeader.classList.toggle('hidden', toGame);
-        this.elements.gameHeader.classList.toggle('hidden', !toGame);
-        this.elements.fabInterimBtn.classList.toggle('hidden', !toGame);
+        this._appElements.setupScreen.classList.toggle('hidden', toGame);
+        this._appElements.gameScreen.classList.toggle('hidden', !toGame);
+        this._appElements.setupHeader.classList.toggle('hidden', toGame);
+        this._appElements.gameHeader.classList.toggle('hidden', !toGame);
+        this.modals.elements.fabInterimBtn.classList.toggle('hidden', !toGame);
     }
 
-    // Refactored to use Pointer Events (Mouse + Touch support)
-    setupDragEvents(row) {
-        const handle = row.querySelector('.drag-handle-btn');
-
-        const handleDragStart = (e) => {
-            // Only allow main button (left click) or touch
-            if (e.pointerType === 'mouse' && e.button !== 0) return;
-            
-            e.preventDefault();
-            
-            // 1. Calculate offsets and dimensions
-            const rect = row.getBoundingClientRect();
-            const offsetY = e.clientY - rect.top;
-            
-            const container = this.elements.activePlayersList;
-            const containerRect = container.getBoundingClientRect();
-
-            // 2. Create placeholder to hold the space
-            const placeholder = document.createElement('li');
-            placeholder.className = 'active-player-row placeholder';
-            placeholder.style.height = `${rect.height}px`;
-            
-            // 3. Style the dragged row to float
-            row.style.width = `${rect.width}px`;
-            row.style.height = `${rect.height}px`;
-            row.style.position = 'fixed';
-            row.style.top = `${rect.top}px`;
-            row.style.left = `${rect.left}px`;
-            row.style.zIndex = '1000';
-            row.classList.add('dragging');
-
-            // 4. Insert placeholder where row currently is
-            row.parentNode.insertBefore(placeholder, row);
-
-            const handleDragMove = (moveEvent) => {
-                moveEvent.preventDefault();
-                
-                // Move the floating row
-                let currentTop = moveEvent.clientY - offsetY;
-
-                // Constrain movement to container bounds
-                if (currentTop < containerRect.top) currentTop = containerRect.top;
-                if (currentTop > containerRect.bottom - rect.height) currentTop = containerRect.bottom - rect.height;
-
-                row.style.top = `${currentTop}px`;
-                
-                // Find siblings (excluding the floating row and the placeholder itself)
-                const siblings = [...container.querySelectorAll('.active-player-row:not(.dragging):not(.placeholder)')];
-                
-                // Find where to move the placeholder
-                const nextSibling = siblings.reduce((closest, sibling) => {
-                    const box = sibling.getBoundingClientRect();
-                    const offset = moveEvent.clientY - box.top - box.height / 2;
-                    if (offset < 0 && offset > closest.offset) {
-                        return { offset: offset, element: sibling };
-                    } else {
-                        return closest;
-                    }
-                }, { offset: Number.NEGATIVE_INFINITY }).element;
-                
-                if (nextSibling) {
-                    container.insertBefore(placeholder, nextSibling);
-                } else {
-                    container.appendChild(placeholder);
-                }
-            };
+    // --- View Rendering Delegation ---
+    renderSetup(state) { this.setup.renderSetup(state); }
+    renderGameTable(state, leaderboard) { this.table.renderGameTable(state, leaderboard); }
+    renderModalContent(state, isComplete) { this.inputModal.renderModalContent(state, isComplete); }
     
-            const handleDragEnd = () => {
-                document.removeEventListener('pointermove', handleDragMove);
-                document.removeEventListener('pointerup', handleDragEnd);
-                document.removeEventListener('pointercancel', handleDragEnd);
-
-                // Swap placeholder with actual row
-                if (placeholder.parentNode) {
-                    placeholder.parentNode.insertBefore(row, placeholder);
-                    placeholder.remove();
-                }
-
-                // Reset row styles
-                row.style.width = '';
-                row.style.height = '';
-                row.style.position = '';
-                row.style.top = '';
-                row.style.left = '';
-                row.style.zIndex = '';
-                row.classList.remove('dragging');
-
-                const newOrder = Array.from(this.elements.activePlayersList.children).map(r => r.querySelector('.player-row-left span').innerText.replace(/^\d+\.\s*/, '').trim());
-                this.onPlayerReorder(newOrder);
-            };
-
-            document.addEventListener('pointermove', handleDragMove);
-            document.addEventListener('pointerup', handleDragEnd);
-            document.addEventListener('pointercancel', handleDragEnd);
-        };
+    showGameOver(leaderboard) { this.modals.showGameOver(leaderboard); }
+    showConfirmBackModal() { this.modals.showConfirmBackModal(); }
+    hideConfirmBackModal() { this.modals.hideConfirmBackModal(); }
+    showValidationAlert(message) { this.modals.showValidationAlert(message); }
+    showInterimModal(leaderboard) { this.modals.showInterimModal(leaderboard); }
     
-        handle.addEventListener('pointerdown', handleDragStart);
-    }
+    startPenultimateRoundBlinking() { this.table.startPenultimateRoundBlinking(); }
+    stopPenultimateRoundBlinking() { this.table.stopPenultimateRoundBlinking(); }
+    toggleInstallButton(show) { this.setup.toggleInstallButton(show); }
 
-    startPenultimateRoundBlinking() {
-        document.body.classList.add('penultimate-round-warning');
-    }
+    // --- Event Bindings Delegation ---
+    bindAddPlayer(h) { this.setup.bindAddPlayer(h); }
+    bindInstallApp(h) { this.setup.bindInstallApp(h); }
+    bindTogglePlayer(h) { this.setup.bindTogglePlayer(h); }
+    bindRemovePlayer(h) { this.setup.bindRemovePlayer(h); }
+    bindReorderPlayers(h) { this.setup.bindReorderPlayers(h); }
+    bindSetDealer(h) { this.setup.bindSetDealer(h); }
+    bindStartGame(h) { this.setup.bindStartGame(h); }
 
-    stopPenultimateRoundBlinking() {
-        document.body.classList.remove('penultimate-round-warning');
-    }
+    bindGoBack(h) { this.table.bindGoBack(h); }
+    bindOpenInputModal(h) { this.table.bindOpenInputModal(h); }
+    bindTriggerRowEdit(h) { this.table.bindTriggerRowEdit(h); }
 
-    bindAddPlayer(handler) {
-        this.elements.addNewPlayerBtn.addEventListener('click', () => {
-            const name = this.elements.newPlayerInput.value.trim();
-            if (name) { handler(name); this.elements.newPlayerInput.value = ''; }
-        });
-    }
-    
-    bindInstallApp(handler) { this.elements.installAppBtn.addEventListener('click', handler); }
-    toggleInstallButton(show) { this.elements.installAppBtn.classList.toggle('hidden', !show); }
-    bindTogglePlayer(handler) { this.onPlayerToggle = handler; }
-    
-    bindRemovePlayer(handler) { 
-        this.elements.confirmDeletePlayerBtn.addEventListener('click', () => {
-            if (this.playerToDelete) handler(this.playerToDelete);
-            this.hideDeletePlayerModal();
-        });
-    }
+    bindModalCancel(h) { this.inputModal.bindModalCancel(h); }
+    bindModalPrev(h) { this.inputModal.bindModalPrev(h); }
+    bindModalNext(h) { this.inputModal.bindModalNext(h); }
+    bindNumberInput(h) { this.inputModal.bindNumberInput(h); }
+    bindModalReset(h) { this.inputModal.bindModalReset(h); }
+    bindModalSave(h) { this.inputModal.bindModalSave(h); }
 
-    bindReorderPlayers(handler) { this.onPlayerReorder = handler; }
-    bindSetDealer(handler) { this.onSetDealer = handler; }
-    bindStartGame(handler) { this.elements.startGameBtn.addEventListener('click', handler); }
-
-    bindOpenInputModal(handler) { this.elements.openInputModalBtn.addEventListener('click', handler); }
-    bindGoBack(handler) { this.elements.backToSetupBtn.addEventListener('click', handler); }
-    bindTriggerRowEdit(handler) { this.onRowEditTriggered = handler; }
-    bindModalCancel(handler) {
-        this.elements.cancelInputBtn.addEventListener('click', handler);
-        this._bindBackdropClick(this.elements.modal, handler);
-    }
-    bindModalPrev(handler) { this.elements.modalPrevBtn.addEventListener('click', handler); }
-    bindModalNext(handler) { this.elements.modalNextBtn.addEventListener('click', handler); }
-    bindNumberInput(handler) { this.onNumberInput = handler; }
-    bindModalReset(handler) { 
-        if (this.elements.resetInputBtn) this.elements.resetInputBtn.addEventListener('click', handler); 
-    }
-    bindModalSave(handler) { this.elements.saveInputBtn.addEventListener('click', handler); }
-    bindEditChoiceClose(handler) {
-        this.elements.cancelEditChoiceBtn.addEventListener('click', handler);
-        this._bindBackdropClick(this.elements.editChoiceModal, handler);
-    }
-    bindEditChoiceSelect(handler) {
-        this.elements.editAnsageBtn.addEventListener('click', () => handler('ansage'));
-        this.elements.editGemachtBtn.addEventListener('click', () => handler('stiche'));
-    }
-    bindCloseGameOver(handler) { 
-        this.elements.closeGameOverBtn.addEventListener('click', handler); 
-        this._bindBackdropClick(this.elements.gameOverModal, handler);
-    }
-
-    bindConfirmBackAccept(handler) { this.elements.confirmBackAcceptBtn.addEventListener('click', handler); }
-    bindConfirmBackCancel(handler) { 
-        this.elements.confirmBackCancelBtn.addEventListener('click', handler); 
-        this._bindBackdropClick(this.elements.confirmBackModal, handler);
-    }
-
-    bindToggleInterim(handler) { this.elements.fabInterimBtn.addEventListener('click', handler); }
+    bindEditChoiceClose(h) { this.modals.bindEditChoiceClose(h); }
+    bindEditChoiceSelect(h) { this.modals.bindEditChoiceSelect(h); }
+    bindCloseGameOver(h) { this.modals.bindCloseGameOver(h); }
+    bindConfirmBackAccept(h) { this.modals.bindConfirmBackAccept(h); }
+    bindConfirmBackCancel(h) { this.modals.bindConfirmBackCancel(h); }
+    bindToggleInterim(h) { this.modals.bindToggleInterim(h); }
 }
