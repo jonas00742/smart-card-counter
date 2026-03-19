@@ -145,16 +145,17 @@ export class GameController {
     }
 
     handleTriggerRowEdit(rIndex) {
-        const roundData = this.model.state.roundsData[rIndex];
-        const firstPlayer = this.model.state.activePlayers[0];
-        const hasGemacht = roundData[firstPlayer].gemacht !== null;
-        
         this.model.state.editRoundIndex = rIndex;
 
-        if (hasGemacht) {
+        const isPastRound = rIndex < this.model.state.currentRoundIndex || this.model.state.isGameOver;
+        const isCurrentRoundStichePhase = rIndex === this.model.state.currentRoundIndex && this.model.state.phase === 'stiche';
+
+        if (isPastRound || isCurrentRoundStichePhase) {
             this.view.elements.editChoiceModal.classList.remove('hidden');
             this.view.elements.fabInterimBtn.classList.add('hidden');
-        } else this.startEditModal('ansage');
+        } else {
+            this.startEditModal('ansage');
+        }
     }
 
     handleModalCancel() {
