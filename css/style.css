@@ -92,6 +92,8 @@ main {
     overflow-y: auto;
     overflow-x: auto;
     overscroll-behavior-y: contain;
+    /* Ensure content can scroll past the Floating Action Button (FAB) */
+    padding-bottom: 90px;
 }
 
 /* ==========================================================================
@@ -144,7 +146,8 @@ main {
 }
 
 .primary-btn:disabled {
-    background: var(--color-disabled);
+    background: var(--color-chip-bg);
+    color: var(--color-text-muted);
     cursor: not-allowed;
 }
 
