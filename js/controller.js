@@ -39,6 +39,7 @@ export class GameController {
         this.view.bindModalPrev(this.handleModalPrev.bind(this));
         this.view.bindModalNext(this.handleModalNext.bind(this));
         this.view.bindNumberInput(this.handleNumberInput.bind(this));
+        this.view.bindModalReset(this.handleModalReset.bind(this));
         this.view.bindModalSave(this.handleModalSave.bind(this));
 
         // Game Over & Confirm
@@ -192,6 +193,12 @@ export class GameController {
 
         this.model.setInputValue(val);
         this.model.applyAutoFill();
+        this.view.renderModalContent(this.model.state, this.model.isPhaseReadyForSave());
+    }
+
+    handleModalReset() {
+        this.model.resetCurrentPhaseInputs();
+        this.model.state.currentPlayerInputIndex = 0; // Return to the first player
         this.view.renderModalContent(this.model.state, this.model.isPhaseReadyForSave());
     }
 

@@ -153,6 +153,16 @@ export class GameModel {
         this.saveState();
     }
 
+    resetCurrentPhaseInputs() {
+        const { rIndex, phase } = this.currentContext;
+        const key = phase === 'ansage' ? 'ansage' : 'gemacht';
+        this.state.activePlayers.forEach(player => {
+            this.state.roundsData[rIndex][player][key] = null;
+        });
+        this.clearAutoFillTracker();
+        this.saveState();
+    }
+
     isCurrentPhaseComplete() {
         const { rIndex, phase } = this.currentContext;
         return this.state.activePlayers.every(player => {

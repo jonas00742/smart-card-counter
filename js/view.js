@@ -31,6 +31,7 @@ export class GameView {
             buttonGrid: document.getElementById('dynamic-button-grid'),
             saveInputBtn: document.getElementById('save-input-btn'),
             cancelInputBtn: document.getElementById('cancel-input-btn'),
+            resetInputBtn: document.getElementById('reset-input-btn'),
 
             editChoiceModal: document.getElementById('edit-choice-modal'),
             editAnsageBtn: document.getElementById('edit-ansage-btn'),
@@ -376,6 +377,18 @@ export class GameView {
 
         this.elements.modalPrevBtn.style.visibility = state.currentPlayerInputIndex > 0 ? 'visible' : 'hidden';
         this.elements.modalNextBtn.style.visibility = state.currentPlayerInputIndex < state.activePlayers.length - 1 ? 'visible' : 'hidden';
+        
+        if (this.elements.resetInputBtn) {
+            // Only show the reset button during the 'stiche' phase as requested
+            if (phase === 'stiche') {
+                this.elements.resetInputBtn.classList.remove('hidden');
+                const hasAnyInput = state.activePlayers.some(p => state.roundsData[rIndex][p].gemacht !== null);
+                this.elements.resetInputBtn.disabled = !hasAnyInput;
+            } else {
+                this.elements.resetInputBtn.classList.add('hidden');
+            }
+        }
+
         if (isComplete) this.elements.saveInputBtn.classList.remove('hidden');
         else this.elements.saveInputBtn.classList.add('hidden');
     }
@@ -535,6 +548,9 @@ export class GameView {
     bindModalPrev(handler) { this.elements.modalPrevBtn.addEventListener('click', handler); }
     bindModalNext(handler) { this.elements.modalNextBtn.addEventListener('click', handler); }
     bindNumberInput(handler) { this.onNumberInput = handler; }
+    bindModalReset(handler) { 
+        if (this.elements.resetInputBtn) this.elements.resetInputBtn.addEventListener('click', handler); 
+    }
     bindModalSave(handler) { this.elements.saveInputBtn.addEventListener('click', handler); }
     bindEditChoiceClose(handler) {
         this.elements.cancelEditChoiceBtn.addEventListener('click', handler);

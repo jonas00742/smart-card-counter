@@ -152,6 +152,35 @@ main {
     cursor: pointer;
 }
 
+.btn-small-pill {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: max-content;
+    margin: 15px auto 0 auto;
+    padding: 6px 16px;
+    border: 1px solid rgba(231, 76, 60, 0.4);
+    border-radius: var(--radius-pill);
+    background: rgba(231, 76, 60, 0.05);
+    color: var(--color-danger);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.btn-small-pill:disabled {
+    border-color: var(--color-border);
+    background: rgba(0,0,0,0.03);
+    color: var(--color-text-muted);
+    cursor: not-allowed;
+}
+.btn-small-pill:active:not(:disabled) {
+    background: var(--color-danger);
+    color: var(--color-surface);
+    transform: scale(0.95);
+}
+
 .icon-btn {
     padding: var(--space-xs);
     border: none;
