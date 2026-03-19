@@ -1,10 +1,12 @@
 import { CONFIG } from './config.js';
+import { ScoreEngine } from './core/ScoreEngine.js';
+import { AutoFillService } from './core/AutoFillService.js';
 
 export class GameModel {
     constructor() {
         this.STORAGE_KEY = 'smartCounterState';
+        this.autoFillService = new AutoFillService();
         this.loadState();
-        this.autoFilledPlayers = [];
     }
 
     getDefaultState() {
@@ -147,7 +149,7 @@ export class GameModel {
         this.state.roundsData[rIndex][player][key] = value;
 
         // If a user manually sets a value, they are no longer considered auto-filled
-        this.autoFilledPlayers = this.autoFilledPlayers.filter(p => p !== player);
+        this.autoFillService.removePlayer(player);
 
         this.saveState();
     }
@@ -187,81 +189,27 @@ export class GameModel {
     }
 
     clearAutoFillTracker() {
-        this.autoFilledPlayers = [];
+        this.autoFillService.clearTracker();
     }
 
     resetAutoFilledValues() {
-        if (this.autoFilledPlayers.length === 0) return;
-
-        const roundData = this.state.roundsData[this.currentContext.rIndex];
-
-        this.autoFilledPlayers.forEach(player => {
-            roundData[player].gemacht = null;
-        });
-
-        this.clearAutoFillTracker(); // Clear the tracking array after use
-        this.saveState();
+        if (this.autoFillService.resetAutoFilledValues(this.state, this.currentContext.rIndex)) {
+            this.saveState();
+        }
     }
 
     applyAutoFill() {
-        const { rIndex, phase } = this.currentContext;
-        
-        // Auto-fill only applies to 'stiche' phase (actual tricks made)
-        if (phase !== 'stiche') return;
-
-        const cards = CONFIG.CARDS_SEQUENCE[rIndex];
-        const roundData = this.state.roundsData[rIndex];
-        
-        let sumGemacht = 0;
-        const missingPlayers = [];
-        
-        this.state.activePlayers.forEach(p => {
-            const val = roundData[p].gemacht;
-            if (val !== null) sumGemacht += val;
-            else missingPlayers.push(p);
-        });
-
-        if (missingPlayers.length > 0) {
-            let fillValue = null;
-            
-            if (sumGemacht >= cards) fillValue = 0;
-            else if (missingPlayers.length === 1) fillValue = Math.max(0, cards - sumGemacht);
-
-            if (fillValue !== null) {
-                missingPlayers.forEach(p => {
-                    roundData[p].gemacht = fillValue;
-                    if (!this.autoFilledPlayers.includes(p)) this.autoFilledPlayers.push(p);
-                });
-                this.saveState();
-            }
+        if (this.autoFillService.applyAutoFill(this.state, this.currentContext)) {
+            this.saveState();
         }
     }
 
     recalculateAllScores() {
-        for (let r = 0; r <= this.state.currentRoundIndex; r++) {
-            const roundData = this.state.roundsData[r];
-            this.state.activePlayers.forEach(player => {
-                const pData = roundData[player];
-                if (pData.gemacht !== null && pData.ansage !== null) {
-                    pData.punkte = pData.ansage === pData.gemacht
-                        ? CONFIG.POINTS_BASE + pData.gemacht 
-                        : -Math.abs(pData.ansage - pData.gemacht);
-                } else pData.punkte = 0;
-                const prevTotal = r === 0 ? 0 : this.state.roundsData[r - 1][player].gesamtPunkte;
-                pData.gesamtPunkte = prevTotal + pData.punkte;
-            });
-        }
+        ScoreEngine.recalculateAllScores(this.state);
         this.saveState();
     }
 
     validateSticheSum(roundIndex) {
-        const cards = CONFIG.CARDS_SEQUENCE[roundIndex];
-        const sumGemacht = this.state.activePlayers.reduce((sum, p) => {
-            return sum + (this.state.roundsData[roundIndex][p].gemacht || 0);
-        }, 0);
-
-        return sumGemacht === cards 
-            ? { valid: true } 
-            : { valid: false, message: `Logik-Fehler:\nEs wurden ${cards} Karten ausgeteilt, aber ${sumGemacht} Stiche eingetragen.` };
+        return ScoreEngine.validateSticheSum(this.state, roundIndex);
     }
 }
