@@ -140,6 +140,7 @@ export class GameController {
         this.model.state.currentPlayerInputIndex = firstEmptyIdx !== -1 ? firstEmptyIdx : 0;
         this.view.renderModalContent(this.model.state, this.model.isPhaseReadyForSave());
         this.view.elements.modal.classList.remove('hidden');
+        this.view.elements.fabInterimBtn.classList.add('hidden');
     }
 
     handleTriggerRowEdit(rIndex) {
@@ -149,8 +150,10 @@ export class GameController {
         
         this.model.state.editRoundIndex = rIndex;
 
-        if (hasGemacht) this.view.elements.editChoiceModal.classList.remove('hidden');
-        else this.startEditModal('ansage');
+        if (hasGemacht) {
+            this.view.elements.editChoiceModal.classList.remove('hidden');
+            this.view.elements.fabInterimBtn.classList.add('hidden');
+        } else this.startEditModal('ansage');
     }
 
     handleModalCancel() {
@@ -238,7 +241,10 @@ export class GameController {
         this.view.elements.gameOverModal.classList.add('hidden');
     }
 
-    handleEditChoiceClose() { this.view.elements.editChoiceModal.classList.add('hidden'); }
+    handleEditChoiceClose() { 
+        this.view.elements.editChoiceModal.classList.add('hidden'); 
+        this.view.elements.fabInterimBtn.classList.remove('hidden');
+    }
     handleEditChoiceSelect(phase) {
         this.view.elements.editChoiceModal.classList.add('hidden');
         this.startEditModal(phase);
@@ -255,6 +261,7 @@ export class GameController {
         
         this.view.renderModalContent(this.model.state, this.model.isPhaseReadyForSave());
         this.view.elements.modal.classList.remove('hidden');
+        this.view.elements.fabInterimBtn.classList.add('hidden');
     }
 
     async handleInstallApp() {
