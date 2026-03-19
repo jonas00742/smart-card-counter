@@ -1,5 +1,14 @@
 import { CONFIG } from './config.js';
 
+const ICONS = {
+    drag: `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>`,
+    edit: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>`,
+    check: `<svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`,
+    cross: `<svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>`,
+    dash: `<svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>`,
+    warning: `<svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`
+};
+
 export class GameView {
     constructor() {
         this.elements = {
@@ -102,14 +111,7 @@ export class GameView {
     }
 
     _getIcon(type) {
-        const icons = {
-            drag: `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>`,
-            edit: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>`,
-            check: `<svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`,
-            cross: `<svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>`,
-            dash: `<svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>`
-        };
-        return icons[type] || '';
+        return ICONS[type] || '';
     }
 
     renderSetup(state) {
@@ -169,8 +171,9 @@ export class GameView {
         let someEntered = false;
 
         if (!state.isGameOver) {
+            const key = state.phase === 'ansage' ? 'ansage' : 'gemacht';
             state.activePlayers.forEach(p => {
-                const val = state.roundsData[state.currentRoundIndex][p][state.phase === 'ansage' ? 'ansage' : 'gemacht'];
+                const val = state.roundsData[state.currentRoundIndex][p][key];
                 if (val !== null) someEntered = true;
                 else allEntered = false;
             });
@@ -187,15 +190,11 @@ export class GameView {
             }
         }
         
+        this.elements.openInputModalBtn.classList.toggle('hidden', state.isGameOver);
+        this.elements.leaderboardContainer.classList.toggle('hidden', !state.isGameOver);
+        this.elements.fabInterimBtn.classList.toggle('hidden', state.isGameOver);
         if (state.isGameOver) {
-            this.elements.openInputModalBtn.classList.add('hidden');
-            this.elements.leaderboardContainer.classList.remove('hidden');
-            this.elements.fabInterimBtn.classList.add('hidden');
             this.renderLeaderboard(leaderboard);
-        } else {
-            this.elements.openInputModalBtn.classList.remove('hidden');
-            this.elements.leaderboardContainer.classList.add('hidden');
-            this.elements.fabInterimBtn.classList.remove('hidden');
         }
 
         // Clear header except first column
@@ -220,7 +219,25 @@ export class GameView {
 
         CONFIG.CARDS_SEQUENCE.forEach((cardCount, index) => {
             const tr = this.createElement('tr');
-            if (index === state.currentRoundIndex && !state.isGameOver) tr.style.backgroundColor = 'var(--color-highlight-row)';
+            
+            let sumAnsage = 0;
+            let allAnsagenMade = true;
+            let isRowIncomplete = false;
+
+            const isPastAnsage = index < state.currentRoundIndex || (index === state.currentRoundIndex && state.phase === 'stiche') || state.isGameOver;
+            const isPastGemacht = index < state.currentRoundIndex || state.isGameOver;
+
+            state.activePlayers.forEach(player => {
+                const data = state.roundsData[index][player];
+                if (data.ansage === null) allAnsagenMade = false;
+                else sumAnsage += data.ansage;
+
+                if (isPastAnsage && data.ansage === null) isRowIncomplete = true;
+                if (isPastGemacht && data.gemacht === null) isRowIncomplete = true;
+            });
+
+            if (isRowIncomplete) tr.classList.add('row-warning');
+            else if (index === state.currentRoundIndex && !state.isGameOver) tr.style.backgroundColor = 'var(--color-highlight-row)';
 
             const editBtnHtml = (index <= state.currentRoundIndex || state.isGameOver) 
                 ? `<button class="edit-btn" data-rindex="${index}">${this._getIcon('edit')}</button>` 
@@ -229,17 +246,11 @@ export class GameView {
             const tdRound = this.createElement('td', { className: 'round-cell', html: `<div class="round-cell-content"><span>${cardCount}</span>${editBtnHtml}</div>` });
             tr.appendChild(tdRound);
 
-            let sumAnsage = 0;
-            let allAnsagenMade = true;
-
             state.activePlayers.forEach(player => {
                 const data = state.roundsData[index][player];
-                
-                if (data.ansage === null) allAnsagenMade = false;
-                else sumAnsage += data.ansage;
 
-                const ansageStr = data.ansage !== null ? data.ansage : '-';
-                const gemachtStr = data.gemacht !== null ? data.gemacht : '-';
+                const ansageStr = data.ansage ?? '-';
+                const gemachtStr = data.gemacht ?? '-';
                 const scoreStr = data.gemacht !== null ? data.gesamtPunkte : '-';
                 const scoreColor = data.punkte < 0 ? 'var(--color-danger)' : 'inherit';
 
@@ -251,7 +262,9 @@ export class GameView {
             });
 
             let statusHtml = '';
-            if (allAnsagenMade) {
+            if (isRowIncomplete) {
+                statusHtml = `<span class="status-badge warning" title="Unvollständig">${this._getIcon('warning')}</span>`;
+            } else if (allAnsagenMade) {
                 if (sumAnsage === cardCount) statusHtml = `<span class="status-badge success">${this._getIcon('check')}</span>`;
                 else if (sumAnsage > cardCount) statusHtml = `<span class="status-badge danger">${this._getIcon('cross')}</span>`;
                 else statusHtml = `<span class="status-badge accent">${this._getIcon('dash')}</span>`;
@@ -353,21 +366,22 @@ export class GameView {
         const rIndex = state.isEditMode ? state.editRoundIndex : state.currentRoundIndex;
         const cards = CONFIG.CARDS_SEQUENCE[rIndex];
         const phase = state.isEditMode ? state.editPhase : state.phase;
+        const key = phase === 'ansage' ? 'ansage' : 'gemacht';
 
         this.elements.modal.classList.remove('phase-ansage', 'phase-stiche');
         this.elements.modal.classList.add(`phase-${phase}`);
 
-        let titlePrefix = state.isEditMode ? "Ändern: " : "";
-        this.elements.modalTitle.innerText = phase === 'ansage' ? `${titlePrefix}Stiche ansagen?` : `${titlePrefix}Stiche gemacht?`;
+        const titlePrefix = state.isEditMode ? "Ändern: " : "";
+        this.elements.modalTitle.innerText = `${titlePrefix}Stiche ${phase === 'ansage' ? 'ansagen' : 'gemacht'}?`;
         this.elements.modalSubtitle.innerText = player;
 
         this.elements.modalIndicators.innerHTML = state.activePlayers.map((p, idx) => {
-            const val = state.roundsData[rIndex][p][phase === 'ansage' ? 'ansage' : 'gemacht'];
+            const val = state.roundsData[rIndex][p][key];
             return `<div class="indicator-dot ${val !== null ? 'filled' : ''} ${idx === state.currentPlayerInputIndex ? 'active' : ''}"></div>`;
         }).join('');
 
         this.elements.buttonGrid.innerHTML = '';
-        const currentValue = state.roundsData[rIndex][player][phase === 'ansage' ? 'ansage' : 'gemacht'];
+        const currentValue = state.roundsData[rIndex][player][key];
         const ansageValue = state.roundsData[rIndex][player].ansage;
 
         let maxButtons = cards;
@@ -400,34 +414,22 @@ export class GameView {
         this.elements.modalNextBtn.style.visibility = state.currentPlayerInputIndex < state.activePlayers.length - 1 ? 'visible' : 'hidden';
         
         if (this.elements.resetInputBtn) {
-            // Only show the reset button during the 'stiche' phase as requested
+            this.elements.resetInputBtn.classList.toggle('hidden', phase !== 'stiche');
             if (phase === 'stiche') {
-                this.elements.resetInputBtn.classList.remove('hidden');
                 const hasAnyInput = state.activePlayers.some(p => state.roundsData[rIndex][p].gemacht !== null);
                 this.elements.resetInputBtn.disabled = !hasAnyInput;
-            } else {
-                this.elements.resetInputBtn.classList.add('hidden');
             }
         }
 
-        if (isComplete) this.elements.saveInputBtn.classList.remove('hidden');
-        else this.elements.saveInputBtn.classList.add('hidden');
+        this.elements.saveInputBtn.classList.toggle('hidden', !isComplete);
     }
 
     switchScreen(toGame) {
-        if (toGame) {
-            this.elements.setupScreen.classList.add('hidden');
-            this.elements.gameScreen.classList.remove('hidden');
-            this.elements.setupHeader.classList.add('hidden');
-            this.elements.gameHeader.classList.remove('hidden');
-            this.elements.fabInterimBtn.classList.remove('hidden');
-        } else {
-            this.elements.gameScreen.classList.add('hidden');
-            this.elements.setupScreen.classList.remove('hidden');
-            this.elements.gameHeader.classList.add('hidden');
-            this.elements.setupHeader.classList.remove('hidden');
-            this.elements.fabInterimBtn.classList.add('hidden');
-        }
+        this.elements.setupScreen.classList.toggle('hidden', toGame);
+        this.elements.gameScreen.classList.toggle('hidden', !toGame);
+        this.elements.setupHeader.classList.toggle('hidden', toGame);
+        this.elements.gameHeader.classList.toggle('hidden', !toGame);
+        this.elements.fabInterimBtn.classList.toggle('hidden', !toGame);
     }
 
     // Refactored to use Pointer Events (Mouse + Touch support)
@@ -545,7 +547,7 @@ export class GameView {
     }
     
     bindInstallApp(handler) { this.elements.installAppBtn.addEventListener('click', handler); }
-    toggleInstallButton(show) { show ? this.elements.installAppBtn.classList.remove('hidden') : this.elements.installAppBtn.classList.add('hidden'); }
+    toggleInstallButton(show) { this.elements.installAppBtn.classList.toggle('hidden', !show); }
     bindTogglePlayer(handler) { this.onPlayerToggle = handler; }
     
     bindRemovePlayer(handler) { 

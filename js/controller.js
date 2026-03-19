@@ -65,14 +65,11 @@ export class GameController {
 
             // Check if we should be blinking on page load
             const { currentRoundIndex, phase, roundsData, activePlayers } = this.model.state;
-            if (currentRoundIndex === CONFIG.TOTAL_ROUNDS - 1 && phase === 'ansage') {
-                if (roundsData[currentRoundIndex]) { // Ensure round data exists
-                    const lastRoundData = roundsData[currentRoundIndex];
-                    const isAnsageStarted = activePlayers.some(p => lastRoundData[p] && lastRoundData[p].ansage !== null);
-                    
-                    if (!isAnsageStarted) {
-                        this.view.startPenultimateRoundBlinking();
-                    }
+            if (currentRoundIndex === CONFIG.TOTAL_ROUNDS - 1 && phase === 'ansage' && roundsData[currentRoundIndex]) {
+                const isAnsageStarted = activePlayers.some(p => roundsData[currentRoundIndex][p]?.ansage !== null);
+                
+                if (!isAnsageStarted) {
+                    this.view.startPenultimateRoundBlinking();
                 }
             }
         } else {
@@ -94,22 +91,21 @@ export class GameController {
         this.view.renderGameTable(this.model.state, this.model.getLeaderboard());
     }
 
-    handlePopState(event) {
+    handlePopState() {
         const isGameScreenVisible = !this.view.elements.gameScreen.classList.contains('hidden');
         
         if (isGameScreenVisible && !this.model.state.isGameOver) {
             window.history.pushState({ screen: 'game' }, '', '#game');
             this.view.showConfirmBackModal();
+            return;
         } 
-        else if (isGameScreenVisible && this.model.state.isGameOver) {
+        
+        if (isGameScreenVisible && this.model.state.isGameOver) {
             this.model.quitGame();
-            this.view.switchScreen(false);
-            this.view.renderSetup(this.model.state);
-        } 
-        else {
-            this.view.switchScreen(false);
-            this.view.renderSetup(this.model.state);
         }
+        
+        this.view.switchScreen(false);
+        this.view.renderSetup(this.model.state);
     }
 
     handleConfirmBackAccept() {
@@ -133,9 +129,10 @@ export class GameController {
         this.model.state.isEditMode = false;
         const rIndex = this.model.state.currentRoundIndex;
         const phase = this.model.state.phase;
+        const key = phase === 'ansage' ? 'ansage' : 'gemacht';
         
         const firstEmptyIdx = this.model.state.activePlayers.findIndex(p => {
-            return this.model.state.roundsData[rIndex][p][phase === 'ansage' ? 'ansage' : 'gemacht'] === null;
+            return this.model.state.roundsData[rIndex][p][key] === null;
         });
         
         this.model.state.currentPlayerInputIndex = firstEmptyIdx !== -1 ? firstEmptyIdx : 0;
@@ -222,6 +219,7 @@ export class GameController {
         } else {
             if (this.model.state.phase === 'ansage') {
                 this.model.state.phase = 'stiche';
+                this.model.saveState();
             } else {
                 // Check if the penultimate round's tricks were just entered.
                 if (this.model.state.currentRoundIndex === CONFIG.TOTAL_ROUNDS - 2) {
@@ -240,6 +238,7 @@ export class GameController {
 
                 this.model.state.phase = 'ansage';
                 this.model.state.currentRoundIndex++;
+                this.model.saveState();
             }
         }
         this.view.renderGameTable(this.model.state, this.model.getLeaderboard());

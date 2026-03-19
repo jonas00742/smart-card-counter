@@ -475,6 +475,11 @@ th:last-child {
 .status-badge.success { background-color: var(--color-success); }
 .status-badge.danger { background-color: var(--color-danger); }
 .status-badge.accent { background-color: #111199; }
+.status-badge.warning { background-color: #e67e22; }
+
+.row-warning {
+    background-color: rgba(230, 126, 34, 0.15) !important;
+}
 
 .edit-btn {
     display: inline-flex;

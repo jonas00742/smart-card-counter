@@ -7,7 +7,7 @@ export class GameModel {
         this.autoFilledPlayers = [];
     }
 
-    get defaultState() {
+    getDefaultState() {
         return {
             availablePlayers: ["Jonas", "Karim", "Nina", "Patrick", "Laura"],
             activePlayers: [],
@@ -36,10 +36,10 @@ export class GameModel {
                 this.state.isGameOver = this.state.isGameOver ?? false;
             } catch (e) {
                 console.error("Failed to load state, resetting.", e);
-                this.state = this.defaultState;
+                this.state = this.getDefaultState();
             }
         } else {
-            this.state = this.defaultState;
+            this.state = this.getDefaultState();
         }
     }
 
@@ -51,7 +51,7 @@ export class GameModel {
         // Preserve available players, reset game specific data
         const { availablePlayers, activePlayers, startingDealerIndex } = this.state;
         this.state = {
-            ...this.defaultState,
+            ...this.getDefaultState(),
             availablePlayers,
             activePlayers,
             startingDealerIndex,
@@ -133,29 +133,27 @@ export class GameModel {
     }
 
     get currentContext() {
+        const phase = this.state.isEditMode ? this.state.editPhase : this.state.phase;
         return {
             rIndex: this.state.isEditMode ? this.state.editRoundIndex : this.state.currentRoundIndex,
-            phase: this.state.isEditMode ? this.state.editPhase : this.state.phase
+            phase,
+            key: phase === 'ansage' ? 'ansage' : 'gemacht'
         };
     }
     
     setInputValue(value) {
         const player = this.state.activePlayers[this.state.currentPlayerInputIndex];
-        const { rIndex, phase } = this.currentContext;
-        this.state.roundsData[rIndex][player][phase === 'ansage' ? 'ansage' : 'gemacht'] = value;
+        const { rIndex, key } = this.currentContext;
+        this.state.roundsData[rIndex][player][key] = value;
 
         // If a user manually sets a value, they are no longer considered auto-filled
-        const autoFillIndex = this.autoFilledPlayers.indexOf(player);
-        if (autoFillIndex > -1) {
-            this.autoFilledPlayers.splice(autoFillIndex, 1);
-        }
+        this.autoFilledPlayers = this.autoFilledPlayers.filter(p => p !== player);
 
         this.saveState();
     }
 
     resetCurrentPhaseInputs() {
-        const { rIndex, phase } = this.currentContext;
-        const key = phase === 'ansage' ? 'ansage' : 'gemacht';
+        const { rIndex, key } = this.currentContext;
         this.state.activePlayers.forEach(player => {
             this.state.roundsData[rIndex][player][key] = null;
         });
@@ -164,9 +162,8 @@ export class GameModel {
     }
 
     isCurrentPhaseComplete() {
-        const { rIndex, phase } = this.currentContext;
+        const { rIndex, key } = this.currentContext;
         return this.state.activePlayers.every(player => {
-            const key = phase === 'ansage' ? 'ansage' : 'gemacht';
             return this.state.roundsData[rIndex][player][key] !== null;
         });
     }
@@ -224,25 +221,19 @@ export class GameModel {
             else missingPlayers.push(p);
         });
 
-        // Case 2: All cards distributed -> remaining players get 0
-        if (sumGemacht >= cards && missingPlayers.length > 0) {
-            missingPlayers.forEach(p => { 
-                roundData[p].gemacht = 0; 
-                if (!this.autoFilledPlayers.includes(p)) {
-                    this.autoFilledPlayers.push(p);
-                }
-            });
-            this.saveState();
-        } 
-        // Case 1: Only one player left -> gets the remainder
-        else if (missingPlayers.length === 1) {
-            const remainder = Math.max(0, cards - sumGemacht);
-            const playerToFill = missingPlayers[0];
-            roundData[playerToFill].gemacht = remainder;
-            if (!this.autoFilledPlayers.includes(playerToFill)) {
-                this.autoFilledPlayers.push(playerToFill);
+        if (missingPlayers.length > 0) {
+            let fillValue = null;
+            
+            if (sumGemacht >= cards) fillValue = 0;
+            else if (missingPlayers.length === 1) fillValue = Math.max(0, cards - sumGemacht);
+
+            if (fillValue !== null) {
+                missingPlayers.forEach(p => {
+                    roundData[p].gemacht = fillValue;
+                    if (!this.autoFilledPlayers.includes(p)) this.autoFilledPlayers.push(p);
+                });
+                this.saveState();
             }
-            this.saveState();
         }
     }
 
