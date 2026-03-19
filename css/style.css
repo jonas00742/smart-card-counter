@@ -129,7 +129,7 @@ main {
     color: var(--color-surface);
     background: var(--color-accent);
     cursor: pointer;
-    transition: opacity 0.2s;
+    transition: opacity 0.2s, background-color 0.3s, box-shadow 0.3s;
 }
 
 .primary-btn:disabled {
@@ -752,6 +752,21 @@ th:last-child {
 
 .penultimate-round-warning .sticky-top-container {
     animation: blink-red-warning 1s infinite;
+}
+
+@keyframes pulse-attention {
+    0% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(46, 204, 113, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); }
+}
+
+.pulse-animation {
+    animation: pulse-attention 1.5s infinite;
+    background-color: var(--color-success) !important;
+}
+
+.btn-continue {
+    background-color: #f39c12 !important;
 }
 
 /* ==========================================================================

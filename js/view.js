@@ -164,8 +164,29 @@ export class GameView {
     renderGameTable(state, leaderboard = []) {
         const cards = CONFIG.CARDS_SEQUENCE[state.currentRoundIndex];
         this.elements.currentCardsSpan.innerText = cards;
-        this.elements.openInputModalBtn.innerText = state.phase === 'ansage' ? `Eingabe starten (${cards} Karten)` : `Stiche eintragen (${cards} Karten)`;
+        
+        let allEntered = true;
+        let someEntered = false;
 
+        if (!state.isGameOver) {
+            state.activePlayers.forEach(p => {
+                const val = state.roundsData[state.currentRoundIndex][p][state.phase === 'ansage' ? 'ansage' : 'gemacht'];
+                if (val !== null) someEntered = true;
+                else allEntered = false;
+            });
+
+            this.elements.openInputModalBtn.classList.remove('pulse-animation', 'btn-continue');
+            if (allEntered) {
+                this.elements.openInputModalBtn.innerText = `Eingabe bestätigen (${cards} Karten)`;
+                this.elements.openInputModalBtn.classList.add('pulse-animation');
+            } else if (someEntered) {
+                this.elements.openInputModalBtn.innerText = `Eingabe fortsetzen (${cards} Karten)`;
+                this.elements.openInputModalBtn.classList.add('btn-continue');
+            } else {
+                this.elements.openInputModalBtn.innerText = state.phase === 'ansage' ? `Eingabe starten (${cards} Karten)` : `Stiche eintragen (${cards} Karten)`;
+            }
+        }
+        
         if (state.isGameOver) {
             this.elements.openInputModalBtn.classList.add('hidden');
             this.elements.leaderboardContainer.classList.remove('hidden');
