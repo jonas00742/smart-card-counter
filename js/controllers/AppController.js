@@ -1,4 +1,5 @@
 import { CONFIG } from '../config.js';
+import { EVENTS } from '../core/events.js';
 
 export class AppController {
     constructor(model, view, eventBus) {
@@ -21,10 +22,10 @@ export class AppController {
     }
 
     bindEvents() {
-        this.eventBus.on('APP_INSTALL', this.handleInstallApp.bind(this));
-        this.eventBus.on('GAME_GO_BACK', () => this.view.showConfirmBackModal());
-        this.eventBus.on('CONFIRM_BACK_ACCEPT', this.handleConfirmBackAccept.bind(this));
-        this.eventBus.on('CONFIRM_BACK_CANCEL', () => this.view.hideConfirmBackModal());
+        this.eventBus.on(EVENTS.APP_INSTALL, this.handleInstallApp.bind(this));
+        this.eventBus.on(EVENTS.GAME_GO_BACK, () => this.view.showConfirmBackModal());
+        this.eventBus.on(EVENTS.CONFIRM_BACK_ACCEPT, this.handleConfirmBackAccept.bind(this));
+        this.eventBus.on(EVENTS.CONFIRM_BACK_CANCEL, () => this.view.hideConfirmBackModal());
     }
 
     initRouter() {

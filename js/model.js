@@ -3,8 +3,11 @@ import { ScoreEngine } from './core/ScoreEngine.js';
 import { AutoFillService } from './core/AutoFillService.js';
 
 export class GameModel {
+    STORAGE_KEY = 'smartCounterState';
+    autoFillService;
+    state;
+
     constructor() {
-        this.STORAGE_KEY = 'smartCounterState';
         this.autoFillService = new AutoFillService();
         this.loadState();
     }

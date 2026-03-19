@@ -11,6 +11,12 @@ export function getIcon(type) {
     return ICONS[type] || '';
 }
 
+export function sanitizeHTML(str) {
+    const temp = document.createElement('div');
+    temp.textContent = str;
+    return temp.innerHTML;
+}
+
 export function createElement(tag, options = {}, ...children) {
     const el = document.createElement(tag);
     const { className, text, html, dataset, events, ...attrs } = options;

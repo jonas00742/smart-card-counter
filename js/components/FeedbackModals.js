@@ -1,4 +1,5 @@
 import { createElement, bindBackdropClick, generateLeaderboardHtml } from '../utils/dom.js';
+import { EVENTS } from '../core/events.js';
 
 export class FeedbackModals {
     constructor(eventBus) {
@@ -32,21 +33,21 @@ export class FeedbackModals {
         this.elements.closeInterimBtn.addEventListener('click', () => this.hideInterimModal());
         bindBackdropClick(this.elements.interimModal, () => this.hideInterimModal());
 
-        this.elements.cancelEditChoiceBtn.addEventListener('click', () => this.eventBus.emit('EDIT_CHOICE_CLOSE'));
-        bindBackdropClick(this.elements.editChoiceModal, () => this.eventBus.emit('EDIT_CHOICE_CLOSE'));
+        this.elements.cancelEditChoiceBtn.addEventListener('click', () => this.eventBus.emit(EVENTS.EDIT_CHOICE_CLOSE));
+        bindBackdropClick(this.elements.editChoiceModal, () => this.eventBus.emit(EVENTS.EDIT_CHOICE_CLOSE));
 
-        this.elements.editAnsageBtn.addEventListener('click', () => this.eventBus.emit('EDIT_CHOICE_SELECT', 'ansage'));
-        this.elements.editGemachtBtn.addEventListener('click', () => this.eventBus.emit('EDIT_CHOICE_SELECT', 'stiche'));
+        this.elements.editAnsageBtn.addEventListener('click', () => this.eventBus.emit(EVENTS.EDIT_CHOICE_SELECT, 'ansage'));
+        this.elements.editGemachtBtn.addEventListener('click', () => this.eventBus.emit(EVENTS.EDIT_CHOICE_SELECT, 'stiche'));
 
-        this.elements.closeGameOverBtn.addEventListener('click', () => this.eventBus.emit('GAME_OVER_CLOSE'));
-        bindBackdropClick(this.elements.gameOverModal, () => this.eventBus.emit('GAME_OVER_CLOSE'));
+        this.elements.closeGameOverBtn.addEventListener('click', () => this.eventBus.emit(EVENTS.GAME_OVER_CLOSE));
+        bindBackdropClick(this.elements.gameOverModal, () => this.eventBus.emit(EVENTS.GAME_OVER_CLOSE));
 
-        this.elements.confirmBackAcceptBtn.addEventListener('click', () => this.eventBus.emit('CONFIRM_BACK_ACCEPT'));
+        this.elements.confirmBackAcceptBtn.addEventListener('click', () => this.eventBus.emit(EVENTS.CONFIRM_BACK_ACCEPT));
         
-        this.elements.confirmBackCancelBtn.addEventListener('click', () => this.eventBus.emit('CONFIRM_BACK_CANCEL'));
-        bindBackdropClick(this.elements.confirmBackModal, () => this.eventBus.emit('CONFIRM_BACK_CANCEL'));
+        this.elements.confirmBackCancelBtn.addEventListener('click', () => this.eventBus.emit(EVENTS.CONFIRM_BACK_CANCEL));
+        bindBackdropClick(this.elements.confirmBackModal, () => this.eventBus.emit(EVENTS.CONFIRM_BACK_CANCEL));
 
-        this.elements.fabInterimBtn.addEventListener('click', () => this.eventBus.emit('TOGGLE_INTERIM'));
+        this.elements.fabInterimBtn.addEventListener('click', () => this.eventBus.emit(EVENTS.TOGGLE_INTERIM));
     }
 
     showGameOver(leaderboard) {

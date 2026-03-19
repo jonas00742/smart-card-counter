@@ -1,4 +1,5 @@
 import { CONFIG } from '../config.js';
+import { EVENTS } from '../core/events.js';
 
 export class RoundController {
     constructor(model, view, eventBus) {
@@ -9,20 +10,20 @@ export class RoundController {
     }
 
     bindEvents() {
-        this.eventBus.on('GAME_OPEN_MODAL', this.handleOpenInputModal.bind(this));
-        this.eventBus.on('GAME_TRIGGER_EDIT', this.handleTriggerRowEdit.bind(this));
+        this.eventBus.on(EVENTS.GAME_OPEN_MODAL, this.handleOpenInputModal.bind(this));
+        this.eventBus.on(EVENTS.GAME_TRIGGER_EDIT, this.handleTriggerRowEdit.bind(this));
 
-        this.eventBus.on('MODAL_CANCEL', this.handleModalCancel.bind(this));
-        this.eventBus.on('MODAL_PREV', this.handleModalPrev.bind(this));
-        this.eventBus.on('MODAL_NEXT', this.handleModalNext.bind(this));
-        this.eventBus.on('MODAL_NUMBER_INPUT', this.handleNumberInput.bind(this));
-        this.eventBus.on('MODAL_RESET', this.handleModalReset.bind(this));
-        this.eventBus.on('MODAL_SAVE', this.handleModalSave.bind(this));
+        this.eventBus.on(EVENTS.MODAL_CANCEL, this.handleModalCancel.bind(this));
+        this.eventBus.on(EVENTS.MODAL_PREV, this.handleModalPrev.bind(this));
+        this.eventBus.on(EVENTS.MODAL_NEXT, this.handleModalNext.bind(this));
+        this.eventBus.on(EVENTS.MODAL_NUMBER_INPUT, this.handleNumberInput.bind(this));
+        this.eventBus.on(EVENTS.MODAL_RESET, this.handleModalReset.bind(this));
+        this.eventBus.on(EVENTS.MODAL_SAVE, this.handleModalSave.bind(this));
 
-        this.eventBus.on('GAME_OVER_CLOSE', () => this.view.hideGameOverModal());
-        this.eventBus.on('EDIT_CHOICE_CLOSE', this.handleEditChoiceClose.bind(this));
-        this.eventBus.on('EDIT_CHOICE_SELECT', this.handleEditChoiceSelect.bind(this));
-        this.eventBus.on('TOGGLE_INTERIM', () => this.view.showInterimModal(this.model.getLeaderboard()));
+        this.eventBus.on(EVENTS.GAME_OVER_CLOSE, () => this.view.hideGameOverModal());
+        this.eventBus.on(EVENTS.EDIT_CHOICE_CLOSE, this.handleEditChoiceClose.bind(this));
+        this.eventBus.on(EVENTS.EDIT_CHOICE_SELECT, this.handleEditChoiceSelect.bind(this));
+        this.eventBus.on(EVENTS.TOGGLE_INTERIM, () => this.view.showInterimModal(this.model.getLeaderboard()));
     }
 
     handleOpenInputModal() {

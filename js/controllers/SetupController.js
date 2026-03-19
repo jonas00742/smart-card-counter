@@ -1,3 +1,5 @@
+import { EVENTS } from '../core/events.js';
+
 export class SetupController {
     constructor(model, view, eventBus) {
         this.model = model;
@@ -7,12 +9,12 @@ export class SetupController {
     }
 
     bindEvents() {
-        this.eventBus.on('SETUP_ADD_PLAYER', this.handleAddPlayer.bind(this));
-        this.eventBus.on('SETUP_TOGGLE_PLAYER', this.handleTogglePlayer.bind(this));
-        this.eventBus.on('SETUP_REMOVE_PLAYER', this.handleRemovePlayer.bind(this));
-        this.eventBus.on('SETUP_REORDER_PLAYERS', this.handleReorderPlayers.bind(this));
-        this.eventBus.on('SETUP_SET_DEALER', this.handleSetDealer.bind(this));
-        this.eventBus.on('SETUP_START_GAME', this.handleStartGame.bind(this));
+        this.eventBus.on(EVENTS.SETUP_ADD_PLAYER, this.handleAddPlayer.bind(this));
+        this.eventBus.on(EVENTS.SETUP_TOGGLE_PLAYER, this.handleTogglePlayer.bind(this));
+        this.eventBus.on(EVENTS.SETUP_REMOVE_PLAYER, this.handleRemovePlayer.bind(this));
+        this.eventBus.on(EVENTS.SETUP_REORDER_PLAYERS, this.handleReorderPlayers.bind(this));
+        this.eventBus.on(EVENTS.SETUP_SET_DEALER, this.handleSetDealer.bind(this));
+        this.eventBus.on(EVENTS.SETUP_START_GAME, this.handleStartGame.bind(this));
     }
 
     handleAddPlayer(name) { this.model.addPlayer(name); this.view.renderSetup(this.model.state); }

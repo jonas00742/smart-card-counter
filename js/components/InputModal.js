@@ -1,5 +1,6 @@
 import { createElement, bindBackdropClick } from '../utils/dom.js';
 import { CONFIG } from '../config.js';
+import { EVENTS } from '../core/events.js';
 
 export class InputModal {
     constructor(eventBus) {
@@ -17,12 +18,20 @@ export class InputModal {
             resetInputBtn: document.getElementById('reset-input-btn')
         };
 
-        this.elements.cancelInputBtn.addEventListener('click', () => this.eventBus.emit('MODAL_CANCEL'));
-        bindBackdropClick(this.elements.modal, () => this.eventBus.emit('MODAL_CANCEL'));
-        this.elements.modalPrevBtn.addEventListener('click', () => this.eventBus.emit('MODAL_PREV'));
-        this.elements.modalNextBtn.addEventListener('click', () => this.eventBus.emit('MODAL_NEXT'));
-        if (this.elements.resetInputBtn) this.elements.resetInputBtn.addEventListener('click', () => this.eventBus.emit('MODAL_RESET'));
-        this.elements.saveInputBtn.addEventListener('click', () => this.eventBus.emit('MODAL_SAVE'));
+        this.elements.cancelInputBtn.addEventListener('click', () => this.eventBus.emit(EVENTS.MODAL_CANCEL));
+        bindBackdropClick(this.elements.modal, () => this.eventBus.emit(EVENTS.MODAL_CANCEL));
+        this.elements.modalPrevBtn.addEventListener('click', () => this.eventBus.emit(EVENTS.MODAL_PREV));
+        this.elements.modalNextBtn.addEventListener('click', () => this.eventBus.emit(EVENTS.MODAL_NEXT));
+        if (this.elements.resetInputBtn) this.elements.resetInputBtn.addEventListener('click', () => this.eventBus.emit(EVENTS.MODAL_RESET));
+        this.elements.saveInputBtn.addEventListener('click', () => this.eventBus.emit(EVENTS.MODAL_SAVE));
+
+        this.elements.buttonGrid.addEventListener('click', (e) => {
+            const btn = e.target.closest('.number-btn');
+            if (btn) {
+                const val = parseInt(btn.dataset.value, 10);
+                this.eventBus.emit(EVENTS.MODAL_NUMBER_INPUT, val);
+            }
+        });
     }
 
     renderModalContent(state, isComplete) {
@@ -44,7 +53,6 @@ export class InputModal {
             return `<div class="indicator-dot ${val !== null ? 'filled' : ''} ${idx === state.currentPlayerInputIndex ? 'active' : ''}"></div>`;
         }).join('');
 
-        this.elements.buttonGrid.innerHTML = '';
         const currentValue = state.roundsData[rIndex][player][key];
         const ansageValue = state.roundsData[rIndex][player].ansage;
 
@@ -57,21 +65,32 @@ export class InputModal {
             maxButtons = Math.max(0, cards - sumOthers); 
         }
 
-        for (let i = 0; i <= maxButtons; i++) {
-            let extraClass = '';
-            if (phase === 'stiche') {
-                if (i === ansageValue) extraClass = ' target-bid';
-                else extraClass = ' non-target';
+        // Ensure we only rebuild DOM if round layout cards change
+        if (this.elements.buttonGrid.children.length !== cards + 1) {
+            this.elements.buttonGrid.innerHTML = '';
+            for (let i = 0; i <= cards; i++) {
+                const btn = createElement('button', {
+                    type: 'button',
+                    className: 'number-btn',
+                    text: i,
+                    dataset: { value: i }
+                });
+                this.elements.buttonGrid.appendChild(btn);
             }
-
-            const btn = createElement('button', {
-                type: 'button',
-                className: `number-btn${extraClass} ${currentValue === i ? 'selected' : ''}`,
-                text: i,
-                events: { click: () => this.eventBus.emit('MODAL_NUMBER_INPUT', i) }
-            });
-            this.elements.buttonGrid.appendChild(btn);
         }
+
+        // Loop through existing buttons and update classes efficiently
+        Array.from(this.elements.buttonGrid.children).forEach((btn, i) => {
+            btn.className = 'number-btn';
+            if (i > maxButtons) btn.classList.add('hidden');
+            else {
+                if (phase === 'stiche') {
+                    if (i === ansageValue) btn.classList.add('target-bid');
+                    else btn.classList.add('non-target');
+                }
+                if (currentValue === i) btn.classList.add('selected');
+            }
+        });
 
         this.elements.modalPrevBtn.style.visibility = state.currentPlayerInputIndex > 0 ? 'visible' : 'hidden';
         this.elements.modalNextBtn.style.visibility = state.currentPlayerInputIndex < state.activePlayers.length - 1 ? 'visible' : 'hidden';

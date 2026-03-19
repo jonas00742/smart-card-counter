@@ -1,4 +1,5 @@
-import { createElement, getIcon, bindBackdropClick } from '../utils/dom.js';
+import { createElement, getIcon, bindBackdropClick, sanitizeHTML } from '../utils/dom.js';
+import { EVENTS } from '../core/events.js';
 
 export class SetupView {
     constructor(eventBus) {
@@ -23,16 +24,16 @@ export class SetupView {
         bindBackdropClick(this.elements.deletePlayerModal, () => this.hideDeletePlayerModal());
 
         this.elements.addNewPlayerBtn.addEventListener('click', () => {
-            const name = this.elements.newPlayerInput.value.trim();
+            const name = sanitizeHTML(this.elements.newPlayerInput.value.trim());
             if (name) { 
-                this.eventBus.emit('SETUP_ADD_PLAYER', name); 
+                this.eventBus.emit(EVENTS.SETUP_ADD_PLAYER, name); 
                 this.elements.newPlayerInput.value = ''; 
             }
         });
-        this.elements.installAppBtn.addEventListener('click', () => this.eventBus.emit('APP_INSTALL'));
-        this.elements.startGameBtn.addEventListener('click', () => this.eventBus.emit('SETUP_START_GAME'));
+        this.elements.installAppBtn.addEventListener('click', () => this.eventBus.emit(EVENTS.APP_INSTALL));
+        this.elements.startGameBtn.addEventListener('click', () => this.eventBus.emit(EVENTS.SETUP_START_GAME));
         this.elements.confirmDeletePlayerBtn.addEventListener('click', () => {
-            if (this.playerToDelete) this.eventBus.emit('SETUP_REMOVE_PLAYER', this.playerToDelete);
+            if (this.playerToDelete) this.eventBus.emit(EVENTS.SETUP_REMOVE_PLAYER, this.playerToDelete);
             this.hideDeletePlayerModal();
         });
     }
@@ -41,7 +42,7 @@ export class SetupView {
         this.elements.playerPool.innerHTML = '';
         state.availablePlayers.forEach(player => {
             const chip = createElement('li', { className: `player-chip ${state.activePlayers.includes(player) ? 'selected' : ''}` },
-                createElement('span', { text: player, events: { click: () => this.eventBus.emit('SETUP_TOGGLE_PLAYER', player) } }),
+                createElement('span', { text: player, events: { click: () => this.eventBus.emit(EVENTS.SETUP_TOGGLE_PLAYER, player) } }),
                 createElement('button', { 
                     type: 'button',
                     className: 'delete-player-btn',
@@ -73,7 +74,7 @@ export class SetupView {
                         type: 'button',
                         className: `dealer-btn ${isDealer ? 'active' : ''}`,
                         text: isDealer ? '🃏 Geber' : 'Geber',
-                        events: { click: () => this.eventBus.emit('SETUP_SET_DEALER', index) }
+                        events: { click: () => this.eventBus.emit(EVENTS.SETUP_SET_DEALER, index) }
                     })
                 );
                 
@@ -152,7 +153,7 @@ export class SetupView {
                 row.classList.remove('dragging');
 
                 const newOrder = Array.from(this.elements.activePlayersList.children).map(r => r.querySelector('.player-row-left span').innerText.replace(/^\d+\.\s*/, '').trim());
-                this.eventBus.emit('SETUP_REORDER_PLAYERS', newOrder);
+                this.eventBus.emit(EVENTS.SETUP_REORDER_PLAYERS, newOrder);
             };
 
             document.addEventListener('pointermove', handleDragMove);

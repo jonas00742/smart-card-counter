@@ -1,5 +1,6 @@
 import { createElement, getIcon, generateLeaderboardHtml } from '../utils/dom.js';
 import { CONFIG } from '../config.js';
+import { EVENTS } from '../core/events.js';
 
 export class GameTableView {
     constructor(eventBus) {
@@ -19,8 +20,8 @@ export class GameTableView {
         this.elements.backToSetupBtn.textContent = '◀';
         this.elements.backToSetupBtn.classList.add('header-back-btn');
 
-        this.elements.backToSetupBtn.addEventListener('click', () => this.eventBus.emit('GAME_GO_BACK'));
-        this.elements.openInputModalBtn.addEventListener('click', () => this.eventBus.emit('GAME_OPEN_MODAL'));
+        this.elements.backToSetupBtn.addEventListener('click', () => this.eventBus.emit(EVENTS.GAME_GO_BACK));
+        this.elements.openInputModalBtn.addEventListener('click', () => this.eventBus.emit(EVENTS.GAME_OPEN_MODAL));
     }
 
     renderGameTable(state, leaderboard = []) {
@@ -134,7 +135,7 @@ export class GameTableView {
         this.elements.tableBody.querySelectorAll('.edit-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const rIndex = parseInt(e.currentTarget.dataset.rindex);
-                this.eventBus.emit('GAME_TRIGGER_EDIT', rIndex);
+                this.eventBus.emit(EVENTS.GAME_TRIGGER_EDIT, rIndex);
             });
         });
     }
