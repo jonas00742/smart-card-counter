@@ -103,6 +103,6 @@ export class InputModal {
             }
         }
 
-        this.elements.saveInputBtn.classList.toggle('hidden', !isComplete);
+        this.elements.saveInputBtn.disabled = !isComplete;
     }
 }

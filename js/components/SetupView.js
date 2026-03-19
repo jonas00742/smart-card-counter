@@ -30,6 +30,14 @@ export class SetupView {
                 this.elements.newPlayerInput.value = ''; 
             }
         });
+
+        this.elements.newPlayerInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                this.elements.addNewPlayerBtn.click();
+            }
+        });
+
         this.elements.installAppBtn.addEventListener('click', () => this.eventBus.emit(EVENTS.APP_INSTALL));
         this.elements.startGameBtn.addEventListener('click', () => this.eventBus.emit(EVENTS.SETUP_START_GAME));
         this.elements.confirmDeletePlayerBtn.addEventListener('click', () => {
