@@ -167,6 +167,32 @@ main {
     cursor: pointer;
 }
 
+.magic-btn {
+    width: 100%;
+    margin-top: var(--space-sm);
+    padding: 8px var(--space-md);
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 1rem;
+    font-weight: bold;
+    color: var(--color-surface);
+    background: linear-gradient(135deg, var(--color-accent), var(--color-primary));
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.magic-btn:active:not(:disabled) {
+    transform: scale(0.995);
+    opacity: 0.9;
+}
+
+.magic-btn:disabled {
+    background: var(--color-chip-bg);
+    color: var(--color-text-muted);
+    cursor: not-allowed;
+    font-weight: normal;
+}
+
 .btn-small-pill {
     display: flex;
     align-items: center;

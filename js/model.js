@@ -207,6 +207,23 @@ export class GameModel {
         }
     }
 
+    applyMagicFill() {
+        const { rIndex, phase } = this.currentContext;
+        if (phase !== 'stiche') return;
+
+        this.state.activePlayers.forEach(player => {
+            const roundData = this.state.roundsData[rIndex][player];
+            if (roundData.gemacht === null) {
+                roundData.gemacht = roundData.ansage;
+                if (!this.autoFillService.autoFilledPlayers.includes(player)) {
+                    this.autoFillService.autoFilledPlayers.push(player);
+                }
+            }
+        });
+        
+        this.saveState();
+    }
+
     recalculateAllScores() {
         ScoreEngine.recalculateAllScores(this.state);
         this.saveState();

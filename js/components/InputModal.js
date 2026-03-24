@@ -15,7 +15,8 @@ export class InputModal {
             buttonGrid: document.getElementById('dynamic-button-grid'),
             saveInputBtn: document.getElementById('save-input-btn'),
             cancelInputBtn: document.getElementById('cancel-input-btn'),
-            resetInputBtn: document.getElementById('reset-input-btn')
+            resetInputBtn: document.getElementById('reset-input-btn'),
+            magicInputBtn: document.getElementById('magic-input-btn')
         };
 
         this.elements.cancelInputBtn.addEventListener('click', () => this.eventBus.emit(EVENTS.MODAL_CANCEL));
@@ -24,6 +25,9 @@ export class InputModal {
         this.elements.modalNextBtn.addEventListener('click', () => this.eventBus.emit(EVENTS.MODAL_NEXT));
         if (this.elements.resetInputBtn) this.elements.resetInputBtn.addEventListener('click', () => this.eventBus.emit(EVENTS.MODAL_RESET));
         this.elements.saveInputBtn.addEventListener('click', () => this.eventBus.emit(EVENTS.MODAL_SAVE));
+        if (this.elements.magicInputBtn) {
+            this.elements.magicInputBtn.addEventListener('click', () => this.eventBus.emit('modal:magicFill'));
+        }
 
         this.elements.buttonGrid.addEventListener('click', (e) => {
             const btn = e.target.closest('.number-btn');
@@ -91,6 +95,32 @@ export class InputModal {
                 if (currentValue === i) btn.classList.add('selected');
             }
         });
+
+        if (this.elements.magicInputBtn) {
+            if (phase === 'stiche') {
+                let sumAnsage = 0;
+                let isMagicPossible = true;
+                let allFilled = true;
+                
+                state.activePlayers.forEach(p => {
+                    const ansage = state.roundsData[rIndex][p].ansage;
+                    const gemacht = state.roundsData[rIndex][p].gemacht;
+                    if (ansage !== null) sumAnsage += ansage;
+                    
+                    if (gemacht !== null) {
+                        if (gemacht !== ansage) isMagicPossible = false;
+                    } else {
+                        allFilled = false;
+                    }
+                });
+
+                const isMagicRound = sumAnsage === cards;
+                this.elements.magicInputBtn.classList.toggle('hidden', !isMagicRound);
+                this.elements.magicInputBtn.disabled = !isMagicPossible || allFilled;
+            } else {
+                this.elements.magicInputBtn.classList.add('hidden');
+            }
+        }
 
         this.elements.modalPrevBtn.style.visibility = state.currentPlayerInputIndex > 0 ? 'visible' : 'hidden';
         this.elements.modalNextBtn.style.visibility = state.currentPlayerInputIndex < state.activePlayers.length - 1 ? 'visible' : 'hidden';

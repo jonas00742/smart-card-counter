@@ -19,6 +19,7 @@ export class RoundController {
         this.eventBus.on(EVENTS.MODAL_NUMBER_INPUT, this.handleNumberInput.bind(this));
         this.eventBus.on(EVENTS.MODAL_RESET, this.handleModalReset.bind(this));
         this.eventBus.on(EVENTS.MODAL_SAVE, this.handleModalSave.bind(this));
+        this.eventBus.on('modal:magicFill', this.handleMagicFill.bind(this));
 
         this.eventBus.on(EVENTS.GAME_OVER_CLOSE, () => this.view.hideGameOverModal());
         this.eventBus.on(EVENTS.EDIT_CHOICE_CLOSE, this.handleEditChoiceClose.bind(this));
@@ -94,6 +95,11 @@ export class RoundController {
     handleModalReset() {
         this.model.resetCurrentPhaseInputs();
         this.model.state.currentPlayerInputIndex = 0;
+        this.view.renderModalContent(this.model.state, this.model.isPhaseReadyForSave());
+    }
+
+    handleMagicFill() {
+        this.model.applyMagicFill();
         this.view.renderModalContent(this.model.state, this.model.isPhaseReadyForSave());
     }
 
