@@ -35,7 +35,7 @@
     /* Z-Index */
     --z-sticky-col: 1;
     --z-sticky-header: 2;
-    --z-sticky-btn: 3;
+    --z-sticky-btn: 4;
     --z-modal: 1000;
     --sticky-header-height: 70px;
 }
@@ -444,6 +444,33 @@ th:first-child {
 
 th:last-child {
     border-top-right-radius: var(--radius-sm);
+}
+
+/* Hide table rows that scroll above the sticky header */
+th::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: -2px;
+    right: -2px;
+    height: 100vh;
+    background-color: var(--color-bg);
+    z-index: -1;
+    pointer-events: none;
+}
+
+/* Hide table content that scrolls to the left of the sticky first column */
+th:first-child::after,
+td:first-child::after {
+    content: '';
+    position: absolute;
+    right: 100%;
+    top: -2px;
+    bottom: -2px;
+    width: 100vw;
+    background-color: var(--color-bg);
+    z-index: -1;
+    pointer-events: none;
 }
 
 /* Column Specifics */
