@@ -818,7 +818,10 @@ th.narrow-col {
     animation: blink-red-warning 1s infinite;
 }
 
-.penultimate-round-warning .sticky-top-container {
+.penultimate-round-warning .sticky-top-container,
+.penultimate-round-warning th::before,
+.penultimate-round-warning th:first-child::after,
+.penultimate-round-warning td:first-child::after {
     animation: blink-red-warning 1s infinite;
 }
 
