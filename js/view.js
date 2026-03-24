@@ -34,7 +34,10 @@ export class GameView {
     hideInputModal() { this.inputModal.elements.modal.classList.add('hidden'); }
     showEditChoiceModal() { this.modals.elements.editChoiceModal.classList.remove('hidden'); }
     hideEditChoiceModal() { this.modals.elements.editChoiceModal.classList.add('hidden'); }
-    hideGameOverModal() { this.modals.elements.gameOverModal.classList.add('hidden'); }
+    hideGameOverModal() { 
+        this.modals.elements.gameOverModal.classList.add('hidden'); 
+        this.toggleFab(true);
+    }
     toggleFab(show) { this.modals.elements.fabInterimBtn.classList.toggle('hidden', !show); }
 
     // --- View Rendering Delegation ---
@@ -42,7 +45,10 @@ export class GameView {
     renderGameTable(state, leaderboard) { this.table.renderGameTable(state, leaderboard); }
     renderModalContent(state, isComplete) { this.inputModal.renderModalContent(state, isComplete); }
     
-    showGameOver(leaderboard) { this.modals.showGameOver(leaderboard); }
+    showGameOver(leaderboard) { 
+        this.modals.showGameOver(leaderboard); 
+        this.toggleFab(false);
+    }
     showConfirmBackModal() { this.modals.showConfirmBackModal(); }
     hideConfirmBackModal() { this.modals.hideConfirmBackModal(); }
     showValidationAlert(message) { this.modals.showValidationAlert(message); }

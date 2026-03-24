@@ -26,7 +26,15 @@ export class GameTableView {
 
     renderGameTable(state, leaderboard = []) {
         const cards = CONFIG.CARDS_SEQUENCE[state.currentRoundIndex];
-        this.elements.currentCardsSpan.innerText = cards;
+        let arrowHtml = '';
+        
+        if (!state.isGameOver && state.currentRoundIndex < CONFIG.TOTAL_ROUNDS - 1) {
+            const nextCards = CONFIG.CARDS_SEQUENCE[state.currentRoundIndex + 1];
+            if (nextCards > cards) arrowHtml = '<span class="trend-arrow">↑</span>';
+            else if (nextCards < cards) arrowHtml = '<span class="trend-arrow">↓</span>';
+        }
+        
+        this.elements.currentCardsSpan.innerHTML = `${cards}${arrowHtml}`;
         
         let allEntered = true;
         let someEntered = false;
@@ -53,7 +61,6 @@ export class GameTableView {
         
         this.elements.openInputModalBtn.classList.toggle('hidden', state.isGameOver);
         this.elements.leaderboardContainer.classList.toggle('hidden', !state.isGameOver);
-        this.elements.fabInterimBtn.classList.toggle('hidden', state.isGameOver);
         if (state.isGameOver) {
             this.renderLeaderboard(leaderboard);
         }

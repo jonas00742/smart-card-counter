@@ -23,7 +23,13 @@ export class RoundController {
         this.eventBus.on(EVENTS.GAME_OVER_CLOSE, () => this.view.hideGameOverModal());
         this.eventBus.on(EVENTS.EDIT_CHOICE_CLOSE, this.handleEditChoiceClose.bind(this));
         this.eventBus.on(EVENTS.EDIT_CHOICE_SELECT, this.handleEditChoiceSelect.bind(this));
-        this.eventBus.on(EVENTS.TOGGLE_INTERIM, () => this.view.showInterimModal(this.model.getLeaderboard()));
+        this.eventBus.on(EVENTS.TOGGLE_INTERIM, () => {
+            if (this.model.state.isGameOver) {
+                this.view.showGameOver(this.model.getLeaderboard());
+            } else {
+                this.view.showInterimModal(this.model.getLeaderboard());
+            }
+        });
     }
 
     handleOpenInputModal() {
@@ -57,6 +63,7 @@ export class RoundController {
     handleModalCancel() {
         this.model.clearAutoFillTracker();
         this.view.hideInputModal();
+        this.view.toggleFab(true);
         this.view.renderGameTable(this.model.state, this.model.getLeaderboard());
     }
 
@@ -99,6 +106,7 @@ export class RoundController {
 
         this.model.clearAutoFillTracker();
         this.view.hideInputModal();
+        this.view.toggleFab(true);
         
         if (this.model.state.isEditMode) {
             this.model.recalculateAllScores();
