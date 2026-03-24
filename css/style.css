@@ -385,10 +385,16 @@ main {
 /* ==========================================================================
    7. MODULE: GAME TABLE
    ========================================================================== */
+#game-screen {
+    width: max-content;
+    min-width: 100%;
+}
+
 .sticky-top-container {
     position: sticky;
     top: 0;
     left: 0;
+    width: calc(100vw - (var(--space-md) * 2));
     z-index: var(--z-sticky-btn);
     height: var(--sticky-header-height);
     display: flex;
