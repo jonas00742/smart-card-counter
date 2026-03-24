@@ -81,6 +81,7 @@ header {
     align-items: center;
     min-height: 60px;
     padding: var(--space-md);
+    padding-top: calc(var(--space-md) + env(safe-area-inset-top, 0px));
     background: var(--color-primary);
     color: var(--color-surface);
     box-shadow: var(--shadow-sm);
