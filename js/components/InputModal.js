@@ -45,8 +45,9 @@ export class InputModal {
         const phase = state.isEditMode ? state.editPhase : state.phase;
         const key = phase === 'ansage' ? 'ansage' : 'gemacht';
 
-        this.elements.modal.classList.remove('phase-ansage', 'phase-stiche');
-        this.elements.modal.classList.add(`phase-${phase}`);
+        const phaseClass = phase === 'ansage' ? 'phase-bid' : 'phase-tricks';
+        this.elements.modal.classList.remove('phase-bid', 'phase-tricks');
+        this.elements.modal.classList.add(phaseClass);
 
         const titlePrefix = state.isEditMode ? "Ändern: " : "";
         this.elements.modalTitle.innerText = `${titlePrefix}Stiche ${phase === 'ansage' ? 'ansagen' : 'gemacht'}?`;
@@ -58,15 +59,15 @@ export class InputModal {
         }).join('');
 
         const currentValue = state.roundsData[rIndex][player][key];
-        const ansageValue = state.roundsData[rIndex][player].ansage;
+        const targetBidValue = state.roundsData[rIndex][player].ansage;
 
         let maxButtons = cards;
 
         if (phase === 'stiche') {
-            const sumOthers = state.activePlayers.reduce((sum, p) => {
+            const sumOtherWon = state.activePlayers.reduce((sum, p) => {
                 return p !== player ? sum + (state.roundsData[rIndex][p].gemacht || 0) : sum;
             }, 0);
-            maxButtons = Math.max(0, cards - sumOthers); 
+            maxButtons = Math.max(0, cards - sumOtherWon); 
         }
 
         // Ensure we only rebuild DOM if round layout cards change
@@ -89,7 +90,7 @@ export class InputModal {
             if (i > maxButtons) btn.classList.add('hidden');
             else {
                 if (phase === 'stiche') {
-                    if (i === ansageValue) btn.classList.add('target-bid');
+                    if (i === targetBidValue) btn.classList.add('target-bid');
                     else btn.classList.add('non-target');
                 }
                 if (currentValue === i) btn.classList.add('selected');
@@ -98,23 +99,23 @@ export class InputModal {
 
         if (this.elements.magicInputBtn) {
             if (phase === 'stiche') {
-                let sumAnsage = 0;
+                let totalBids = 0;
                 let isMagicPossible = true;
                 let allFilled = true;
                 
                 state.activePlayers.forEach(p => {
-                    const ansage = state.roundsData[rIndex][p].ansage;
-                    const gemacht = state.roundsData[rIndex][p].gemacht;
-                    if (ansage !== null) sumAnsage += ansage;
+                    const bid = state.roundsData[rIndex][p].ansage;
+                    const wonTricks = state.roundsData[rIndex][p].gemacht;
+                    if (bid !== null) totalBids += bid;
                     
-                    if (gemacht !== null) {
-                        if (gemacht !== ansage) isMagicPossible = false;
+                    if (wonTricks !== null) {
+                        if (wonTricks !== bid) isMagicPossible = false;
                     } else {
                         allFilled = false;
                     }
                 });
 
-                const isMagicRound = sumAnsage === cards;
+                const isMagicRound = totalBids === cards;
                 this.elements.magicInputBtn.classList.toggle('hidden', !isMagicRound);
                 this.elements.magicInputBtn.disabled = !isMagicPossible || allFilled;
             } else {

@@ -99,19 +99,23 @@ export class SetupView {
         const handle = row.querySelector('.drag-handle-btn');
 
         const handleDragStart = (e) => {
+            // Only allow left mouse button or touch interaction
             if (e.pointerType === 'mouse' && e.button !== 0) return;
             e.preventDefault();
             
+            // Set up dimensions and starting positions
             const rect = row.getBoundingClientRect();
             const offsetY = e.clientY - rect.top;
             
             const container = this.elements.activePlayersList;
             const containerRect = container.getBoundingClientRect();
 
+            // Create placeholder element to maintain space in the list
             const placeholder = document.createElement('li');
             placeholder.className = 'active-player-row placeholder';
             placeholder.style.height = `${rect.height}px`;
             
+            // Style the dragged row for absolute positioning over the list
             row.style.width = `${rect.width}px`;
             row.style.height = `${rect.height}px`;
             row.style.position = 'fixed';
@@ -126,11 +130,13 @@ export class SetupView {
                 moveEvent.preventDefault();
                 let currentTop = moveEvent.clientY - offsetY;
 
+                // Constrain the dragging boundary vertically within the container
                 if (currentTop < containerRect.top) currentTop = containerRect.top;
                 if (currentTop > containerRect.bottom - rect.height) currentTop = containerRect.bottom - rect.height;
 
                 row.style.top = `${currentTop}px`;
                 
+                // Determine the correct insertion point visually
                 const siblings = [...container.querySelectorAll('.active-player-row:not(.dragging):not(.placeholder)')];
                 const nextSibling = siblings.reduce((closest, sibling) => {
                     const box = sibling.getBoundingClientRect();

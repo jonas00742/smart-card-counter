@@ -25,6 +25,14 @@ export class GameTableView {
     }
 
     renderGameTable(state, leaderboard = []) {
+        this._renderTrendIndicator(state);
+        this._renderActionButtons(state);
+        this._renderTableHeader(state, leaderboard);
+        this._renderTableBody(state);
+        this._updateLeaderboardVisibility(state, leaderboard);
+    }
+
+    _renderTrendIndicator(state) {
         const cards = CONFIG.CARDS_SEQUENCE[state.currentRoundIndex];
         let arrowHtml = '';
         
@@ -35,43 +43,23 @@ export class GameTableView {
         }
         
         this.elements.currentCardsSpan.innerHTML = `${cards}${arrowHtml}`;
-        
-        let allEntered = true;
-        let someEntered = false;
+    }
 
+    _renderActionButtons(state) {
+        const cards = CONFIG.CARDS_SEQUENCE[state.currentRoundIndex];
         if (!state.isGameOver) {
-            const key = state.phase === 'ansage' ? 'ansage' : 'gemacht';
-            state.activePlayers.forEach(p => {
-                const val = state.roundsData[state.currentRoundIndex][p][key];
-                if (val !== null) someEntered = true;
-                else allEntered = false;
-            });
-
-            this.elements.openInputModalBtn.classList.remove('pulse-animation', 'btn-continue');
-            if (allEntered) {
-                this.elements.openInputModalBtn.innerText = `Eingabe bestätigen (${cards} Karten)`;
-                this.elements.openInputModalBtn.classList.add('pulse-animation');
-            } else if (someEntered) {
-                this.elements.openInputModalBtn.innerText = `Eingabe fortsetzen (${cards} Karten)`;
-                this.elements.openInputModalBtn.classList.add('btn-continue');
-            } else {
-                this.elements.openInputModalBtn.innerText = state.phase === 'ansage' ? `Eingabe starten (${cards} Karten)` : `Stiche eintragen (${cards} Karten)`;
-            }
+            this._updateInputButtonState(state, cards);
         }
-        
         this.elements.openInputModalBtn.classList.toggle('hidden', state.isGameOver);
-        this.elements.leaderboardContainer.classList.toggle('hidden', !state.isGameOver);
-        if (state.isGameOver) {
-            this.renderLeaderboard(leaderboard);
-        }
+    }
 
+    _renderTableHeader(state, leaderboard) {
         Array.from(this.elements.tableHeaderRow.children).slice(1).forEach(el => el.remove());
 
         const numPlayers = state.activePlayers.length;
         const currentDealerIndex = numPlayers > 0 ? (state.startingDealerIndex + state.currentRoundIndex) % numPlayers : 0;
         const currentDealer = state.activePlayers[currentDealerIndex];
         
-        // Finde die Führenden (abgeschlossene 1. Runde vorausgesetzt)
         let leadingPlayers = [];
         if (state.currentRoundIndex > 0 || state.isGameOver) {
             const maxScore = leaderboard.length > 0 ? leaderboard[0].score : -Infinity;
@@ -90,25 +78,59 @@ export class GameTableView {
         });
 
         this.elements.tableHeaderRow.appendChild(createElement('th', { className: 'status-col-header', text: '±' }));
+    }
+
+    _updateLeaderboardVisibility(state, leaderboard) {
+        this.elements.leaderboardContainer.classList.toggle('hidden', !state.isGameOver);
+        if (state.isGameOver) {
+            this.renderLeaderboard(leaderboard);
+        }
+    }
+
+    _updateInputButtonState(state, cards) {
+        const phaseKey = state.phase === 'ansage' ? 'ansage' : 'gemacht';
+        
+        const enteredCount = state.activePlayers.filter(p => 
+            state.roundsData[state.currentRoundIndex][p][phaseKey] !== null
+        ).length;
+
+        const allEntered = enteredCount === state.activePlayers.length;
+        const someEntered = enteredCount > 0;
+
+        const btn = this.elements.openInputModalBtn;
+        btn.classList.remove('pulse-animation', 'btn-continue');
+        
+        if (allEntered) {
+            btn.innerText = `Eingabe bestätigen (${cards} Karten)`;
+            btn.classList.add('pulse-animation');
+        } else if (someEntered) {
+            btn.innerText = `Eingabe fortsetzen (${cards} Karten)`;
+            btn.classList.add('btn-continue');
+        } else {
+            btn.innerText = state.phase === 'ansage' ? `Eingabe starten (${cards} Karten)` : `Stiche eintragen (${cards} Karten)`;
+        }
+    }
+
+    _renderTableBody(state) {
         this.elements.tableBody.innerHTML = '';
 
         CONFIG.CARDS_SEQUENCE.forEach((cardCount, index) => {
             const tr = createElement('tr');
             
-            let sumAnsage = 0;
-            let allAnsagenMade = true;
+            let totalBids = 0;
+            let allBidsMade = true;
             let isRowIncomplete = false;
 
-            const isPastAnsage = index < state.currentRoundIndex || (index === state.currentRoundIndex && state.phase === 'stiche') || state.isGameOver;
-            const isPastGemacht = index < state.currentRoundIndex || state.isGameOver;
+            const isPastBidPhase = index < state.currentRoundIndex || (index === state.currentRoundIndex && state.phase === 'stiche') || state.isGameOver;
+            const isPastTricksPhase = index < state.currentRoundIndex || state.isGameOver;
 
             state.activePlayers.forEach(player => {
                 const data = state.roundsData[index][player];
-                if (data.ansage === null) allAnsagenMade = false;
-                else sumAnsage += data.ansage;
+                if (data.ansage === null) allBidsMade = false;
+                else totalBids += data.ansage;
 
-                if (isPastAnsage && data.ansage === null) isRowIncomplete = true;
-                if (isPastGemacht && data.gemacht === null) isRowIncomplete = true;
+                if (isPastBidPhase && data.ansage === null) isRowIncomplete = true;
+                if (isPastTricksPhase && data.gemacht === null) isRowIncomplete = true;
             });
 
             if (isRowIncomplete) tr.classList.add('row-warning');
@@ -123,14 +145,14 @@ export class GameTableView {
 
             state.activePlayers.forEach(player => {
                 const data = state.roundsData[index][player];
-                const ansageStr = data.ansage ?? '-';
-                const gemachtStr = data.gemacht ?? '-';
+                const bidStr = data.ansage ?? '-';
+                const wonStr = data.gemacht ?? '-';
                 const scoreStr = data.gemacht !== null ? data.gesamtPunkte : '-';
                 const scoreColor = data.punkte < 0 ? 'var(--color-danger)' : 'inherit';
 
                 const td = createElement('td', { 
                     className: 'player-col',
-                    html: `<div class="cell-data"><span class="cell-stats">${ansageStr} / ${gemachtStr}</span><span class="cell-score" style="color: ${scoreColor}">${scoreStr}</span></div>`
+                    html: `<div class="cell-data"><span class="cell-stats">${bidStr} / ${wonStr}</span><span class="cell-score" style="color: ${scoreColor}">${scoreStr}</span></div>`
                 });
                 tr.appendChild(td);
             });
@@ -138,9 +160,9 @@ export class GameTableView {
             let statusHtml = '';
             if (isRowIncomplete) {
                 statusHtml = `<span class="status-badge warning" title="Unvollständig">${getIcon('warning')}</span>`;
-            } else if (allAnsagenMade) {
-                if (sumAnsage === cardCount) statusHtml = `<span class="status-badge success">${getIcon('check')}</span>`;
-                else if (sumAnsage > cardCount) statusHtml = `<span class="status-badge danger">${getIcon('cross')}</span>`;
+            } else if (allBidsMade) {
+                if (totalBids === cardCount) statusHtml = `<span class="status-badge success">${getIcon('check')}</span>`;
+                else if (totalBids > cardCount) statusHtml = `<span class="status-badge danger">${getIcon('cross')}</span>`;
                 else statusHtml = `<span class="status-badge accent">${getIcon('dash')}</span>`;
             }
             

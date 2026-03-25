@@ -30,21 +30,34 @@ export class AppController {
 
     initRouter() {
         window.addEventListener('popstate', this.handlePopState.bind(this));
-        if (this.model.state.roundsData && this.model.state.roundsData.length > 0) {
-            window.history.replaceState({ screen: 'game' }, '', '#game');
-            this.view.switchScreen(true);
-            this.view.renderGameTable(this.model.state, this.model.getLeaderboard());
-
-            const { currentRoundIndex, phase, roundsData, activePlayers } = this.model.state;
-            if (currentRoundIndex === CONFIG.TOTAL_ROUNDS - 1 && phase === 'ansage' && roundsData[currentRoundIndex]) {
-                if (!activePlayers.some(p => roundsData[currentRoundIndex][p]?.ansage !== null)) {
-                    this.view.startPenultimateRoundBlinking();
-                }
-            }
+        
+        const hasOngoingGame = this.model.state.roundsData && this.model.state.roundsData.length > 0;
+        
+        if (hasOngoingGame) {
+            this._restoreOngoingGame();
         } else {
-            window.history.replaceState({ screen: 'setup' }, '', '#setup');
-            this.view.renderSetup(this.model.state);
+            this._initializeSetupScreen();
         }
+    }
+
+    _restoreOngoingGame() {
+        window.history.replaceState({ screen: 'game' }, '', '#game');
+        this.view.switchScreen(true);
+        this.view.renderGameTable(this.model.state, this.model.getLeaderboard());
+
+        // Check if penultimate round warning is needed
+        const { currentRoundIndex, phase, roundsData, activePlayers } = this.model.state;
+        const isPenultimateRound = currentRoundIndex === CONFIG.TOTAL_ROUNDS - 1;
+        
+        if (isPenultimateRound && phase === 'ansage' && roundsData[currentRoundIndex]) {
+            const noBidsEnteredYet = !activePlayers.some(p => roundsData[currentRoundIndex][p]?.ansage !== null);
+            if (noBidsEnteredYet) this.view.startPenultimateRoundBlinking();
+        }
+    }
+
+    _initializeSetupScreen() {
+        window.history.replaceState({ screen: 'setup' }, '', '#setup');
+        this.view.renderSetup(this.model.state);
     }
 
     handlePopState() {

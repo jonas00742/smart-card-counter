@@ -51,9 +51,9 @@ export class RoundController {
     handleTriggerRowEdit(rIndex) {
         this.model.state.editRoundIndex = rIndex;
         const isPastRound = rIndex < this.model.state.currentRoundIndex || this.model.state.isGameOver;
-        const isCurrentRoundStichePhase = rIndex === this.model.state.currentRoundIndex && this.model.state.phase === 'stiche';
+        const isCurrentRoundTricksPhase = rIndex === this.model.state.currentRoundIndex && this.model.state.phase === 'stiche';
 
-        if (isPastRound || isCurrentRoundStichePhase) {
+        if (isPastRound || isCurrentRoundTricksPhase) {
             this.view.showEditChoiceModal();
             this.view.toggleFab(false);
         } else {
@@ -106,68 +106,76 @@ export class RoundController {
     handleModalSave() {
         const { rIndex, phase } = this.model.currentContext;
         if (phase === 'stiche') {
-            const validation = this.model.validateSticheSum(rIndex);
+            const validation = this.model.validateTricksSum(rIndex);
             if (!validation.valid) return this.view.showValidationAlert(validation.message);
         }
 
-        // Vor dem Speichern: Aktuelle Führende ermitteln (nur wenn mind. 1 Runde abgeschlossen ist)
         const wasRound1Completed = this.model.state.currentRoundIndex > 0 || this.model.state.isGameOver;
-        let oldLeaders = '';
-        if (wasRound1Completed) {
-            const oldLeaderboard = this.model.getLeaderboard();
-            if (oldLeaderboard.length > 0) {
-                const maxScore = oldLeaderboard[0].score;
-                oldLeaders = oldLeaderboard.filter(p => p.score === maxScore).map(p => p.name).sort().join(',');
-            }
-        }
+        const oldLeaders = wasRound1Completed ? this._getLeadingPlayersString() : '';
 
-        this.model.clearAutoFillTracker();
-        this.view.hideInputModal();
-        this.view.toggleFab(true);
+        this._closeModalAndResetState();
         
-        const isEdit = this.model.state.isEditMode;
-
-        if (isEdit) {
+        if (this.model.state.isEditMode) {
             this.model.recalculateAllScores();
         } else {
-            if (this.model.state.phase === 'ansage') {
-                this.model.state.phase = 'stiche';
-                this.model.saveState();
-            } else {
-                if (this.model.state.currentRoundIndex === CONFIG.TOTAL_ROUNDS - 2) this.view.startPenultimateRoundBlinking();
-                this.model.recalculateAllScores();
-                
-                if (this.model.state.currentRoundIndex >= CONFIG.TOTAL_ROUNDS - 1) {
-                    this.model.state.isGameOver = true;
-                    this.model.saveState();
-                    this.checkLeaderChange(wasRound1Completed, oldLeaders, phase, isEdit);
-                    this.view.renderGameTable(this.model.state, this.model.getLeaderboard());
-                    return this.view.showGameOver(this.model.getLeaderboard());
-                }
-                this.model.state.phase = 'ansage';
-                this.model.state.currentRoundIndex++;
-                this.model.saveState();
+            const gameJustEnded = this._advanceGameState();
+            if (gameJustEnded) {
+                this._checkLeaderChange(wasRound1Completed, oldLeaders, phase, false);
+                this.view.renderGameTable(this.model.state, this.model.getLeaderboard());
+                return this.view.showGameOver(this.model.getLeaderboard());
             }
         }
         
-        this.checkLeaderChange(wasRound1Completed, oldLeaders, phase, isEdit);
+        this._checkLeaderChange(wasRound1Completed, oldLeaders, phase, this.model.state.isEditMode);
         this.view.renderGameTable(this.model.state, this.model.getLeaderboard());
     }
 
-    checkLeaderChange(wasRound1Completed, oldLeaders, phase, isEditMode) {
-        // Wenn nur regulär "Ansagen" gemacht werden, ändern sich die Punkte ohnehin nicht.
+    _closeModalAndResetState() {
+        this.model.clearAutoFillTracker();
+        this.view.hideInputModal();
+        this.view.toggleFab(true);
+    }
+
+    _advanceGameState() {
+        if (this.model.state.phase === 'ansage') {
+            this.model.state.phase = 'stiche';
+            this.model.saveState();
+            return false;
+        }
+
+        if (this.model.state.currentRoundIndex === CONFIG.TOTAL_ROUNDS - 2) {
+            this.view.startPenultimateRoundBlinking();
+        }
+        
+        this.model.recalculateAllScores();
+        
+        if (this.model.state.currentRoundIndex >= CONFIG.TOTAL_ROUNDS - 1) {
+            this.model.state.isGameOver = true;
+            this.model.saveState();
+            return true; // Returns true if the game is over
+        }
+        
+        this.model.state.phase = 'ansage';
+        this.model.state.currentRoundIndex++;
+        this.model.saveState();
+        return false;
+    }
+
+    _getLeadingPlayersString() {
+        const leaderboard = this.model.getLeaderboard();
+        if (leaderboard.length === 0) return '';
+        const maxScore = leaderboard[0].score;
+        return leaderboard.filter(p => p.score === maxScore).map(p => p.name).sort().join(',');
+    }
+
+    _checkLeaderChange(wasRound1Completed, oldLeaders, phase, isEditMode) {
         if (!isEditMode && phase === 'ansage') return;
         if (!wasRound1Completed || !oldLeaders) return;
         
-        const newLeaderboard = this.model.getLeaderboard();
-        if (newLeaderboard.length > 0) {
-            const maxScore = newLeaderboard[0].score;
-            const newLeaders = newLeaderboard.filter(p => p.score === maxScore).map(p => p.name).sort().join(',');
-            
-            if (oldLeaders !== newLeaders) {
-                const audio = new Audio('./assets/Fah.mp3');
-                audio.play().catch(e => console.warn('Audio konnte nicht abgespielt werden:', e));
-            }
+        const newLeaders = this._getLeadingPlayersString();
+        if (newLeaders && oldLeaders !== newLeaders) {
+            const audio = new Audio('./assets/Fah.mp3');
+            audio.play().catch(e => console.warn('Audio play failed:', e));
         }
     }
 

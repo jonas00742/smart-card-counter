@@ -176,18 +176,18 @@ export class GameModel {
     isPhaseReadyForSave() {
         const { rIndex, phase } = this.currentContext;
 
-        // 1. Are all inputs filled for the current phase?
+        // 1. Check if all inputs are filled for the current phase
         if (!this.isCurrentPhaseComplete()) {
             return false;
         }
 
-        // 2. If it's the 'stiche' phase, we have an additional validation.
+        // 2. If it's the tricks phase ('stiche'), perform additional validation
         if (phase === 'stiche') {
-            const validation = this.validateSticheSum(rIndex);
+            const validation = this.validateTricksSum(rIndex);
             return validation.valid;
         }
 
-        // 3. For 'ansage' phase, just being complete is enough.
+        // 3. For the bid phase ('ansage'), being complete is sufficient
         return true;
     }
 
@@ -213,8 +213,8 @@ export class GameModel {
 
         this.state.activePlayers.forEach(player => {
             const roundData = this.state.roundsData[rIndex][player];
-            if (roundData.gemacht === null) {
-                roundData.gemacht = roundData.ansage;
+            if (roundData.gemacht === null) { // gemacht = won tricks
+                roundData.gemacht = roundData.ansage; // ansage = bid
                 if (!this.autoFillService.autoFilledPlayers.includes(player)) {
                     this.autoFillService.autoFilledPlayers.push(player);
                 }
@@ -229,7 +229,7 @@ export class GameModel {
         this.saveState();
     }
 
-    validateSticheSum(roundIndex) {
-        return ScoreEngine.validateSticheSum(this.state, roundIndex);
+    validateTricksSum(roundIndex) {
+        return ScoreEngine.validateTricksSum(this.state, roundIndex);
     }
 }
