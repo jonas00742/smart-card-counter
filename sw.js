@@ -1,4 +1,4 @@
-const CACHE_NAME = 'smart-counter-v29';
+const CACHE_NAME = 'smart-counter-v30';
 
 const ASSETS_TO_CACHE = [
     './',

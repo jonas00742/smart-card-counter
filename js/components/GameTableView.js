@@ -71,12 +71,21 @@ export class GameTableView {
         const currentDealerIndex = numPlayers > 0 ? (state.startingDealerIndex + state.currentRoundIndex) % numPlayers : 0;
         const currentDealer = state.activePlayers[currentDealerIndex];
         
+        // Finde die Führenden (abgeschlossene 1. Runde vorausgesetzt)
+        let leadingPlayers = [];
+        if (state.currentRoundIndex > 0 || state.isGameOver) {
+            const maxScore = leaderboard.length > 0 ? leaderboard[0].score : -Infinity;
+            leadingPlayers = leaderboard.filter(p => p.score === maxScore).map(p => p.name);
+        }
+        
         state.activePlayers.forEach(player => {
             const isDealer = player === currentDealer;
+            const isLeading = leadingPlayers.includes(player);
             const th = createElement('th', { 
                 className: `player-col ${isDealer ? 'dealer-col-header' : ''}`,
-                text: player.substring(0, 10)
+                text: player.substring(0, 10) + (isLeading ? ' 👑' : '')
             });
+            if (isLeading) th.title = "Aktuell auf Platz 1";
             this.elements.tableHeaderRow.appendChild(th);
         });
 
