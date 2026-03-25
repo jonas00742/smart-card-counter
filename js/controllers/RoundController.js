@@ -110,11 +110,24 @@ export class RoundController {
             if (!validation.valid) return this.view.showValidationAlert(validation.message);
         }
 
+        // Vor dem Speichern: Aktuelle Führende ermitteln (nur wenn mind. 1 Runde abgeschlossen ist)
+        const wasRound1Completed = this.model.state.currentRoundIndex > 0 || this.model.state.isGameOver;
+        let oldLeaders = '';
+        if (wasRound1Completed) {
+            const oldLeaderboard = this.model.getLeaderboard();
+            if (oldLeaderboard.length > 0) {
+                const maxScore = oldLeaderboard[0].score;
+                oldLeaders = oldLeaderboard.filter(p => p.score === maxScore).map(p => p.name).sort().join(',');
+            }
+        }
+
         this.model.clearAutoFillTracker();
         this.view.hideInputModal();
         this.view.toggleFab(true);
         
-        if (this.model.state.isEditMode) {
+        const isEdit = this.model.state.isEditMode;
+
+        if (isEdit) {
             this.model.recalculateAllScores();
         } else {
             if (this.model.state.phase === 'ansage') {
@@ -127,6 +140,7 @@ export class RoundController {
                 if (this.model.state.currentRoundIndex >= CONFIG.TOTAL_ROUNDS - 1) {
                     this.model.state.isGameOver = true;
                     this.model.saveState();
+                    this.checkLeaderChange(wasRound1Completed, oldLeaders, phase, isEdit);
                     this.view.renderGameTable(this.model.state, this.model.getLeaderboard());
                     return this.view.showGameOver(this.model.getLeaderboard());
                 }
@@ -135,7 +149,26 @@ export class RoundController {
                 this.model.saveState();
             }
         }
+        
+        this.checkLeaderChange(wasRound1Completed, oldLeaders, phase, isEdit);
         this.view.renderGameTable(this.model.state, this.model.getLeaderboard());
+    }
+
+    checkLeaderChange(wasRound1Completed, oldLeaders, phase, isEditMode) {
+        // Wenn nur regulär "Ansagen" gemacht werden, ändern sich die Punkte ohnehin nicht.
+        if (!isEditMode && phase === 'ansage') return;
+        if (!wasRound1Completed || !oldLeaders) return;
+        
+        const newLeaderboard = this.model.getLeaderboard();
+        if (newLeaderboard.length > 0) {
+            const maxScore = newLeaderboard[0].score;
+            const newLeaders = newLeaderboard.filter(p => p.score === maxScore).map(p => p.name).sort().join(',');
+            
+            if (oldLeaders !== newLeaders) {
+                const audio = new Audio('./assets/Fah.mp3');
+                audio.play().catch(e => console.warn('Audio konnte nicht abgespielt werden:', e));
+            }
+        }
     }
 
     handleEditChoiceClose() { 

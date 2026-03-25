@@ -22,7 +22,8 @@ const ASSETS_TO_CACHE = [
     './js/utils/dom.js',
     './manifest.json',
     './assets/icon-192.png',
-    './assets/icon-512.png'
+    './assets/icon-512.png',
+    './assets/Fah.mp3'
 ];
 
 // 1. INSTALL
