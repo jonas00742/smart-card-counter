@@ -23,6 +23,7 @@ Diese Progressive Web App digitalisiert den kompletten Zähl- und Rechenprozess 
   * Die App generiert eine übersichtliche Matrix (Zeilen = 13 Runden, Spalten = Spieler).
   * Die aktuell aktive Runde sowie der aktuelle Geber werden visuell hervorgehoben.
   * Der/die führende(n) Spieler werden in der Kopfzeile mit einem Kronen-Symbol (👑) markiert.
+  * **Detail-Status Spalte:** Die "±"-Spalte zeigt nicht nur ein Erfolgssymbol bei korrekter Gesamtansage. Bei Abweichungen wird stattdessen rechts oben die Summe der angesagten Stiche (in schwarz) und rechts unten die Differenz zur Kartenanzahl der Runde (in rot, z.B. "+2") angezeigt, um sofortiges, detailliertes Feedback zu geben.
   * Ein schwebender (sticky) Action-Button führt die Nutzer iterativ durch die Phasen der jeweiligen Runde (Ansage eintragen -> Stiche eintragen -> Nächste Runde).
 * **Runden-Logik & Hinweise:**
   * Die App kennt und steuert die exakte Kartenanzahl der 13 Runden (Aufbauend: 1 bis 7 Karten; Abbauend: 6 bis 1 Karte).

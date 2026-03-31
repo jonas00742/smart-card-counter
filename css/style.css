@@ -529,10 +529,10 @@ td:first-child::after {
 .status-cell,
 .status-col-header {
     width: 1%;
-    min-width: max-content;
+    min-width: 50px;
     white-space: nowrap;
     text-align: center;
-    padding: 4px 2px;
+    padding: 4px 8px;
 }
 
 th.dealer-col-header { /* Increased specificity to naturally override th */
@@ -589,6 +589,42 @@ th.narrow-col {
     background: rgba(0,0,0,0.05);
     cursor: pointer;
     transition: all 0.2s ease;
+}
+
+.status-details {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+}
+
+.status-details .status-badge {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.total-bids {
+    position: absolute;
+    top: 0;
+    right: 0;
+    font-size: 0.7rem;
+    font-weight: bold;
+    color: var(--color-text-main);
+    padding: 2px 4px;
+}
+
+.bid-diff {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    font-size: 0.7rem;
+    font-weight: bold;
+    color: var(--color-danger);
+    padding: 2px 4px;
 }
 
 .edit-btn:active {

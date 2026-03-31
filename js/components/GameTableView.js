@@ -161,9 +161,28 @@ export class GameTableView {
             if (isRowIncomplete) {
                 statusHtml = `<span class="status-badge warning" title="Unvollständig">${getIcon('warning')}</span>`;
             } else if (allBidsMade) {
-                if (totalBids === cardCount) statusHtml = `<span class="status-badge success">${getIcon('check')}</span>`;
-                else if (totalBids > cardCount) statusHtml = `<span class="status-badge danger">${getIcon('cross')}</span>`;
-                else statusHtml = `<span class="status-badge accent">${getIcon('dash')}</span>`;
+                const diff = totalBids - cardCount;
+                let iconHtml = '';
+                if (totalBids === cardCount) {
+                    iconHtml = `<span class="status-badge success">${getIcon('check')}</span>`;
+                } else if (totalBids > cardCount) {
+                    iconHtml = `<span class="status-badge danger">${getIcon('cross')}</span>`;
+                } else {
+                    iconHtml = `<span class="status-badge accent">${getIcon('dash')}</span>`;
+                }
+
+                if (totalBids !== cardCount) {
+                    const diffText = diff > 0 ? `+${diff}` : `${diff}`;
+                    statusHtml = `
+                        <div class="status-details">
+                            ${iconHtml}
+                            <span class="total-bids">${totalBids}</span>
+                            <span class="bid-diff">${diffText}</span>
+                        </div>
+                    `;
+                } else {
+                    statusHtml = iconHtml;
+                }
             }
             
             tr.appendChild(createElement('td', { className: 'status-cell', html: statusHtml }));
