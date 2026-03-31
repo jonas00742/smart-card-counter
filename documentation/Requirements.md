@@ -22,11 +22,12 @@ Diese Progressive Web App digitalisiert den kompletten Zähl- und Rechenprozess 
 * **Digitale Spieltabelle:**
   * Die App generiert eine übersichtliche Matrix (Zeilen = 13 Runden, Spalten = Spieler).
   * Die aktuell aktive Runde sowie der aktuelle Geber werden visuell hervorgehoben.
+  * Der/die führende(n) Spieler werden in der Kopfzeile mit einem Kronen-Symbol (👑) markiert.
   * Ein schwebender (sticky) Action-Button führt die Nutzer iterativ durch die Phasen der jeweiligen Runde (Ansage eintragen -> Stiche eintragen -> Nächste Runde).
 * **Runden-Logik & Hinweise:**
   * Die App kennt und steuert die exakte Kartenanzahl der 13 Runden (Aufbauend: 1 bis 7 Karten; Abbauend: 6 bis 1 Karte).
-  * Anzeige der aktuell zu verteilenden Karten für den jeweiligen Geber.
-  * **Warn-Anzeige (Letzte Runde):** Ein dediziertes visuelles Feedback warnt die Spieler unmittelbar vor dem Start der 13. (und damit letzten) Runde, um den Fokus auf das Finale zu lenken.
+  * Anzeige der aktuell zu verteilenden Karten inklusive eines Trend-Pfeils (↑/↓), der anzeigt, ob es in der nächsten Runde mehr oder weniger Karten gibt.
+  * **Warn-Anzeige (Vorletzte Runde):** Ein dediziertes visuelles Feedback (Blinken) warnt die Spieler unmittelbar vor dem Start der 13. (und damit letzten) Runde, um den Fokus auf das Finale zu lenken.
 
 ## 3. 🎯 Smart Input (Eingabe der Ansagen & Stiche)
 
@@ -36,8 +37,10 @@ Diese Progressive Web App digitalisiert den kompletten Zähl- und Rechenprozess 
 * **Ansage-Phase:**
   * Jeder Spieler gibt an, wie viele Stiche er exakt prognostiziert.
 * **Ergebnis-Phase (Gemachte Stiche):**
-  * *Dynamische Autovervollständigung:* Sobald Stiche eingetragen werden, errechnet die App, ob sich die restlichen fehlenden Stiche der anderen Spieler automatisch logisch ergeben.
-  * *Validierung:* Das System stellt sicher, dass die Eingabe erst bestätigt werden kann, wenn die Summe aller eingetragenen Stiche exakt der Summe der ausgeteilten Karten in dieser Runde entspricht.
+  * **Dynamische Autovervollständigung:** Sobald Stiche eingetragen werden, errechnet die App, ob sich die restlichen fehlenden Stiche der anderen Spieler automatisch logisch ergeben (z.B. wenn nur noch ein Spieler eine Eingabe fehlt).
+  * **"Magic Fill" Button:** In Runden, in denen die Summe der Ansagen der Anzahl der Karten entspricht, erscheint ein "Alle lagen richtig" Button, der automatisch für alle Spieler die gemachten Stiche entsprechend ihrer Ansage ausfüllt.
+  * **Reset-Button:** Die Eingaben der aktuellen Phase können über einen Button zurückgesetzt werden.
+  * **Validierung:** Das System stellt sicher, dass die Eingabe erst bestätigt werden kann, wenn die Summe aller eingetragenen Stiche exakt der Summe der ausgeteilten Karten in dieser Runde entspricht.
 
 ## 4. 🧮 Punkte-Engine & Zwischenstand
 
@@ -47,6 +50,10 @@ Diese Progressive Web App digitalisiert den kompletten Zähl- und Rechenprozess 
     * *Abweichung (Misserfolg):* Danebengetippt = Minuspunkte in Höhe der exakten Differenz zwischen Ansage und tatsächlichen Stichen.
 * **Zwischenstand-Anzeige:**
   * Über einen separaten Button kann jederzeit (ohne die Tabelle verlassen zu müssen) das aktuelle Ranking und die genaue Punktzahl aller Spieler bis zur aktuellen Runde als Overlay/Modal eingesehen werden.
+  * Bei einem Führungswechsel wird ein kurzer Sound abgespielt.
+* **Leaderboard-Medaillen:**
+  * Die Platzierungen im Zwischen- und Endstand-Ranking werden mit Medaillen visualisiert (🥇, 🥈, 🥉).
+  * Bei 4 oder mehr Spielern erhält der letzte Platz ein "💩"-Emoji.
 
 ## 5. ✏️ Korrektur & Edit-Modus
 
