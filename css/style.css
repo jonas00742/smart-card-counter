@@ -529,10 +529,15 @@ td:first-child::after {
 .status-cell,
 .status-col-header {
     width: 1%;
-    min-width: 50px;
+    min-width: max-content;
     white-space: nowrap;
     text-align: center;
-    padding: 4px 8px;
+    padding: 4px 2px;
+}
+
+.status-cell {
+    position: relative !important;
+    padding-right: 20px !important; /* Forces physical space on the right for the numbers */
 }
 
 th.dealer-col-header { /* Increased specificity to naturally override th */
@@ -571,6 +576,39 @@ th.narrow-col {
 .status-badge.accent { background-color: var(--color-accent-dark); }
 .status-badge.warning { background-color: var(--color-warning); }
 
+/* Target by class OR structurally grab the 2nd span (Top number) */
+.status-value-top,
+.status-cell > span:nth-of-type(2) {
+    position: absolute !important;
+    top: 2px !important;
+    right: 2px !important;
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--color-text-main) !important;
+    z-index: 2;
+}
+
+/* Target by class OR structurally grab the 3rd span (Bottom number) */
+.status-value-bottom,
+.status-cell > span:nth-of-type(3) {
+    position: absolute !important;
+    bottom: 2px !important;
+    right: 2px !important;
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 1;
+    z-index: 2;
+}
+
+.status-value-positive {
+    color: var(--color-accent) !important;
+}
+
+.status-value-negative {
+    color: var(--color-danger) !important;
+}
+
 .row-warning {
     background-color: #fcf0e4 !important; /* Solid color for sticky overlap */
 }
@@ -589,42 +627,6 @@ th.narrow-col {
     background: rgba(0,0,0,0.05);
     cursor: pointer;
     transition: all 0.2s ease;
-}
-
-.status-details {
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    height: 100%;
-}
-
-.status-details .status-badge {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-}
-
-.total-bids {
-    position: absolute;
-    top: 0;
-    right: 0;
-    font-size: 0.7rem;
-    font-weight: bold;
-    color: var(--color-text-main);
-    padding: 2px 4px;
-}
-
-.bid-diff {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    font-size: 0.7rem;
-    font-weight: bold;
-    color: var(--color-danger);
-    padding: 2px 4px;
 }
 
 .edit-btn:active {
