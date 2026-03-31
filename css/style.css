@@ -537,7 +537,7 @@ td:first-child::after {
 
 .status-cell {
     position: relative !important;
-    padding-right: 20px !important; /* Forces physical space on the right for the numbers */
+    padding: 4px 20px !important; /* Symmetrical padding perfectly centers the badge */
 }
 
 th.dealer-col-header { /* Increased specificity to naturally override th */
@@ -602,11 +602,11 @@ th.narrow-col {
 }
 
 .status-value-positive {
-    color: var(--color-accent) !important;
+    color: var(--color-danger) !important;
 }
 
 .status-value-negative {
-    color: var(--color-danger) !important;
+    color: var(--color-accent-dark) !important;
 }
 
 .row-warning {

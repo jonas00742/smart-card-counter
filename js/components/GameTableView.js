@@ -161,20 +161,23 @@ export class GameTableView {
             if (isRowIncomplete) {
                 statusHtml = `<span class="status-badge warning" title="Unvollständig">${getIcon('warning')}</span>`;
             } else if (allBidsMade) {
-                if (totalBids === cardCount) statusHtml = `<span class="status-badge success">${getIcon('check')}</span>`;
-                else if (totalBids > cardCount) statusHtml = `<span class="status-badge danger">${getIcon('cross')}</span>`;
-                else statusHtml = `<span class="status-badge accent">${getIcon('dash')}</span>`;
-                
-                // Automatically add the top and bottom numbers dynamically
-                const diff = totalBids - cardCount;
-                const sign = diff > 0 ? '+' : '';
-                
-                let diffClass = '';
-                if (diff > 0) diffClass = 'status-value-positive';
-                else if (diff < 0) diffClass = 'status-value-negative';
+                if (totalBids === cardCount) {
+                    statusHtml = `<span class="status-badge success">${getIcon('check')}</span>`;
+                } else {
+                    if (totalBids > cardCount) statusHtml = `<span class="status-badge danger">${getIcon('cross')}</span>`;
+                    else statusHtml = `<span class="status-badge accent">${getIcon('dash')}</span>`;
+                    
+                    // Automatically add the top and bottom numbers dynamically
+                    const diff = totalBids - cardCount;
+                    const sign = diff > 0 ? '+' : '';
+                    
+                    let diffClass = '';
+                    if (diff > 0) diffClass = 'status-value-positive';
+                    else if (diff < 0) diffClass = 'status-value-negative';
 
-                statusHtml += `<span class="status-value-top">${totalBids}</span>`;
-                statusHtml += `<span class="status-value-bottom ${diffClass}">${sign}${diff}</span>`;
+                    statusHtml += `<span class="status-value-top">${totalBids}</span>`;
+                    statusHtml += `<span class="status-value-bottom ${diffClass}">${sign}${diff}</span>`;
+                }
             }
             
             tr.appendChild(createElement('td', { className: 'status-cell', html: statusHtml }));
