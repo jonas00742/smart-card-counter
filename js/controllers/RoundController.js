@@ -117,13 +117,13 @@ export class RoundController {
         } else {
             const gameJustEnded = this._advanceGameState();
             if (gameJustEnded) {
-                this._checkLeaderChange(wasRound1Completed, oldLeaders, phase, false);
+                this._checkAudioTriggers(wasRound1Completed, oldLeaders, phase, false, rIndex);
                 this.view.renderGameTable(this.model.state, this.model.getLeaderboard());
                 return this.view.showGameOver(this.model.getLeaderboard());
             }
         }
         
-        this._checkLeaderChange(wasRound1Completed, oldLeaders, phase, this.model.state.isEditMode);
+        this._checkAudioTriggers(wasRound1Completed, oldLeaders, phase, this.model.state.isEditMode, rIndex);
         this.view.renderGameTable(this.model.state, this.model.getLeaderboard());
     }
 
@@ -164,12 +164,24 @@ export class RoundController {
         return leaderboard.filter(p => p.score === maxScore).map(p => p.name).sort().join(',');
     }
 
-    _checkLeaderChange(wasRound1Completed, oldLeaders, phase, isEditMode) {
+    _checkAudioTriggers(wasRound1Completed, oldLeaders, phase, isEditMode, rIndex) {
         if (!isEditMode && phase === 'ansage') return;
-        if (!wasRound1Completed || !oldLeaders) return;
         
-        const newLeaders = this._getLeadingPlayersString();
-        if (newLeaders && oldLeaders !== newLeaders) {
+        let shouldPlaySound = false;
+
+        if (wasRound1Completed && oldLeaders) {
+            const newLeaders = this._getLeadingPlayersString();
+            if (newLeaders && oldLeaders !== newLeaders) {
+                shouldPlaySound = true;
+            }
+        }
+
+        if (phase === 'stiche') {
+            const everyoneFailed = this.model.state.activePlayers.every(p => this.model.state.roundsData[rIndex][p].punkte < 0);
+            if (everyoneFailed) shouldPlaySound = true;
+        }
+
+        if (shouldPlaySound) {
             const audio = new Audio('./assets/Fah.mp3');
             audio.play().catch(e => console.warn('Audio play failed:', e));
         }
