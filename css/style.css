@@ -837,12 +837,52 @@ th.narrow-col {
     transform: translateY(20px);
 }
 
-.place-1 { animation-delay: 0.4s; z-index: 2; }
-.place-2 { animation-delay: 0.2s; }
-.place-3 { animation-delay: 0s; }
+.place-1 { animation-delay: 0.4s; z-index: 3; }
+.place-2 { animation-delay: 0.2s; z-index: 2; }
+.place-3 { animation-delay: 0s; z-index: 1; }
+.place-loser-wrapper {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    margin-top: 15px;
+    padding-bottom: 10px;
+}
+
+.place-loser {
+    width: 100px;
+    animation-name: plopDown;
+    animation-delay: 1.2s; 
+    z-index: 1; 
+    transform: translateY(-100px);
+}
+
+.loser-crater {
+    position: absolute;
+    bottom: 5px;
+    width: 80px;
+    height: 15px;
+    background: radial-gradient(ellipse, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 70%);
+    border-radius: 50%;
+    animation: craterForm 0.3s ease-in forwards;
+    animation-delay: 1.4s;
+    opacity: 0;
+    z-index: 0;
+}
 
 @keyframes slideUp {
     to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes plopDown {
+    0% { opacity: 0; transform: translateY(-100px) scale(0.8) rotate(5deg); }
+    60% { opacity: 1; transform: translateY(10px) scale(1.05) rotate(-3deg); }
+    80% { opacity: 1; transform: translateY(-5px) scale(0.98) rotate(2deg); }
+    100% { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
+}
+
+@keyframes craterForm {
+    from { opacity: 0; transform: scale(0); }
+    to { opacity: 1; transform: scale(1); }
 }
 
 .podium-block {
@@ -860,6 +900,11 @@ th.narrow-col {
 .place-1 .podium-block { height: 90px; background: linear-gradient(135deg, #FFDF00, #D4AF37); }
 .place-2 .podium-block { height: 60px; background: linear-gradient(135deg, #E0E0E0, #9E9E9E); }
 .place-3 .podium-block { height: 40px; background: linear-gradient(135deg, #CD7F32, #8B4513); }
+.place-loser .podium-block { 
+    height: 25px; 
+    background: linear-gradient(135deg, #8B4513, #5c2e0e); 
+    font-size: 1.2rem;
+}
 
 .podium-name {
     font-weight: bold;

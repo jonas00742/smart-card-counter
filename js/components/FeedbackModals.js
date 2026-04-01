@@ -66,6 +66,19 @@ export class FeedbackModals {
             });
             this.elements.podiumContainer.appendChild(step);
         });
+
+        const oldLoser = this.elements.gameOverModal.querySelector('.place-loser-wrapper');
+        if (oldLoser) oldLoser.remove();
+
+        if (leaderboard.length >= 4) {
+            const loser = leaderboard[leaderboard.length - 1];
+            const loserStep = createElement('div', {
+                className: `place-loser-wrapper`,
+                html: `<div class="loser-crater"></div>
+                       <div class="podium-step place-loser"><div class="podium-name">${loser.name}</div><div class="podium-score">${loser.score} Pkt</div><div class="podium-block">💩</div></div>`
+            });
+            this.elements.podiumContainer.insertAdjacentElement('afterend', loserStep);
+        }
     }
 
     showConfirmBackModal() { this.elements.confirmBackModal.classList.remove('hidden'); }
