@@ -83,13 +83,22 @@ export class GameModel {
         let targetIndex = this.state.currentRoundIndex - 1;
         if (this.state.isGameOver) targetIndex = this.state.currentRoundIndex;
 
-        if (targetIndex < 0) return this.state.activePlayers.map(p => ({ name: p, score: 0 }));
+        if (targetIndex < 0) return this.state.activePlayers.map(p => ({ name: p, score: 0, rank: 1 }));
 
         const currentData = this.state.roundsData[targetIndex];
-        return this.state.activePlayers.map(player => ({
+        const sorted = this.state.activePlayers.map(player => ({
             name: player,
             score: currentData[player].gesamtPunkte
         })).sort((a, b) => b.score - a.score);
+
+        let currentRank = 1;
+        for (let i = 0; i < sorted.length; i++) {
+            if (i > 0 && sorted[i].score < sorted[i - 1].score) {
+                currentRank = i + 1;
+            }
+            sorted[i].rank = currentRank;
+        }
+        return sorted;
     }
 
     setStartingDealer(index) {

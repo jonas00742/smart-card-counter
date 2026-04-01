@@ -55,29 +55,39 @@ export class FeedbackModals {
         this.elements.podiumContainer.innerHTML = '';
         
         const podiumOrder = [];
-        if (leaderboard.length > 1) podiumOrder.push({ ...leaderboard[1], place: 2 });
-        if (leaderboard.length > 0) podiumOrder.push({ ...leaderboard[0], place: 1 });
-        if (leaderboard.length > 2) podiumOrder.push({ ...leaderboard[2], place: 3 });
+        const rank2 = leaderboard.filter(p => p.rank === 2);
+        const rank1 = leaderboard.filter(p => p.rank === 1);
+        const rank3 = leaderboard.filter(p => p.rank === 3);
+
+        rank2.forEach(item => podiumOrder.push({ ...item, place: 2 }));
+        rank1.forEach(item => podiumOrder.push({ ...item, place: 1 }));
+        rank3.forEach(item => podiumOrder.push({ ...item, place: 3 }));
 
         podiumOrder.forEach(item => {
             const step = createElement('div', { 
                 className: `podium-step place-${item.place}`,
-                html: `<div class="podium-name">${item.name}</div><div class="podium-score">${item.score} Pkt</div><div class="podium-block">${item.place}</div>`
+                html: `<div class="podium-name">${item.name}</div><div class="podium-score">${item.score} Pkt</div><div class="podium-block">${item.rank}</div>`
             });
             this.elements.podiumContainer.appendChild(step);
         });
 
-        const oldLoser = this.elements.gameOverModal.querySelector('.place-loser-wrapper');
-        if (oldLoser) oldLoser.remove();
+        const oldLosers = this.elements.gameOverModal.querySelectorAll('.place-loser-wrapper');
+        oldLosers.forEach(el => el.remove());
 
         if (leaderboard.length >= 4) {
-            const loser = leaderboard[leaderboard.length - 1];
-            const loserStep = createElement('div', {
-                className: `place-loser-wrapper`,
-                html: `<div class="loser-crater"></div>
-                       <div class="podium-step place-loser"><div class="podium-name">${loser.name}</div><div class="podium-score">${loser.score} Pkt</div><div class="podium-block">💩</div></div>`
-            });
-            this.elements.podiumContainer.insertAdjacentElement('afterend', loserStep);
+            const worstRank = leaderboard[leaderboard.length - 1].rank;
+            if (worstRank > 1) {
+                const losers = leaderboard.filter(p => p.rank === worstRank);
+                losers.forEach((loser, i) => {
+                    const loserStep = createElement('div', {
+                        className: `place-loser-wrapper`,
+                        // Added a tiny delay multiplier so tied losers plop down one after another
+                        html: `<div class="loser-crater" style="animation-delay: ${1.4 + i*0.1}s"></div>
+                               <div class="podium-step place-loser" style="animation-delay: ${1.2 + i*0.1}s"><div class="podium-name">${loser.name}</div><div class="podium-score">${loser.score} Pkt</div><div class="podium-block">💩</div></div>`
+                    });
+                    this.elements.podiumContainer.insertAdjacentElement('afterend', loserStep);
+                });
+            }
         }
     }
 

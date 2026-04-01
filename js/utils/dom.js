@@ -38,12 +38,16 @@ export function bindBackdropClick(modal, handler) {
 
 export function generateLeaderboardHtml(leaderboard, suffix = '') {
     const numPlayers = leaderboard.length;
-    return leaderboard.map((item, index) => {
-        let medal = `${index + 1}.`;
-        if (index === 0) medal = '🥇';
-        if (index === 1) medal = '🥈';
-        if (index === 2) medal = '🥉';
-        if (numPlayers >= 4 && index === numPlayers - 1) medal = '💩';
+    const worstRank = numPlayers > 0 ? leaderboard[numPlayers - 1].rank : -1;
+
+    return leaderboard.map((item) => {
+        let medal = `${item.rank}.`;
+        if (item.rank === 1) medal = '🥇';
+        else if (item.rank === 2) medal = '🥈';
+        else if (item.rank === 3) medal = '🥉';
+        
+        if (numPlayers >= 4 && item.rank === worstRank && item.rank > 1) medal = '💩';
+
         return `<li>
             <span class="rank-medal">${medal}</span> 
             <span class="rank-name">${item.name}</span> 
