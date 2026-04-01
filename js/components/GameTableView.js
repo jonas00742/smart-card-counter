@@ -59,6 +59,8 @@ export class GameTableView {
         const numPlayers = state.activePlayers.length;
         const currentDealerIndex = numPlayers > 0 ? (state.startingDealerIndex + state.currentRoundIndex) % numPlayers : 0;
         const currentDealer = state.activePlayers[currentDealerIndex];
+        const startingPlayerIndex = numPlayers > 0 ? (currentDealerIndex + 1) % numPlayers : 0;
+        const startingPlayer = state.activePlayers[startingPlayerIndex];
         
         let leadingPlayers = [];
         if (state.currentRoundIndex > 0 || state.isGameOver) {
@@ -68,12 +70,24 @@ export class GameTableView {
         
         state.activePlayers.forEach(player => {
             const isDealer = player === currentDealer;
+            const isStarter = player === startingPlayer;
             const isLeading = leadingPlayers.includes(player);
+            
+            let headerText = player.substring(0, 10);
+            if (isStarter) headerText = '▶ ' + headerText;
+            if (isLeading) headerText += ' 👑';
+
             const th = createElement('th', { 
-                className: `player-col ${isDealer ? 'dealer-col-header' : ''}`,
-                text: player.substring(0, 10) + (isLeading ? ' 👑' : '')
+                className: `player-col ${isDealer ? 'dealer-col-header' : ''} ${isStarter ? 'starter-col-header' : ''}`,
+                text: headerText
             });
-            if (isLeading) th.title = "Aktuell auf Platz 1";
+            
+            let tooltips = [];
+            if (isDealer) tooltips.push("Geber");
+            if (isStarter) tooltips.push("Kommt raus (Start)");
+            if (isLeading) tooltips.push("Aktuell auf Platz 1");
+            if (tooltips.length > 0) th.title = tooltips.join(" | ");
+
             this.elements.tableHeaderRow.appendChild(th);
         });
 
