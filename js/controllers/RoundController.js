@@ -45,7 +45,6 @@ export class RoundController {
         
         this.view.renderModalContent(this.model.state, this.model.isPhaseReadyForSave());
         this.view.showInputModal();
-        this.view.toggleFab(false);
     }
 
     handleTriggerRowEdit(rIndex) {
@@ -55,7 +54,6 @@ export class RoundController {
 
         if (isPastRound || isCurrentRoundTricksPhase) {
             this.view.showEditChoiceModal();
-            this.view.toggleFab(false);
         } else {
             this.startEditModal('ansage');
         }
@@ -64,7 +62,6 @@ export class RoundController {
     handleModalCancel() {
         this.model.clearAutoFillTracker();
         this.view.hideInputModal();
-        this.view.toggleFab(true);
         this.view.renderGameTable(this.model.state, this.model.getLeaderboard());
     }
 
@@ -133,7 +130,6 @@ export class RoundController {
     _closeModalAndResetState() {
         this.model.clearAutoFillTracker();
         this.view.hideInputModal();
-        this.view.toggleFab(true);
     }
 
     _advanceGameState() {
@@ -181,7 +177,6 @@ export class RoundController {
 
     handleEditChoiceClose() { 
         this.view.hideEditChoiceModal();
-        this.view.toggleFab(true);
     }
 
     handleEditChoiceSelect(phase) {
@@ -195,6 +190,5 @@ export class RoundController {
         this.model.state.currentPlayerInputIndex = 0;
         this.view.renderModalContent(this.model.state, this.model.isPhaseReadyForSave());
         this.view.showInputModal();
-        this.view.toggleFab(false);
     }
 }

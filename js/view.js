@@ -30,10 +30,22 @@ export class GameView {
     isGameScreenVisible() { return !this._appElements.gameScreen.classList.contains('hidden'); }
 
     // --- Modal / UI Toggles ---
-    showInputModal() { this.inputModal.elements.modal.classList.remove('hidden'); }
-    hideInputModal() { this.inputModal.elements.modal.classList.add('hidden'); }
-    showEditChoiceModal() { this.modals.elements.editChoiceModal.classList.remove('hidden'); }
-    hideEditChoiceModal() { this.modals.elements.editChoiceModal.classList.add('hidden'); }
+    showInputModal() { 
+        this.inputModal.elements.modal.classList.remove('hidden'); 
+        this.toggleFab(false);
+    }
+    hideInputModal() { 
+        this.inputModal.elements.modal.classList.add('hidden'); 
+        this.toggleFab(true);
+    }
+    showEditChoiceModal() { 
+        this.modals.elements.editChoiceModal.classList.remove('hidden'); 
+        this.toggleFab(false);
+    }
+    hideEditChoiceModal() { 
+        this.modals.elements.editChoiceModal.classList.add('hidden'); 
+        this.toggleFab(true);
+    }
     hideGameOverModal() { 
         this.modals.elements.gameOverModal.classList.add('hidden'); 
         this.toggleFab(true);
@@ -49,8 +61,14 @@ export class GameView {
         this.modals.showGameOver(leaderboard); 
         this.toggleFab(false);
     }
-    showConfirmBackModal() { this.modals.showConfirmBackModal(); }
-    hideConfirmBackModal() { this.modals.hideConfirmBackModal(); }
+    showConfirmBackModal() { 
+        this.modals.showConfirmBackModal(); 
+        this.toggleFab(false);
+    }
+    hideConfirmBackModal() { 
+        this.modals.hideConfirmBackModal(); 
+        this.toggleFab(true);
+    }
     showValidationAlert(message) { this.modals.showValidationAlert(message); }
     showInterimModal(leaderboard) { this.modals.showInterimModal(leaderboard); }
     
