@@ -3,6 +3,7 @@ const CACHE_NAME = 'smart-counter-v30';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
+    './favicon.ico',
     './css/style.css',
     './js/config.js',
     './js/model.js',
