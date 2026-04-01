@@ -1,4 +1,4 @@
-import { createElement, getIcon, generateLeaderboardHtml } from '../utils/dom.js';
+import { createElement, getIcon, generateLeaderboardHtml, bindBackdropClick } from '../utils/dom.js';
 import { CONFIG } from '../config.js';
 import { EVENTS } from '../core/events.js';
 
@@ -22,6 +22,65 @@ export class GameTableView {
 
         this.elements.backToSetupBtn.addEventListener('click', () => this.eventBus.emit(EVENTS.GAME_GO_BACK));
         this.elements.openInputModalBtn.addEventListener('click', () => this.eventBus.emit(EVENTS.GAME_OPEN_MODAL));
+
+        this._initCheckButtonAndModal();
+    }
+
+    _initCheckButtonAndModal() {
+        this.elements.fabCheckBtn = document.getElementById('fab-check-btn');
+        if (!this.elements.fabCheckBtn) {
+            const eyeIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+            this.elements.fabCheckBtn = createElement('button', {
+                id: 'fab-check-btn',
+                className: 'fab-check-btn hidden',
+                html: eyeIcon
+            });
+            document.body.appendChild(this.elements.fabCheckBtn);
+        }
+        this.elements.fabCheckBtn.addEventListener('click', () => this.eventBus.emit('GAME_TOGGLE_BIDS'));
+
+        this.elements.bidsModal = document.getElementById('bids-check-modal');
+        if (!this.elements.bidsModal) {
+            this.elements.bidsModal = createElement('div', { id: 'bids-check-modal', className: 'modal hidden' });
+            const content = createElement('div', { className: 'modal-content text-center' });
+            content.style.padding = '15px'; // Etwas kompakteres Padding für das Modal
+            content.innerHTML = `
+                <div class="modal-header-custom" style="justify-content: center; margin-bottom: 10px;">
+                    <h2 class="m-0" style="font-size: 1.5rem;">Angesagte Stiche</h2>
+                </div>
+                <div id="bids-list" class="flex-col-gap mb-md text-md"></div>
+                <button id="close-bids-btn" class="primary-btn mt-sm">Schließen</button>
+            `;
+            this.elements.bidsModal.appendChild(content);
+            document.body.appendChild(this.elements.bidsModal);
+            
+            const closeModal = () => {
+                this.hideBidsModal();
+                this.eventBus.emit('MODAL_BIDS_CLOSE');
+            };
+            document.getElementById('close-bids-btn').addEventListener('click', closeModal);
+            bindBackdropClick(this.elements.bidsModal, closeModal);
+        }
+
+        // Synchronisiert die Sichtbarkeit des Check-Buttons mit dem Zwischenstand-Button
+        if (this.elements.fabInterimBtn) {
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((m) => {
+                    if (m.attributeName === 'class') {
+                        const isInterimHidden = this.elements.fabInterimBtn.classList.contains('hidden');
+                        if (isInterimHidden) {
+                            if (this.elements.fabCheckBtn) this.elements.fabCheckBtn.classList.add('hidden');
+                        } else {
+                            if (this.elements.fabCheckBtn) {
+                                const shouldShow = this.elements.fabCheckBtn.dataset.shouldShow === 'true';
+                                this.elements.fabCheckBtn.classList.toggle('hidden', !shouldShow);
+                            }
+                        }
+                    }
+                });
+            });
+            observer.observe(this.elements.fabInterimBtn, { attributes: true, attributeFilter: ['class'] });
+        }
     }
 
     renderGameTable(state, leaderboard = []) {
@@ -30,6 +89,33 @@ export class GameTableView {
         this._renderTableHeader(state, leaderboard);
         this._renderTableBody(state);
         this._updateLeaderboardVisibility(state, leaderboard);
+        this._updateCheckButtonVisibility(state);
+    }
+
+    _updateCheckButtonVisibility(state) {
+        if (!this.elements.fabCheckBtn) return;
+        const shouldShow = state.phase === 'stiche' && !state.isGameOver;
+        this.elements.fabCheckBtn.dataset.shouldShow = shouldShow;
+        this.elements.fabCheckBtn.classList.toggle('hidden', !shouldShow);
+    }
+
+    showBidsModal(state) {
+        const rIndex = state.currentRoundIndex;
+        const bidsList = document.getElementById('bids-list');
+        if (bidsList) {
+            bidsList.innerHTML = state.activePlayers.map(p => {
+                const ansage = state.roundsData[rIndex][p].ansage;
+                return `<div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--color-border); background: var(--color-surface); border-radius: var(--radius-sm); margin-bottom: 4px; box-shadow: var(--shadow-sm);">
+                            <strong style="font-size: 1.1rem;">${p}</strong>
+                            <span style="font-size: 1.8rem; font-weight: bold; color: var(--color-success);">${ansage !== null ? ansage : '-'}</span>
+                        </div>`;
+            }).join('');
+        }
+        this.elements.bidsModal.classList.remove('hidden');
+    }
+
+    hideBidsModal() {
+        if (this.elements.bidsModal) this.elements.bidsModal.classList.add('hidden');
     }
 
     _renderTrendIndicator(state) {

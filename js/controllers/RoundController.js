@@ -31,6 +31,15 @@ export class RoundController {
                 this.view.showInterimModal(this.model.getLeaderboard());
             }
         });
+        this.eventBus.on('GAME_TOGGLE_BIDS', () => {
+            if (!this.model.state.isGameOver && this.model.state.phase === 'stiche') {
+                this.view.table.showBidsModal(this.model.state);
+                this.view.toggleFab(false);
+            }
+        });
+        this.eventBus.on('MODAL_BIDS_CLOSE', () => {
+            this.view.toggleFab(true);
+        });
     }
 
     handleOpenInputModal() {
