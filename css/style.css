@@ -986,3 +986,56 @@ th.narrow-col {
 .fab-btn svg {
     filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));
 }
+
+/* ==========================================================================
+   12. LANDSCAPE OPTIMIZATIONS
+   ========================================================================== */
+@media (orientation: landscape) and (max-height: 600px) {
+    /* Reclaim vertical space for the game table */
+    :root {
+        --sticky-header-height: 56px;
+    }
+
+    header {
+        min-height: 40px;
+        padding: var(--space-xs) var(--space-md);
+        padding-top: calc(var(--space-xs) + env(safe-area-inset-top, 0px));
+    }
+
+    main {
+        padding: var(--space-sm);
+        padding-bottom: 75px; /* Leave space for FAB */
+    }
+
+    /* Make the sticky action button slightly smaller to create a visual gap to the table header */
+    .sticky-top-container .primary-btn {
+        padding: 8px var(--space-sm);
+        font-size: 1rem;
+    }
+
+    /* Center the modal and allow scrolling if it's taller than the screen */
+    .modal {
+        align-items: center;
+    }
+
+    .modal-content {
+        max-height: 95vh;
+        overflow-y: auto;
+        padding: var(--space-md);
+        border-radius: var(--space-md);
+    }
+
+    /* Compress input buttons slightly */
+    .number-btn {
+        padding: 8px 0;
+    }
+    
+    .podium-container {
+        height: 120px;
+    }
+
+    /* Avoid the FAB hiding under notches (e.g. iPhone dynamic island) */
+    .fab-btn {
+        right: calc(25px + env(safe-area-inset-right, 0px));
+    }
+}
