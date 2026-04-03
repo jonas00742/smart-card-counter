@@ -1,6 +1,6 @@
 # 📱 App Spezifikation & Requirements
 
-Diese Progressive Web App digitalisiert den kompletten Zähl- und Rechenprozess des analogen Stich-Kartenspiels.
+Diese Progressive Web App digitalisiert den kompletten Zähl- und Rechenprozess des analogen Stich-Kartenspiels. Eine detaillierte Erklärung der Spielregeln befindet sich in der [`GameRules.md`](./GameRules.md) Datei.
 
 ## 1. 🗂️ Setup & Spielervorbereitung (Vor dem Spiel)
 
@@ -66,6 +66,7 @@ Diese Progressive Web App digitalisiert den kompletten Zähl- und Rechenprozess 
 * **Endstand-Screen:**
   * Nach Abschluss der letzten Eingabe in Runde 13 wird automatisch ein finaler Endstand präsentiert.
   * Visuelle Darstellung der Platzierungen (Podium/Ranking) inklusive der erreichten Gesamtpunktzahlen.
+  * Das Podium hebt die ersten drei und den letzten Platz besonders hervor.
 * **Neues Spiel (Revanche):**
   * Möglichkeit, direkt aus dem Endstand-Screen ein neues Spiel mit demselben Setup (gleichen Spielern) oder komplett neu zu starten.
 
@@ -76,3 +77,4 @@ Diese Progressive Web App digitalisiert den kompletten Zähl- und Rechenprozess 
 * **Installierbar:** Die App muss als Standalone-PWA installierbar sein. Der "App installieren"-Button wird intelligent nur dann eingeblendet, wenn das Gerät/Browser dies unterstützt und die App noch nicht installiert ist.
 * **State-Management:** Alle Spieler, Setups und jeder getätigte Spielzug werden direkt und persistent im LocalStorage des Browsers gespeichert, um Datenverlust zu verhindern.
 * **Sicherheit/UX:** Verhindern von versehentlichen Aktionen durch Bestätigungsdialoge (z.B. beim Löschen von Spielern oder Abbrechen eines laufenden Spiels).
+* **Sound-Effekte:** Dezente Sound-Effekte, wie beim Führungswechsel, verbessern das interaktive Erlebnis.
