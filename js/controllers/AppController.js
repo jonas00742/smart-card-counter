@@ -43,7 +43,7 @@ export class AppController {
     _restoreOngoingGame() {
         window.history.replaceState({ screen: 'game' }, '', '#game');
         this.view.switchScreen(true);
-        this.view.renderGameTable(this.model.state, this.model.getLeaderboard());
+        this._updateGameTableView();
 
         // Check if penultimate round warning is needed
         const { currentRoundIndex, phase, roundsData, activePlayers } = this.model.state;
@@ -55,9 +55,22 @@ export class AppController {
         }
     }
 
+    _getGameTableProps() {
+        return {
+            state: this.model.state,
+            leaderboard: this.model.getLeaderboard()
+        }
+    }
+
+    _updateGameTableView() {
+        const props = this._getGameTableProps();
+        this.view.renderGameTable(props);
+    }
+
     _initializeSetupScreen() {
         window.history.replaceState({ screen: 'setup' }, '', '#setup');
-        this.view.renderSetup(this.model.state);
+        const { availablePlayers, activePlayers, startingDealerIndex } = this.model.state;
+        this.view.renderSetup({ availablePlayers, activePlayers, startingDealerIndex });
     }
 
     handlePopState() {
@@ -69,7 +82,8 @@ export class AppController {
         } 
         if (isGameScreenVisible && this.model.state.isGameOver) this.model.quitGame();
         this.view.switchScreen(false);
-        this.view.renderSetup(this.model.state);
+        const { availablePlayers, activePlayers, startingDealerIndex } = this.model.state;
+        this.view.renderSetup({ availablePlayers, activePlayers, startingDealerIndex });
     }
 
     handleConfirmBackAccept() {
@@ -77,7 +91,8 @@ export class AppController {
         this.model.quitGame();
         window.history.replaceState({ screen: 'setup' }, '', '#setup');
         this.view.switchScreen(false);
-        this.view.renderSetup(this.model.state);
+        const { availablePlayers, activePlayers, startingDealerIndex } = this.model.state;
+        this.view.renderSetup({ availablePlayers, activePlayers, startingDealerIndex });
     }
 
     async handleInstallApp() {

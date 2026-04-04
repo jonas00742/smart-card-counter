@@ -1,10 +1,14 @@
 import { createElement, bindBackdropClick } from '../utils/dom.js';
-import { CONFIG } from '../config.js';
 import { EVENTS } from '../core/events.js';
 
 export class InputModal {
     constructor(eventBus) {
         this.eventBus = eventBus;
+        this._cacheElements();
+        this._bindEvents();
+    }
+
+    _cacheElements() {
         this.elements = {
             modal: document.getElementById('input-modal'),
             modalTitle: document.getElementById('modal-title'),
@@ -18,16 +22,16 @@ export class InputModal {
             resetInputBtn: document.getElementById('reset-input-btn'),
             magicInputBtn: document.getElementById('magic-input-btn')
         };
+    }
 
+    _bindEvents() {
         this.elements.cancelInputBtn.addEventListener('click', () => this.eventBus.emit(EVENTS.MODAL_CANCEL));
         bindBackdropClick(this.elements.modal, () => this.eventBus.emit(EVENTS.MODAL_CANCEL));
         this.elements.modalPrevBtn.addEventListener('click', () => this.eventBus.emit(EVENTS.MODAL_PREV));
         this.elements.modalNextBtn.addEventListener('click', () => this.eventBus.emit(EVENTS.MODAL_NEXT));
-        if (this.elements.resetInputBtn) this.elements.resetInputBtn.addEventListener('click', () => this.eventBus.emit(EVENTS.MODAL_RESET));
+        this.elements.resetInputBtn.addEventListener('click', () => this.eventBus.emit(EVENTS.MODAL_RESET));
         this.elements.saveInputBtn.addEventListener('click', () => this.eventBus.emit(EVENTS.MODAL_SAVE));
-        if (this.elements.magicInputBtn) {
-            this.elements.magicInputBtn.addEventListener('click', () => this.eventBus.emit('modal:magicFill'));
-        }
+        this.elements.magicInputBtn.addEventListener('click', () => this.eventBus.emit(EVENTS.MODAL_MAGIC_FILL));
 
         this.elements.buttonGrid.addEventListener('click', (e) => {
             const btn = e.target.closest('.number-btn');
@@ -38,102 +42,73 @@ export class InputModal {
         });
     }
 
-    renderModalContent(state, isComplete) {
-        const player = state.activePlayers[state.currentPlayerInputIndex];
-        const rIndex = state.isEditMode ? state.editRoundIndex : state.currentRoundIndex;
-        const cards = CONFIG.CARDS_SEQUENCE[rIndex];
-        const phase = state.isEditMode ? state.editPhase : state.phase;
-        const key = phase === 'ansage' ? 'ansage' : 'gemacht';
+    renderModalContent(props) {
+        const {
+            player,
+            phase,
+            cards,
+            currentValue,
+            targetBidValue,
+            isEditMode,
+            indicators,
+            isMagicPossible,
+            isComplete,
+            showPrev,
+            showNext,
+            hasAnyInput,
+            maxButtons
+        } = props;
 
-        const phaseClass = phase === 'ansage' ? 'phase-bid' : 'phase-tricks';
-        this.elements.modal.classList.remove('phase-bid', 'phase-tricks');
-        this.elements.modal.classList.add(phaseClass);
-
-        const titlePrefix = state.isEditMode ? "Ändern: " : "";
-        this.elements.modalTitle.innerText = `${titlePrefix}Stiche ${phase === 'ansage' ? 'ansagen' : 'gemacht'}?`;
+        this.elements.modal.className = `modal ${phase === 'ansage' ? 'phase-bid' : 'phase-tricks'}`;
+        this.elements.modalTitle.innerText = `${isEditMode ? "Ändern: " : ""}Stiche ${phase === 'ansage' ? 'ansagen' : 'gemacht'}?`;
         this.elements.modalSubtitle.innerText = player;
 
-        this.elements.modalIndicators.innerHTML = state.activePlayers.map((p, idx) => {
-            const val = state.roundsData[rIndex][p][key];
-            return `<div class="indicator-dot ${val !== null ? 'filled' : ''} ${idx === state.currentPlayerInputIndex ? 'active' : ''}"></div>`;
-        }).join('');
+        this.elements.modalIndicators.innerHTML = indicators.map(dot => 
+            `<div class="indicator-dot ${dot.isFilled ? 'filled' : ''} ${dot.isActive ? 'active' : ''}"></div>`
+        ).join('');
 
-        const currentValue = state.roundsData[rIndex][player][key];
-        const targetBidValue = state.roundsData[rIndex][player].ansage;
+        this._renderButtons(cards, phase, currentValue, targetBidValue, maxButtons);
 
-        let maxButtons = cards;
+        this.elements.magicInputBtn.classList.toggle('hidden', !isMagicPossible);
+        this.elements.magicInputBtn.disabled = !isMagicPossible;
 
-        if (phase === 'stiche') {
-            const sumOtherWon = state.activePlayers.reduce((sum, p) => {
-                return p !== player ? sum + (state.roundsData[rIndex][p].gemacht || 0) : sum;
-            }, 0);
-            maxButtons = Math.max(0, cards - sumOtherWon); 
-        }
+        this.elements.modalPrevBtn.style.visibility = showPrev ? 'visible' : 'hidden';
+        this.elements.modalNextBtn.style.visibility = showNext ? 'visible' : 'hidden';
+        
+        this.elements.resetInputBtn.classList.toggle('hidden', phase !== 'stiche');
+        this.elements.resetInputBtn.disabled = phase === 'stiche' && !hasAnyInput;
 
-        // Ensure we only rebuild DOM if round layout cards change
+        this.elements.saveInputBtn.disabled = !isComplete;
+    }
+
+    _renderButtons(cards, phase, currentValue, targetBidValue, maxButtons) {
+        // Ensure we only rebuild DOM if the number of cards changes
         if (this.elements.buttonGrid.children.length !== cards + 1) {
             this.elements.buttonGrid.innerHTML = '';
             for (let i = 0; i <= cards; i++) {
-                const btn = createElement('button', {
+                this.elements.buttonGrid.appendChild(createElement('button', {
                     type: 'button',
                     className: 'number-btn',
                     text: i,
                     dataset: { value: i }
-                });
-                this.elements.buttonGrid.appendChild(btn);
+                }));
             }
         }
 
-        // Loop through existing buttons and update classes efficiently
+        // Efficiently update button classes
         Array.from(this.elements.buttonGrid.children).forEach((btn, i) => {
-            btn.className = 'number-btn';
-            if (i > maxButtons) btn.classList.add('hidden');
-            else {
+            btn.className = 'number-btn'; // Reset classes
+            if (i > maxButtons) {
+                btn.classList.add('hidden');
+            } else {
                 if (phase === 'stiche') {
                     if (i === targetBidValue) btn.classList.add('target-bid');
                     else btn.classList.add('non-target');
                 }
-                if (currentValue === i) btn.classList.add('selected');
+                if (currentValue === i) {
+                    btn.classList.add('selected');
+                }
             }
         });
-
-        if (this.elements.magicInputBtn) {
-            if (phase === 'stiche') {
-                let totalBids = 0;
-                let isMagicPossible = true;
-                let allFilled = true;
-                
-                state.activePlayers.forEach(p => {
-                    const bid = state.roundsData[rIndex][p].ansage;
-                    const wonTricks = state.roundsData[rIndex][p].gemacht;
-                    if (bid !== null) totalBids += bid;
-                    
-                    if (wonTricks !== null) {
-                        if (wonTricks !== bid) isMagicPossible = false;
-                    } else {
-                        allFilled = false;
-                    }
-                });
-
-                const isMagicRound = totalBids === cards;
-                this.elements.magicInputBtn.classList.toggle('hidden', !isMagicRound);
-                this.elements.magicInputBtn.disabled = !isMagicPossible || allFilled;
-            } else {
-                this.elements.magicInputBtn.classList.add('hidden');
-            }
-        }
-
-        this.elements.modalPrevBtn.style.visibility = state.currentPlayerInputIndex > 0 ? 'visible' : 'hidden';
-        this.elements.modalNextBtn.style.visibility = state.currentPlayerInputIndex < state.activePlayers.length - 1 ? 'visible' : 'hidden';
-        
-        if (this.elements.resetInputBtn) {
-            this.elements.resetInputBtn.classList.toggle('hidden', phase !== 'stiche');
-            if (phase === 'stiche') {
-                const hasAnyInput = state.activePlayers.some(p => state.roundsData[rIndex][p].gemacht !== null);
-                this.elements.resetInputBtn.disabled = !hasAnyInput;
-            }
-        }
-
-        this.elements.saveInputBtn.disabled = !isComplete;
     }
 }

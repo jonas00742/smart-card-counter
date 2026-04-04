@@ -46,10 +46,11 @@ export class SetupView {
         });
     }
 
-    renderSetup(state) {
+    renderSetup(props) {
+        const { availablePlayers, activePlayers, startingDealerIndex } = props;
         this.elements.playerPool.innerHTML = '';
-        state.availablePlayers.forEach(player => {
-            const chip = createElement('li', { className: `player-chip ${state.activePlayers.includes(player) ? 'selected' : ''}` },
+        availablePlayers.forEach(player => {
+            const chip = createElement('li', { className: `player-chip ${activePlayers.includes(player) ? 'selected' : ''}` },
                 createElement('span', { text: player, events: { click: () => this.eventBus.emit(EVENTS.SETUP_TOGGLE_PLAYER, player) } }),
                 createElement('button', { 
                     type: 'button',
@@ -65,10 +66,10 @@ export class SetupView {
         });
 
         this.elements.activePlayersList.innerHTML = '';
-        if (state.activePlayers.length === 0) {
+        if (activePlayers.length === 0) {
             this.elements.activePlayersList.innerHTML = '<li><p class="subtitle text-sm">Noch keine Spieler gewählt.</p></li>';
         } else {
-            state.activePlayers.forEach((player, index) => {
+            activePlayers.forEach((player, index) => {
                 const row = createElement('li', { className: 'active-player-row' });
                 
                 const leftSide = createElement('div', { className: 'player-row-left' },
@@ -76,7 +77,7 @@ export class SetupView {
                     createElement('span', { html: `<strong>${index + 1}.</strong> ${player}` })
                 );
                 
-                const isDealer = index === state.startingDealerIndex;
+                const isDealer = index === startingDealerIndex;
                 const rightSide = createElement('div', { className: 'player-row-right' },
                     createElement('button', {
                         type: 'button',
@@ -92,7 +93,7 @@ export class SetupView {
                 this.elements.activePlayersList.appendChild(row);
             });
         }
-        this.elements.startGameBtn.disabled = state.activePlayers.length < 2;
+        this.elements.startGameBtn.disabled = activePlayers.length < 2;
     }
 
     setupDragEvents(row) {

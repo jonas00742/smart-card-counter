@@ -63,9 +63,9 @@ export class GameView {
     }
 
     // --- View Rendering Delegation ---
-    renderSetup(state) { this.setup.renderSetup(state); }
-    renderGameTable(state, leaderboard) { this.table.renderGameTable(state, leaderboard); }
-    renderModalContent(state, isComplete) { this.inputModal.renderModalContent(state, isComplete); }
+    renderSetup(props) { this.setup.renderSetup(props); }
+    renderGameTable(props) { this.table.renderGameTable(props); }
+    renderModalContent(props) { this.inputModal.renderModalContent(props); }
     
     showGameOver(leaderboard) { 
         this.modals.showGameOver(leaderboard); 

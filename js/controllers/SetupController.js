@@ -17,16 +17,33 @@ export class SetupController {
         this.eventBus.on(EVENTS.SETUP_START_GAME, this.handleStartGame.bind(this));
     }
 
-    handleAddPlayer(name) { this.model.addPlayer(name); this.view.renderSetup(this.model.state); }
-    handleTogglePlayer(player) { this.model.togglePlayerActive(player); this.view.renderSetup(this.model.state); }
-    handleRemovePlayer(player) { this.model.removePlayer(player); this.view.renderSetup(this.model.state); }
-    handleReorderPlayers(newOrder) { this.model.setPlayerOrder(newOrder); this.view.renderSetup(this.model.state); }
-    handleSetDealer(index) { this.model.setStartingDealer(index); this.view.renderSetup(this.model.state); }
+    _updateSetupView() {
+        const { availablePlayers, activePlayers, startingDealerIndex } = this.model.state;
+        this.view.renderSetup({ availablePlayers, activePlayers, startingDealerIndex });
+    }
+
+    handleAddPlayer(name) { this.model.addPlayer(name); this._updateSetupView(); }
+    handleTogglePlayer(player) { this.model.togglePlayerActive(player); this._updateSetupView(); }
+    handleRemovePlayer(player) { this.model.removePlayer(player); this._updateSetupView(); }
+    handleReorderPlayers(newOrder) { this.model.setPlayerOrder(newOrder); this._updateSetupView(); }
+    handleSetDealer(index) { this.model.setStartingDealer(index); this._updateSetupView(); }
 
     handleStartGame() {
         this.model.initGameData();
         window.history.pushState({ screen: 'game' }, '', '#game');
         this.view.switchScreen(true);
-        this.view.renderGameTable(this.model.state, this.model.getLeaderboard());
+        this._updateGameTableView();
+    }
+
+    _getGameTableProps() {
+        return {
+            state: this.model.state,
+            leaderboard: this.model.getLeaderboard()
+        }
+    }
+
+    _updateGameTableView() {
+        const props = this._getGameTableProps();
+        this.view.renderGameTable(props);
     }
 }
