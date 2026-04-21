@@ -260,5 +260,6 @@ export class GameTableView {
 
         const isFabCheckVisible = isFabInterimVisible && state.phase === 'stiche';
         this.elements.fabCheckBtn.classList.toggle('hidden', !isFabCheckVisible);
+        this.elements.fabCheckBtn.dataset.shouldShow = isFabCheckVisible;
     }
 }
