@@ -77,7 +77,11 @@ export class GameTableView {
         this.elements.bidsModal.classList.add('hidden');
     }
 
-    startPenultimateRoundBlinking() { document.body.classList.add('penultimate-round-warning'); }
+    startPenultimateRoundBlinking() { 
+        document.body.classList.add('penultimate-round-warning'); 
+        const alarmSound = new Audio('assets/Danger Alarm.mp3');
+        alarmSound.play().catch(err => console.warn('Audio playback failed:', err));
+    }
     stopPenultimateRoundBlinking() { document.body.classList.remove('penultimate-round-warning'); }
 
     // --- Private Rendering Methods ---
