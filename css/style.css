@@ -61,7 +61,7 @@ html, body {
     background-color: var(--color-bg);
     color: var(--color-text-main);
     overscroll-behavior: none;
-    touch-action: pan-y;
+    touch-action: manipulation;
     user-select: none;
 }
 
