@@ -39,15 +39,52 @@ export class SetupView {
         });
 
         this.elements.installAppBtn.addEventListener('click', () => this.eventBus.emit(EVENTS.APP_INSTALL));
-        this.elements.startGameBtn.addEventListener('click', () => this.eventBus.emit(EVENTS.SETUP_START_GAME));
+        this.elements.startGameBtn.addEventListener('click', () => {
+            if (!this.isManualDealer && this.lastProps && this.lastProps.activePlayers.length > 0) {
+                const randomIndex = Math.floor(Math.random() * this.lastProps.activePlayers.length);
+                this.eventBus.emit(EVENTS.SETUP_SET_DEALER, randomIndex);
+            }
+            this.eventBus.emit(EVENTS.SETUP_START_GAME);
+        });
         this.elements.confirmDeletePlayerBtn.addEventListener('click', () => {
             if (this.playerToDelete) this.eventBus.emit(EVENTS.SETUP_REMOVE_PLAYER, this.playerToDelete);
             this.hideDeletePlayerModal();
         });
+
+        this.isManualDealer = true;
+        this.dealerCheckboxContainer = createElement('div', { className: 'dealer-checkbox-container' });
+        this.elements.activePlayersList.parentNode.insertBefore(this.dealerCheckboxContainer, this.elements.activePlayersList);
+        
+        this.dealerCheckboxContainer.innerHTML = `
+            <label class="custom-checkbox-wrapper">
+                <div class="custom-checkbox">
+                    <input type="checkbox" id="manual-dealer-checkbox" checked>
+                    <span class="checkmark"></span>
+                </div>
+                <div class="checkbox-text-content">
+                    <div class="checkbox-title">Geber auswählen</div>
+                    <div class="checkbox-status text-sm text-muted" id="dealer-status-text"></div>
+                </div>
+            </label>
+        `;
+        this.elements.manualDealerCheckbox = this.dealerCheckboxContainer.querySelector('#manual-dealer-checkbox');
+        this.elements.dealerStatusText = this.dealerCheckboxContainer.querySelector('#dealer-status-text');
+
+        this.elements.manualDealerCheckbox.addEventListener('change', (e) => {
+            this.isManualDealer = e.target.checked;
+            if (this.lastProps) this.renderSetup(this.lastProps);
+        });
     }
 
     renderSetup(props) {
+        this.lastProps = props;
         const { availablePlayers, activePlayers, startingDealerIndex } = props;
+
+        const currentDealer = activePlayers[startingDealerIndex];
+        this.elements.dealerStatusText.innerText = this.isManualDealer 
+            ? (currentDealer ? `${currentDealer} startet zu geben` : 'Noch kein Geber gewählt')
+            : 'Geber wird zufällig gewählt';
+
         this.elements.playerPool.innerHTML = '';
         availablePlayers.forEach(player => {
             const chip = createElement('li', { className: `player-chip ${activePlayers.includes(player) ? 'selected' : ''}` },
@@ -78,14 +115,16 @@ export class SetupView {
                 );
                 
                 const isDealer = index === startingDealerIndex;
-                const rightSide = createElement('div', { className: 'player-row-right' },
-                    createElement('button', {
+                const rightSide = createElement('div', { className: 'player-row-right' });
+                
+                if (this.isManualDealer) {
+                    rightSide.appendChild(createElement('button', {
                         type: 'button',
                         className: `dealer-btn ${isDealer ? 'active' : ''}`,
                         text: isDealer ? '🃏 Geber' : 'Geber',
                         events: { click: () => this.eventBus.emit(EVENTS.SETUP_SET_DEALER, index) }
-                    })
-                );
+                    }));
+                }
                 
                 row.appendChild(leftSide);
                 row.appendChild(rightSide);
