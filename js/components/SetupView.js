@@ -23,18 +23,20 @@ export class SetupView {
         this.elements.cancelDeletePlayerBtn.addEventListener('click', () => this.hideDeletePlayerModal());
         bindBackdropClick(this.elements.deletePlayerModal, () => this.hideDeletePlayerModal());
 
-        this.elements.addNewPlayerBtn.addEventListener('click', () => {
+        const handleAddPlayer = () => {
             const name = sanitizeHTML(this.elements.newPlayerInput.value.trim());
             if (name) { 
                 this.eventBus.emit(EVENTS.SETUP_ADD_PLAYER, name); 
                 this.elements.newPlayerInput.value = ''; 
             }
-        });
+        };
+
+        this.elements.addNewPlayerBtn.addEventListener('click', handleAddPlayer);
 
         this.elements.newPlayerInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 e.preventDefault();
-                this.elements.addNewPlayerBtn.click();
+                handleAddPlayer();
             }
         });
 

@@ -146,6 +146,65 @@ export class GameModel {
         this.saveState();
     }
 
+    setEditRoundIndex(rIndex) {
+        this.state.editRoundIndex = rIndex;
+        this.saveState();
+    }
+
+    startEditMode(rIndex, phase) {
+        this.state.isEditMode = true;
+        this.state.editRoundIndex = rIndex;
+        this.state.editPhase = phase;
+        this.state.currentPlayerInputIndex = 0;
+        this.saveState();
+    }
+
+    clearEditMode() {
+        this.state.isEditMode = false;
+    }
+
+    setPlayerInputIndexToFirstEmpty() {
+        const { currentRoundIndex, activePlayers, roundsData, phase } = this.state;
+        const key = phase === 'ansage' ? 'ansage' : 'gemacht';
+        const firstEmptyIdx = activePlayers.findIndex(p => roundsData[currentRoundIndex][p][key] === null);
+        this.state.currentPlayerInputIndex = firstEmptyIdx > -1 ? firstEmptyIdx : 0;
+    }
+
+    previousPlayerInput() {
+        if (this.state.currentPlayerInputIndex > 0) {
+            this.state.currentPlayerInputIndex--;
+        }
+    }
+
+    nextPlayerInput() {
+        if (this.state.currentPlayerInputIndex < this.state.activePlayers.length - 1) {
+            this.state.currentPlayerInputIndex++;
+        }
+    }
+
+    advanceGameState() {
+        if (this.state.phase === 'ansage') {
+            this.state.phase = 'stiche';
+        } else {
+            this.recalculateAllScores();
+            if (this.state.currentRoundIndex >= CONFIG.TOTAL_ROUNDS - 1) {
+                this.state.isGameOver = true;
+            } else {
+                this.state.phase = 'ansage';
+                this.state.currentRoundIndex++;
+            }
+        }
+        this.saveState();
+        return this.state.isGameOver;
+    }
+
+    getLeadingPlayers() {
+        const leaderboard = this.getLeaderboard();
+        if (leaderboard.length === 0 || leaderboard[0].score === undefined) return new Set();
+        const maxScore = leaderboard[0].score;
+        return new Set(leaderboard.filter(p => p.score === maxScore).map(p => p.name));
+    }
+
     get currentContext() {
         const phase = this.state.isEditMode ? this.state.editPhase : this.state.phase;
         return {

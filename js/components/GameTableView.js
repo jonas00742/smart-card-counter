@@ -1,4 +1,4 @@
-import { createElement, getIcon, generateLeaderboardHtml, bindBackdropClick } from '../utils/dom.js';
+import { createElement, getIcon, generateLeaderboardHtml } from '../utils/dom.js';
 import { CONFIG } from '../config.js';
 import { EVENTS } from '../core/events.js';
 
@@ -18,8 +18,7 @@ export class GameTableView {
             tableBody: document.getElementById('table-body'),
             openInputModalBtn: document.getElementById('open-input-modal-btn'),
             leaderboardContainer: document.getElementById('leaderboard-container'),
-            leaderboardList: document.getElementById('leaderboard-list'),
-            fabInterimBtn: document.getElementById('fab-interim-btn'),
+            leaderboardList: document.getElementById('leaderboard-list')
         };
     }
 
@@ -44,7 +43,6 @@ export class GameTableView {
         this._renderTableHeader(state, leaderboard);
         this._renderTableBody(state);
         this._updateLeaderboardVisibility(state, leaderboard);
-        this._updateFabInterimBtnVisibility(state);
     }
 
     startPenultimateRoundBlinking() { 
@@ -197,15 +195,18 @@ export class GameTableView {
         let allBidsMade = true;
         let isRowIncomplete = false;
 
-        const isPastBidPhase = rIndex < state.currentRoundIndex || (rIndex === state.currentRoundIndex && state.phase === 'stiche') || state.isGameOver;
+        const isCurrentRound = rIndex === state.currentRoundIndex;
+        const isPastBidPhase = rIndex < state.currentRoundIndex || (isCurrentRound && state.phase === 'stiche') || state.isGameOver;
         const isPastTricksPhase = rIndex < state.currentRoundIndex || state.isGameOver;
 
         for (const player of state.activePlayers) {
-            const data = state.roundsData[rIndex][player];
-            if (data.ansage === null) allBidsMade = false;
-            else totalBids += data.ansage;
-            if (isPastBidPhase && data.ansage === null) isRowIncomplete = true;
-            if (isPastTricksPhase && data.gemacht === null) isRowIncomplete = true;
+            const playerData = state.roundsData[rIndex][player];
+            
+            if (playerData.ansage === null) allBidsMade = false;
+            else totalBids += playerData.ansage;
+            
+            if (isPastBidPhase && playerData.ansage === null) isRowIncomplete = true;
+            if (isPastTricksPhase && playerData.gemacht === null) isRowIncomplete = true;
         }
         return { totalBids, allBidsMade, isRowIncomplete };
     }
@@ -252,10 +253,5 @@ export class GameTableView {
         if (state.isGameOver) {
             this.elements.leaderboardList.innerHTML = generateLeaderboardHtml(leaderboard, ' Pkt');
         }
-    }
-
-    _updateFabInterimBtnVisibility(state) {
-        const isFabInterimVisible = !state.isGameOver;
-        this.elements.fabInterimBtn.classList.toggle('hidden', !isFabInterimVisible);
     }
 }

@@ -25,22 +25,22 @@ export class AutoFillService {
         const cards = CONFIG.CARDS_SEQUENCE[rIndex];
         const roundData = state.roundsData[rIndex];
         
-        let totalWonTricks = 0;
-        const playersMissingInput = [];
+        let tricksAlreadyWon = 0;
+        const playersNeedingInput = [];
         
         state.activePlayers.forEach(p => {
             const val = roundData[p].gemacht;
-            if (val !== null) totalWonTricks += val;
-            else playersMissingInput.push(p);
+            if (val !== null) tricksAlreadyWon += val;
+            else playersNeedingInput.push(p);
         });
 
-        if (playersMissingInput.length > 0) {
+        if (playersNeedingInput.length > 0) {
             let fillValue = null;
-            if (totalWonTricks >= cards) fillValue = 0;
-            else if (playersMissingInput.length === 1) fillValue = Math.max(0, cards - totalWonTricks);
+            if (tricksAlreadyWon >= cards) fillValue = 0;
+            else if (playersNeedingInput.length === 1) fillValue = Math.max(0, cards - tricksAlreadyWon);
 
             if (fillValue !== null) {
-                playersMissingInput.forEach(p => {
+                playersNeedingInput.forEach(p => {
                     roundData[p].gemacht = fillValue;
                     if (!this.autoFilledPlayers.includes(p)) this.autoFilledPlayers.push(p);
                 });

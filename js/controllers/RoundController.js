@@ -32,19 +32,15 @@ export class RoundController {
 
     handleOpenInputModal() {
         this.model.clearAutoFillTracker();
-        this.model.state.isEditMode = false;
-        const { currentRoundIndex, activePlayers, roundsData, phase } = this.model.state;
-        
-        const key = phase === 'ansage' ? 'ansage' : 'gemacht';
-        const firstEmptyIdx = activePlayers.findIndex(p => roundsData[currentRoundIndex][p][key] === null);
-        this.model.state.currentPlayerInputIndex = firstEmptyIdx > -1 ? firstEmptyIdx : 0;
-        
+        this.model.clearEditMode();
+        this.model.setPlayerInputIndexToFirstEmpty();
+
         this._updateModal();
         this.view.showInputModal();
     }
 
     handleTriggerRowEdit(rIndex) {
-        this.model.state.editRoundIndex = rIndex;
+        this.model.setEditRoundIndex(rIndex);
         const { currentRoundIndex, phase, isGameOver } = this.model.state;
         const isPastRound = rIndex < currentRoundIndex || isGameOver;
         const isCurrentRoundTricksPhase = rIndex === currentRoundIndex && phase === 'stiche';
@@ -63,17 +59,13 @@ export class RoundController {
     }
 
     handleModalPrev() {
-        if (this.model.state.currentPlayerInputIndex > 0) {
-            this.model.state.currentPlayerInputIndex--;
-            this._updateModal();
-        }
+        this.model.previousPlayerInput();
+        this._updateModal();
     }
 
     handleModalNext() {
-        if (this.model.state.currentPlayerInputIndex < this.model.state.activePlayers.length - 1) {
-            this.model.state.currentPlayerInputIndex++;
-            this._updateModal();
-        }
+        this.model.nextPlayerInput();
+        this._updateModal();
     }
 
     handleNumberInput(val) {
@@ -111,7 +103,7 @@ export class RoundController {
             }
         }
         
-        const oldLeaders = this._getLeadingPlayers();
+        const oldLeaders = this.model.getLeadingPlayers();
 
         this.view.hideInputModal();
         this.model.clearAutoFillTracker();
@@ -119,11 +111,15 @@ export class RoundController {
         if (this.model.state.isEditMode) {
             this.model.recalculateAllScores();
         } else {
-            const gameJustEnded = this._advanceGameState();
+            const gameJustEnded = this.model.advanceGameState();
             if (gameJustEnded) {
                 this._checkAudioTriggers(oldLeaders, phase, rIndex);
                 this._updateGameTableView();
                 return this.view.showGameOver(this.model.getLeaderboard());
+            }
+            
+            if (this.model.state.currentRoundIndex === CONFIG.TOTAL_ROUNDS - 1 && this.model.state.phase === 'ansage') {
+                this.view.startPenultimateRoundBlinking();
             }
         }
         
@@ -131,26 +127,6 @@ export class RoundController {
         this._updateGameTableView();
     }
 
-    _advanceGameState() {
-        if (this.model.state.phase === 'ansage') {
-            this.model.state.phase = 'stiche';
-        } else {
-            this.model.recalculateAllScores();
-            if (this.model.state.currentRoundIndex >= CONFIG.TOTAL_ROUNDS - 1) {
-                this.model.state.isGameOver = true;
-            } else {
-                this.model.state.phase = 'ansage';
-                this.model.state.currentRoundIndex++;
-
-                if (this.model.state.currentRoundIndex === CONFIG.TOTAL_ROUNDS - 1) {
-                    this.view.startPenultimateRoundBlinking();
-                }
-            }
-        }
-        this.model.saveState();
-        return this.model.state.isGameOver;
-    }
-    
     _getGameTableProps() {
         return {
             state: this.model.state,
@@ -219,14 +195,6 @@ export class RoundController {
         this.view.renderModalContent(props);
     }
 
-    _getLeadingPlayers() {
-        const leaderboard = this.model.getLeaderboard();
-        if (leaderboard.length === 0 || leaderboard[0].score === undefined) return new Set();
-        
-        const maxScore = leaderboard[0].score;
-        return new Set(leaderboard.filter(p => p.score === maxScore).map(p => p.name));
-    }
-    
     _checkAudioTriggers(oldLeaders, phaseJustCompleted, rIndexJustCompleted) {
         const { state } = this.model;
         const phase = phaseJustCompleted || this.model.currentContext.phase;
@@ -234,7 +202,7 @@ export class RoundController {
         
         if (phase === 'ansage' && !state.isEditMode) return;
     
-        const newLeaders = this._getLeadingPlayers();
+        const newLeaders = this.model.getLeadingPlayers();
         const leadershipChanged = rIndex > 0 && oldLeaders.size > 0 && newLeaders.size > 0 && ![...oldLeaders].every(l => newLeaders.has(l));
     
         const everyoneFailed = phase === 'stiche' &&
@@ -256,9 +224,7 @@ export class RoundController {
     }
 
     startEditModal(phase) {
-        this.model.state.isEditMode = true;
-        this.model.state.editPhase = phase;
-        this.model.state.currentPlayerInputIndex = 0;
+        this.model.startEditMode(this.model.state.editRoundIndex, phase);
         this._updateModal();
         this.view.showInputModal();
     }

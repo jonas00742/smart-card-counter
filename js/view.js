@@ -51,6 +51,10 @@ export class GameView {
         this.toggleFab(true);
     }
     toggleFab(show) { 
+        // Do not show the FAB if the game is over (leaderboard embedded in table is visible)
+        if (show && this.table && !this.table.elements.leaderboardContainer.classList.contains('hidden')) {
+            show = false;
+        }
         this.modals.elements.fabInterimBtn.classList.toggle('hidden', !show); 
     }
 
