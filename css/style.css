@@ -4,12 +4,12 @@
 :root {
     /* Colors */
     --color-primary: #2c3e50;
-    --color-accent: #3498db;
+    --color-accent: #207abf;
     --color-bg: #f4f7f6;
     --color-surface: #ffffff;
     --color-text-main: #333333;
-    --color-text-muted: #7f8c8d;
-    --color-danger: #e74c3c;
+    --color-text-muted: #596566;
+    --color-danger: #c0392b;
     --color-success: #2ecc71;
     --color-warning: #e67e22;
     --color-info: #f39c12;
@@ -205,9 +205,9 @@ main {
     width: max-content;
     margin: 15px auto 0 auto;
     padding: 6px 16px;
-    border: 1px solid rgba(231, 76, 60, 0.4);
+    border: 1px solid rgba(192, 57, 43, 0.4);
     border-radius: var(--radius-pill);
-    background: rgba(231, 76, 60, 0.05);
+    background: rgba(192, 57, 43, 0.05);
     color: var(--color-danger);
     font-size: 0.85rem;
     font-weight: 600;
@@ -891,7 +891,7 @@ th.narrow-col {
     transition: all 0.1s;
 }
 
-.number-btn:active, 
+.number-btn:active,
 .number-btn.selected {
     color: var(--color-surface);
     background: var(--color-accent);
@@ -918,7 +918,7 @@ th.narrow-col {
     color: var(--color-text-muted);
 }
 
-.phase-tricks .number-btn.non-target:active, 
+.phase-tricks .number-btn.non-target:active,
 .phase-tricks .number-btn.non-target.selected {
     background: var(--color-disabled);
     color: var(--color-surface);
@@ -931,7 +931,7 @@ th.narrow-col {
     color: var(--color-success);
 }
 
-.phase-tricks .number-btn.target-bid:active, 
+.phase-tricks .number-btn.target-bid:active,
 .phase-tricks .number-btn.target-bid.selected {
     background: var(--color-success);
     color: var(--color-surface);
@@ -1007,8 +1007,8 @@ th.narrow-col {
 .place-loser {
     width: 100px;
     animation-name: plopDown;
-    animation-delay: 1.2s; 
-    z-index: 1; 
+    animation-delay: 1.2s;
+    z-index: 1;
     transform: translateY(-100px);
 }
 
@@ -1056,9 +1056,9 @@ th.narrow-col {
 .place-1 .podium-block { height: 90px; background: linear-gradient(135deg, #FFDF00, #D4AF37); }
 .place-2 .podium-block { height: 60px; background: linear-gradient(135deg, #E0E0E0, #9E9E9E); }
 .place-3 .podium-block { height: 40px; background: linear-gradient(135deg, #CD7F32, #8B4513); }
-.place-loser .podium-block { 
-    height: 25px; 
-    background: linear-gradient(135deg, #8B4513, #5c2e0e); 
+.place-loser .podium-block {
+    height: 25px;
+    background: linear-gradient(135deg, #8B4513, #5c2e0e);
     font-size: 1.2rem;
 }
 
@@ -1185,7 +1185,7 @@ th.narrow-col {
     .number-btn {
         padding: 8px 0;
     }
-    
+
     .podium-container {
         height: 120px;
     }

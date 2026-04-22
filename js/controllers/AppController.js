@@ -30,9 +30,9 @@ export class AppController {
 
     initRouter() {
         window.addEventListener('popstate', this.handlePopState.bind(this));
-        
+
         const hasOngoingGame = this.model.state.roundsData && this.model.state.roundsData.length > 0;
-        
+
         if (hasOngoingGame) {
             this._restoreOngoingGame();
         } else {
@@ -48,7 +48,7 @@ export class AppController {
         // Check if penultimate round warning is needed
         const { currentRoundIndex, phase, roundsData, activePlayers } = this.model.state;
         const isPenultimateRound = currentRoundIndex === CONFIG.TOTAL_ROUNDS - 1;
-        
+
         if (isPenultimateRound && phase === 'ansage' && roundsData[currentRoundIndex]) {
             const noBidsEnteredYet = !activePlayers.some(p => roundsData[currentRoundIndex][p]?.ansage !== null);
             if (noBidsEnteredYet) this.view.startPenultimateRoundBlinking();
@@ -79,7 +79,7 @@ export class AppController {
             window.history.pushState({ screen: 'game' }, '', '#game');
             this.view.showConfirmBackModal();
             return;
-        } 
+        }
         if (isGameScreenVisible && this.model.state.isGameOver) this.model.quitGame();
         this.view.switchScreen(false);
         const { availablePlayers, activePlayers, startingDealerIndex } = this.model.state;

@@ -63,7 +63,7 @@ export class InputModal {
         this.elements.modalTitle.innerText = `${isEditMode ? "Ändern: " : ""}Stiche ${phase === 'ansage' ? 'ansagen' : 'gemacht'}?`;
         this.elements.modalSubtitle.innerText = player;
 
-        this.elements.modalIndicators.innerHTML = indicators.map(dot => 
+        this.elements.modalIndicators.innerHTML = indicators.map(dot =>
             `<div class="indicator-dot ${dot.isFilled ? 'filled' : ''} ${dot.isActive ? 'active' : ''}"></div>`
         ).join('');
 
@@ -74,7 +74,7 @@ export class InputModal {
 
         this.elements.modalPrevBtn.style.visibility = showPrev ? 'visible' : 'hidden';
         this.elements.modalNextBtn.style.visibility = showNext ? 'visible' : 'hidden';
-        
+
         this.elements.resetInputBtn.classList.toggle('hidden', phase !== 'stiche');
         this.elements.resetInputBtn.disabled = phase === 'stiche' && !hasAnyInput;
 

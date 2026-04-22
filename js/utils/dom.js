@@ -20,14 +20,14 @@ export function sanitizeHTML(str) {
 export function createElement(tag, options = {}, ...children) {
     const el = document.createElement(tag);
     const { className, text, html, dataset, events, ...attrs } = options;
-    
+
     if (className) el.className = className;
     if (text !== undefined && text !== null) el.textContent = text;
     if (html) el.innerHTML = html;
     if (dataset) Object.entries(dataset).forEach(([k, v]) => el.dataset[k] = v);
     if (events) Object.entries(events).forEach(([k, v]) => el.addEventListener(k, v));
     Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, v));
-    
+
     children.forEach(child => child && el.appendChild(child));
     return el;
 }
@@ -45,12 +45,12 @@ export function generateLeaderboardHtml(leaderboard, suffix = '') {
         if (item.rank === 1) medal = '🥇';
         else if (item.rank === 2) medal = '🥈';
         else if (item.rank === 3) medal = '🥉';
-        
+
         if (numPlayers >= 4 && item.rank === worstRank && item.rank > 1) medal = '💩';
 
         return `<li>
-            <span class="rank-medal">${medal}</span> 
-            <span class="rank-name">${item.name}</span> 
+            <span class="rank-medal">${medal}</span>
+            <span class="rank-name">${item.name}</span>
             <strong>${item.score}${suffix}</strong>
         </li>`;
     }).join('');

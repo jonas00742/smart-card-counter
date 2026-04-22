@@ -35,7 +35,7 @@ export class GameTableView {
             }
         });
     }
-    
+
     renderGameTable(props) {
         const { state, leaderboard } = props;
         this._renderTrendIndicator(state);
@@ -45,8 +45,8 @@ export class GameTableView {
         this._updateLeaderboardVisibility(state, leaderboard);
     }
 
-    startPenultimateRoundBlinking() { 
-        document.body.classList.add('penultimate-round-warning'); 
+    startPenultimateRoundBlinking() {
+        document.body.classList.add('penultimate-round-warning');
         const alarmSound = new Audio('assets/Danger Alarm.mp3');
         alarmSound.play().catch(err => console.warn('Audio playback failed:', err));
     }
@@ -71,7 +71,7 @@ export class GameTableView {
         if (state.isGameOver) return;
 
         const phaseKey = state.phase === 'ansage' ? 'ansage' : 'gemacht';
-        const enteredCount = state.activePlayers.filter(p => 
+        const enteredCount = state.activePlayers.filter(p =>
             state.roundsData[state.currentRoundIndex][p][phaseKey] !== null
         ).length;
 
@@ -80,7 +80,7 @@ export class GameTableView {
         const btn = this.elements.openInputModalBtn;
 
         btn.classList.remove('pulse-animation', 'btn-continue');
-        
+
         if (allEntered) {
             btn.innerText = `Eingabe bestätigen (${cards} Karten)`;
             btn.classList.add('pulse-animation');
@@ -100,20 +100,19 @@ export class GameTableView {
 
         this.elements.tableHeaderRow.innerHTML = '<th class="narrow-col">Runde</th>'; // Reset header
 
-
         const numPlayers = state.activePlayers.length;
         const currentDealerIndex = numPlayers > 0 ? (state.startingDealerIndex + state.currentRoundIndex) % numPlayers : 0;
         const startingPlayerIndex = numPlayers > 0 ? (currentDealerIndex + 1) % numPlayers : 0;
-        
+
         const leadingPlayerNames = (state.currentRoundIndex > 0 || state.isGameOver) && leaderboard.length > 0
             ? leaderboard.filter(p => p.rank === 1).map(p => p.name)
             : [];
-        
+
         state.activePlayers.forEach((player, index) => {
             const isDealer = index === currentDealerIndex;
             const isStarter = index === startingPlayerIndex;
             const isLeading = leadingPlayerNames.includes(player);
-            
+
             let headerText = player.substring(0, 10);
             if (isStarter) headerText = '▶ ' + headerText;
             if (isLeading) headerText += ' 👑';
@@ -122,8 +121,8 @@ export class GameTableView {
             if (isDealer) tooltips.push("Geber");
             if (isStarter) tooltips.push("Kommt raus");
             if (isLeading) tooltips.push("Führend");
-            
-            const th = createElement('th', { 
+
+            const th = createElement('th', {
                 className: `player-col ${isDealer ? 'dealer-col-header' : ''}`,
                 text: headerText,
                 title: tooltips.join(" | ")
@@ -169,7 +168,7 @@ export class GameTableView {
     _createTableRow(state, rIndex, cardCount) {
         const roundData = state.roundsData[rIndex];
         const { totalBids, allBidsMade, isRowIncomplete } = this._getRoundStatus(state, rIndex);
-        
+
         const tr = createElement('tr');
         if (isRowIncomplete) tr.classList.add('row-warning');
         else if (rIndex === state.currentRoundIndex && !state.isGameOver) {
@@ -177,7 +176,7 @@ export class GameTableView {
         }
 
         const editBtnHtml = (rIndex <= state.currentRoundIndex || state.isGameOver)
-            ? `<button class="edit-btn" data-rindex="${rIndex}">${getIcon('edit')}</button>`
+            ? `<button class="edit-btn" data-rindex="${rIndex}" aria-label="Runde ${rIndex + 1} bearbeiten">${getIcon('edit')}</button>`
             : '';
         tr.appendChild(createElement('td', { className: 'round-cell', html: `<div class="round-cell-content"><span>${cardCount}</span>${editBtnHtml}</div>` }));
 
@@ -201,10 +200,10 @@ export class GameTableView {
 
         for (const player of state.activePlayers) {
             const playerData = state.roundsData[rIndex][player];
-            
+
             if (playerData.ansage === null) allBidsMade = false;
             else totalBids += playerData.ansage;
-            
+
             if (isPastBidPhase && playerData.ansage === null) isRowIncomplete = true;
             if (isPastTricksPhase && playerData.gemacht === null) isRowIncomplete = true;
         }

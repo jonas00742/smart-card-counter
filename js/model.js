@@ -35,7 +35,7 @@ export class GameModel {
                 this.state = JSON.parse(saved);
                 // Reset transient flags
                 this.state.isEditMode = false;
-                
+
                 // Backwards compatibility checks
                 this.state.startingDealerIndex = this.state.startingDealerIndex ?? 0;
                 this.state.isGameOver = this.state.isGameOver ?? false;
@@ -79,7 +79,7 @@ export class GameModel {
 
     getLeaderboard() {
         if (!this.state.roundsData || this.state.roundsData.length === 0) return [];
-        
+
         let targetIndex = this.state.currentRoundIndex - 1;
         if (this.state.isGameOver) targetIndex = this.state.currentRoundIndex;
 
@@ -213,7 +213,7 @@ export class GameModel {
             key: phase === 'ansage' ? 'ansage' : 'gemacht'
         };
     }
-    
+
     setInputValue(value) {
         const player = this.state.activePlayers[this.state.currentPlayerInputIndex];
         const { rIndex, key } = this.currentContext;
@@ -288,7 +288,7 @@ export class GameModel {
                 }
             }
         });
-        
+
         this.saveState();
     }
 

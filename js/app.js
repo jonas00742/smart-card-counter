@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const eventBus = new EventBus();
     const model = new GameModel();
     const view = new GameView(eventBus);
-    
+
     new AppController(model, view, eventBus);
     new SetupController(model, view, eventBus);
     new RoundController(model, view, eventBus);

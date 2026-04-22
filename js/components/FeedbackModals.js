@@ -43,7 +43,7 @@ export class FeedbackModals {
         bindBackdropClick(this.elements.gameOverModal, () => this.eventBus.emit(EVENTS.GAME_OVER_CLOSE));
 
         this.elements.confirmBackAcceptBtn.addEventListener('click', () => this.eventBus.emit(EVENTS.CONFIRM_BACK_ACCEPT));
-        
+
         this.elements.confirmBackCancelBtn.addEventListener('click', () => this.eventBus.emit(EVENTS.CONFIRM_BACK_CANCEL));
         bindBackdropClick(this.elements.confirmBackModal, () => this.eventBus.emit(EVENTS.CONFIRM_BACK_CANCEL));
 
@@ -53,7 +53,7 @@ export class FeedbackModals {
     showGameOver(leaderboard) {
         this.elements.gameOverModal.classList.remove('hidden');
         this.elements.podiumContainer.innerHTML = '';
-        
+
         const podiumOrder = [];
         const rank2 = leaderboard.filter(p => p.rank === 2);
         const rank1 = leaderboard.filter(p => p.rank === 1);
@@ -64,7 +64,7 @@ export class FeedbackModals {
         rank3.forEach(item => podiumOrder.push({ ...item, place: 3 }));
 
         podiumOrder.forEach(item => {
-            const step = createElement('div', { 
+            const step = createElement('div', {
                 className: `podium-step place-${item.place}`,
                 html: `<div class="podium-name">${item.name}</div><div class="podium-score">${item.score} Pkt</div><div class="podium-block">${item.rank}</div>`
             });
@@ -93,7 +93,7 @@ export class FeedbackModals {
 
     showConfirmBackModal() { this.elements.confirmBackModal.classList.remove('hidden'); }
     hideConfirmBackModal() { this.elements.confirmBackModal.classList.add('hidden'); }
-    
+
     showValidationAlert(message) {
         this.elements.validationText.innerText = message;
         this.elements.validationModal.classList.remove('hidden');

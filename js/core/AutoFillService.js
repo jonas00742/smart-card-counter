@@ -14,7 +14,7 @@ export class AutoFillService {
         const roundData = state.roundsData[rIndex];
         this.autoFilledPlayers.forEach(player => { roundData[player].gemacht = null; });
         this.clearTracker();
-        
+
         return true; // Indicates the state has changed
     }
 
@@ -24,10 +24,10 @@ export class AutoFillService {
 
         const cards = CONFIG.CARDS_SEQUENCE[rIndex];
         const roundData = state.roundsData[rIndex];
-        
+
         let tricksAlreadyWon = 0;
         const playersNeedingInput = [];
-        
+
         state.activePlayers.forEach(p => {
             const val = roundData[p].gemacht;
             if (val !== null) tricksAlreadyWon += val;

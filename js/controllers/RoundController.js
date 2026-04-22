@@ -24,7 +24,7 @@ export class RoundController {
         this.eventBus.on(EVENTS.GAME_OVER_CLOSE, () => this.view.hideGameOverModal());
         this.eventBus.on(EVENTS.EDIT_CHOICE_CLOSE, this.handleEditChoiceClose.bind(this));
         this.eventBus.on(EVENTS.EDIT_CHOICE_SELECT, this.handleEditChoiceSelect.bind(this));
-        
+
         this.eventBus.on(EVENTS.TOGGLE_INTERIM, this.handleToggleInterim.bind(this));
         this.eventBus.on(EVENTS.GAME_TOGGLE_BIDS, this.handleToggleBids.bind(this));
         this.eventBus.on(EVENTS.MODAL_BIDS_CLOSE, () => this.view.toggleFab(true));
@@ -102,12 +102,12 @@ export class RoundController {
                 return this.view.showValidationAlert(validation.message);
             }
         }
-        
+
         const oldLeaders = this.model.getLeadingPlayers();
 
         this.view.hideInputModal();
         this.model.clearAutoFillTracker();
-        
+
         if (this.model.state.isEditMode) {
             this.model.recalculateAllScores();
         } else {
@@ -117,12 +117,12 @@ export class RoundController {
                 this._updateGameTableView();
                 return this.view.showGameOver(this.model.getLeaderboard());
             }
-            
+
             if (this.model.state.currentRoundIndex === CONFIG.TOTAL_ROUNDS - 1 && this.model.state.phase === 'ansage') {
                 this.view.startPenultimateRoundBlinking();
             }
         }
-        
+
         this._checkAudioTriggers(oldLeaders, phase, rIndex);
         this._updateGameTableView();
     }
@@ -138,7 +138,7 @@ export class RoundController {
         const props = this._getGameTableProps();
         this.view.renderGameTable(props);
     }
-    
+
     _updateModal() {
         const state = this.model.state;
         const rIndex = state.isEditMode ? state.editRoundIndex : state.currentRoundIndex;
@@ -199,22 +199,22 @@ export class RoundController {
         const { state } = this.model;
         const phase = phaseJustCompleted || this.model.currentContext.phase;
         const rIndex = rIndexJustCompleted !== undefined ? rIndexJustCompleted : this.model.currentContext.rIndex;
-        
+
         if (phase === 'ansage' && !state.isEditMode) return;
-    
+
         const newLeaders = this.model.getLeadingPlayers();
         const leadershipChanged = rIndex > 0 && oldLeaders.size > 0 && newLeaders.size > 0 && ![...oldLeaders].every(l => newLeaders.has(l));
-    
+
         const everyoneFailed = phase === 'stiche' &&
             state.activePlayers.every(p => state.roundsData[rIndex][p].punkte < 0);
-    
+
         if (leadershipChanged || everyoneFailed) {
             const audio = new Audio('./assets/Fah.mp3');
             audio.play().catch(e => console.warn('Audio play failed:', e));
         }
     }
 
-    handleEditChoiceClose() { 
+    handleEditChoiceClose() {
         this.view.hideEditChoiceModal();
     }
 
@@ -228,7 +228,7 @@ export class RoundController {
         this._updateModal();
         this.view.showInputModal();
     }
-    
+
     handleToggleInterim() {
         if (this.model.state.isGameOver) {
             this.view.showGameOver(this.model.getLeaderboard());
