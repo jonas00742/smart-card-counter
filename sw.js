@@ -1,29 +1,37 @@
-const CACHE_NAME = 'smart-counter-v31';
+const CACHE_NAME = 'smart-counter-v32';
 
 const ASSETS_TO_CACHE = [
+    // App Shell
     './',
     './index.html',
+    './manifest.json',
     './favicon.ico',
+
+    // Styles
     './css/style.css',
+
+    // Scripts
+    './js/app.js',
     './js/config.js',
     './js/model.js',
     './js/view.js',
-    './js/app.js',
+    './js/components/FeedbackModals.js',
+    './js/components/GameTableView.js',
+    './js/components/InputModal.js',
+    './js/components/SetupView.js',
+    './js/controllers/AppController.js',
+    './js/controllers/RoundController.js',
+    './js/controllers/SetupController.js',
+    './js/core/AutoFillService.js',
     './js/core/EventBus.js',
     './js/core/events.js',
     './js/core/ScoreEngine.js',
-    './js/core/AutoFillService.js',
-    './js/controllers/AppController.js',
-    './js/controllers/SetupController.js',
-    './js/controllers/RoundController.js',
-    './js/components/SetupView.js',
-    './js/components/GameTableView.js',
-    './js/components/InputModal.js',
-    './js/components/FeedbackModals.js',
     './js/utils/dom.js',
-    './manifest.json',
+
+    // Assets
     './assets/icon-192.png',
     './assets/icon-512.png',
+    './assets/Danger Alarm.mp3',
     './assets/Fah.mp3'
 ];
 
