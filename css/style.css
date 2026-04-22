@@ -16,6 +16,7 @@
     --color-info-light: #f1c40f;
     --color-disabled: #bdc3c7;
     --color-accent-dark: #111199;
+    --color-primary-light: #516980;
     --color-border: #eeeeee;
     --color-chip-bg: #e0e0e0;
     --color-highlight-row: #e8f4f8;
@@ -37,6 +38,7 @@
     --z-sticky-header: 2;
     --z-sticky-btn: 4;
     --z-modal: 1000;
+    --header-name-row-height: 40px;
     --sticky-header-height: 70px;
 }
 
@@ -85,6 +87,8 @@ header {
     background: var(--color-primary);
     color: var(--color-surface);
     box-shadow: var(--shadow-sm);
+    position: relative;
+    z-index: 10;
 }
 
 main {
@@ -534,7 +538,7 @@ main {
     position: sticky;
     top: 0;
     left: 0;
-    width: calc(100vw - (var(--space-md) * 2));
+    width: 100%;
     z-index: var(--z-sticky-btn);
     height: var(--sticky-header-height);
     display: flex;
@@ -571,23 +575,63 @@ th, td {
 
 th {
     position: sticky;
-    top: var(--sticky-header-height);
+    /* top property is now handled by more specific rules below */
     z-index: var(--z-sticky-header);
     color: var(--color-surface);
     background: var(--color-primary);
+    background-clip: padding-box;
+}
+
+/* First header row (Player Names) */
+thead tr:first-child th {
+    top: var(--sticky-header-height);
+    height: var(--header-name-row-height);
+    border-bottom: none; /* Seamless join with bids row */
+    padding-bottom: 2px;
+}
+
+/* Second header row (Bids) */
+.bids-header-row th {
+    top: calc(var(--sticky-header-height) + var(--header-name-row-height));
+    background-color: var(--color-primary-light);
+    padding: 2px 4px 4px 4px;
+    height: 24px;
+    border-top: none;
+    background-clip: padding-box;
+}
+
+.bid-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.15);
+    padding: 0 6px;
+    border-radius: var(--radius-pill);
+    color: var(--color-surface);
+    font-size: 0.75rem;
+    font-weight: 700;
+    min-width: 32px;
+    height: 18px;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.bids-label {
+    font-size: 0.65rem;
+    font-weight: normal;
+    opacity: 0.9;
 }
 
 /* Apply radius to the corners of the sticky header */
-th:first-child {
+thead tr:first-child th:first-child {
     border-top-left-radius: var(--radius-sm);
 }
 
-th:last-child {
+thead tr:first-child th:last-child {
     border-top-right-radius: var(--radius-sm);
 }
 
 /* Hide table rows that scroll above the sticky header */
-th::before {
+thead tr:first-child th::before {
     content: '';
     position: absolute;
     bottom: 100%;
@@ -654,6 +698,11 @@ th.dealer-col-header { /* Increased specificity to naturally override th */
 th.narrow-col {
     z-index: calc(var(--z-sticky-header) + 1);
     background-color: var(--color-primary);
+}
+
+.bids-header-row th.narrow-col {
+    background-color: var(--color-primary-light);
+    z-index: calc(var(--z-sticky-header) + 1);
 }
 
 .round-cell-content {
@@ -1042,7 +1091,7 @@ th.narrow-col {
 }
 
 .penultimate-round-warning .sticky-top-container,
-.penultimate-round-warning th::before,
+.penultimate-round-warning thead tr:first-child th::before,
 .penultimate-round-warning th:first-child::after,
 .penultimate-round-warning td:first-child::after {
     animation: blink-red-warning 1s infinite;
@@ -1091,34 +1140,6 @@ th.narrow-col {
 }
 
 .fab-btn svg {
-    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));
-}
-
-.fab-check-btn {
-    position: fixed;
-    bottom: 25px;
-    left: 25px;
-    z-index: var(--z-modal);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    border: none;
-    background: linear-gradient(135deg, var(--color-success), #27ae60);
-    color: #fff;
-    box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.fab-check-btn:active {
-    transform: scale(0.95);
-    box-shadow: 0 2px 8px rgba(46, 204, 113, 0.4);
-}
-
-.fab-check-btn svg {
     filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));
 }
 
@@ -1172,8 +1193,5 @@ th.narrow-col {
     /* Avoid the FAB hiding under notches (e.g. iPhone dynamic island) */
     .fab-btn {
         right: calc(25px + env(safe-area-inset-right, 0px));
-    }
-    .fab-check-btn {
-        left: calc(25px + env(safe-area-inset-left, 0px));
     }
 }

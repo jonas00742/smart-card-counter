@@ -24,10 +24,6 @@ export class GameView {
         this._appElements.setupHeader.classList.toggle('hidden', toGame);
         this._appElements.gameHeader.classList.toggle('hidden', !toGame);
         this.modals.elements.fabInterimBtn.classList.toggle('hidden', !toGame);
-        if (this.table.elements.fabCheckBtn) {
-            const shouldShow = this.table.elements.fabCheckBtn.dataset.shouldShow === 'true';
-            this.table.elements.fabCheckBtn.classList.toggle('hidden', !(toGame && shouldShow));
-        }
     }
 
     // --- State Queries ---
@@ -56,10 +52,6 @@ export class GameView {
     }
     toggleFab(show) { 
         this.modals.elements.fabInterimBtn.classList.toggle('hidden', !show); 
-        if (this.table.elements.fabCheckBtn) {
-            const shouldShow = this.table.elements.fabCheckBtn.dataset.shouldShow === 'true';
-            this.table.elements.fabCheckBtn.classList.toggle('hidden', !(show && shouldShow));
-        }
     }
 
     // --- View Rendering Delegation ---

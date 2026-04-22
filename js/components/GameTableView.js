@@ -20,24 +20,12 @@ export class GameTableView {
             leaderboardContainer: document.getElementById('leaderboard-container'),
             leaderboardList: document.getElementById('leaderboard-list'),
             fabInterimBtn: document.getElementById('fab-interim-btn'),
-            fabCheckBtn: document.getElementById('fab-check-btn'),
-            bidsModal: document.getElementById('bids-check-modal'),
-            bidsList: document.getElementById('bids-list'),
-            closeBidsBtn: document.getElementById('close-bids-btn'),
         };
     }
 
     _bindEvents() {
         this.elements.backToSetupBtn.addEventListener('click', () => this.eventBus.emit(EVENTS.GAME_GO_BACK));
         this.elements.openInputModalBtn.addEventListener('click', () => this.eventBus.emit(EVENTS.GAME_OPEN_MODAL));
-        this.elements.fabCheckBtn.addEventListener('click', () => this.eventBus.emit(EVENTS.GAME_TOGGLE_BIDS));
-
-        const closeBidsModal = () => {
-            this.hideBidsModal();
-            this.eventBus.emit(EVENTS.MODAL_BIDS_CLOSE);
-        };
-        this.elements.closeBidsBtn.addEventListener('click', closeBidsModal);
-        bindBackdropClick(this.elements.bidsModal, closeBidsModal);
 
         // Re-delegate edit clicks whenever the table body changes
         this.elements.tableBody.addEventListener('click', (e) => {
@@ -56,25 +44,7 @@ export class GameTableView {
         this._renderTableHeader(state, leaderboard);
         this._renderTableBody(state);
         this._updateLeaderboardVisibility(state, leaderboard);
-        this._updateFabVisibility(state);
-    }
-    
-    showBidsModal(props) {
-        const { currentRoundIndex, activePlayers, roundsData } = props;
-        this.elements.bidsList.innerHTML = activePlayers.map(p => {
-            const ansage = roundsData[currentRoundIndex][p].ansage;
-            return `
-                <div class="bids-modal-row">
-                    <strong>${p}</strong>
-                    <span class="bids-modal-value">${ansage !== null ? ansage : '-'}</span>
-                </div>
-            `;
-        }).join('');
-        this.elements.bidsModal.classList.remove('hidden');
-    }
-
-    hideBidsModal() {
-        this.elements.bidsModal.classList.add('hidden');
+        this._updateFabInterimBtnVisibility(state);
     }
 
     startPenultimateRoundBlinking() { 
@@ -125,7 +95,13 @@ export class GameTableView {
     }
 
     _renderTableHeader(state, leaderboard) {
+        const thead = this.elements.tableHeaderRow.parentNode;
+        // Remove old bids row before re-rendering
+        const oldBidsRow = thead.querySelector('.bids-header-row');
+        if (oldBidsRow) oldBidsRow.remove();
+
         this.elements.tableHeaderRow.innerHTML = '<th class="narrow-col">Runde</th>'; // Reset header
+
 
         const numPlayers = state.activePlayers.length;
         const currentDealerIndex = numPlayers > 0 ? (state.startingDealerIndex + state.currentRoundIndex) % numPlayers : 0;
@@ -158,6 +134,30 @@ export class GameTableView {
         });
 
         this.elements.tableHeaderRow.appendChild(createElement('th', { className: 'status-col-header', text: '±' }));
+
+        // --- Create and append the new bids row ---
+        const bidsRow = createElement('tr', { className: 'bids-header-row' });
+        bidsRow.appendChild(createElement('th', { className: 'narrow-col', html: '<span class="bids-label">Angesagt</span>' })); // Spacer for round column
+
+        const roundDataForBids = state.roundsData[state.currentRoundIndex];
+        const showBids = (state.phase === 'stiche' || state.isGameOver) && roundDataForBids;
+
+        state.activePlayers.forEach(player => {
+            let bidText = '-';
+            if (showBids) {
+                const bid = roundDataForBids[player]?.ansage;
+                if (bid !== null && bid !== undefined) {
+                    bidText = bid;
+                }
+            }
+            bidsRow.appendChild(createElement('th', {
+                className: 'player-col',
+                html: `<span class="bid-badge">${bidText}</span>`
+            }));
+        });
+
+        bidsRow.appendChild(createElement('th', { className: 'status-col-header', html: '&nbsp;' })); // Spacer for status column
+        thead.appendChild(bidsRow);
     }
 
     _renderTableBody(state) {
@@ -254,12 +254,8 @@ export class GameTableView {
         }
     }
 
-    _updateFabVisibility(state) {
+    _updateFabInterimBtnVisibility(state) {
         const isFabInterimVisible = !state.isGameOver;
         this.elements.fabInterimBtn.classList.toggle('hidden', !isFabInterimVisible);
-
-        const isFabCheckVisible = isFabInterimVisible && state.phase === 'stiche';
-        this.elements.fabCheckBtn.classList.toggle('hidden', !isFabCheckVisible);
-        this.elements.fabCheckBtn.dataset.shouldShow = isFabCheckVisible;
     }
 }
