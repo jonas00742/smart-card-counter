@@ -1146,7 +1146,7 @@ th.narrow-col {
 /* ==========================================================================
    12. LANDSCAPE OPTIMIZATIONS
    ========================================================================== */
-@media (orientation: landscape) {
+@media (orientation: landscape) and (max-height: 600px) {
     /* Reclaim vertical space for the game table */
     :root {
         --sticky-header-height: 56px;
