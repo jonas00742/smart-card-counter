@@ -12,6 +12,7 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:debug": "playwright test --debug",
     "test:e2e:report": "playwright show-report",
-    "test:load": "k6 run tests/load/baseline.js"
+    "test:load": "k6 run tests/load/baseline.js",
+    "test:load:normal": "k6 run tests/load/normal-load.js"
   }
 }
