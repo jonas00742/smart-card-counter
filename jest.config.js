@@ -6,7 +6,8 @@ const config = {
   transform: {},
   testPathIgnorePatterns: [
     ...defaults.testPathIgnorePatterns,
-    "/tests/node"
+    "/tests/node",
+    "/tests/e2e"
   ]
 };
 
