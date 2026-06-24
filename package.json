@@ -1,7 +1,8 @@
 {
   "type": "module",
   "devDependencies": {
-    "jest": "^30.4.2"
+    "jest": "^30.4.2",
+    "jest-environment-jsdom": "^30.4.1"
   },
   "scripts": {
     "test": "node --experimental-vm-modules --disable-warning=ExperimentalWarning node_modules/jest/bin/jest.js"
