@@ -1,7 +1,7 @@
 # WAT Projektarbeit
 
-Smart card counter - Eine smarter intuitiver Spielblock für ein Wizard ähnliches Kartenspiel (Javascript)
-Zusammenarbeit von Jonas Blehrmühlhuber, Nina KÖck
+Smart card counter - Ein smarter intuitiver Spielblock für ein Wizard ähnliches Kartenspiel (Javascript)
+Zusammenarbeit von Jonas Blehrmühlhuber, Nina Köck
 
 ## Webanwendung
 
